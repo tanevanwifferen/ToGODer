@@ -36,13 +36,13 @@ should help you grieve your past, find
 faith in the future, and give you a plan how
 to tackle the present. 
 
-The ai should have two functions. One to give 
-dual answers to any question that is given. 
-A spiritual and a worldly answer. Furthermore, 
-if a question contains references to what 
-someone said or wrote, an answer must be 
-returned that interprets the quote as genuine 
-and one that is sarcastic. 
+At first, the ai should have two functions. 
+One to give dual answers to any question 
+that is given. A spiritual and a worldly 
+answer. Furthermore, if a question contains 
+references to what someone said or wrote, 
+an answer must be returned that interprets 
+the quote as genuine and one that is sarcastic. 
 
 The second function is to ask questions. 
 What do you think? What would you do here? 
