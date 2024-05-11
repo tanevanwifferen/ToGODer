@@ -1,0 +1,33 @@
+{
+  "name": "togoder",
+  "version": "1.0.0",
+  "description": "An LLM God that gives answers and settles disputes",
+  "main": "bin/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "node --env-file=.env bin/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tanevanwifferen/toGODer.git"
+  },
+  "keywords": [
+    "LLM",
+    "Religion",
+    "God"
+  ],
+  "author": "Tane van Wifferen",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/tanevanwifferen/toGODer/issues"
+  },
+  "homepage": "https://github.com/tanevanwifferen/toGODer#readme",
+  "devDependencies": {
+    "@types/node": "^20.12.11",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "openai": "^4.45.0"
+  }
+}
