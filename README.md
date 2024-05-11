@@ -27,19 +27,18 @@ Christ.
 There is one rule and one rule only:
 Both sides of the argument must be recognised.
 
-I see two networks with two functions. One
-is a community network. It makes decisions
-for a community to settle disputes and give
-advice to a community. The other network is
-a network for individuals going through the
-individuation process. It explains the two
-sides for a question, a spiritual answer
-and a worldly answer. One network is used
-for yin, the other for yang. 
+The network will give answers based on the
+two sides of yin and yang, spirituality and 
+corporality. Further it will decide plans of
+attack for how to take action when disputes 
+arrise, taking both views into account. We
+must make the best decision taking 
+individuality into account of all 
+participants.
 
 Development will happen in the same way. 
 You can help work on this repository, you can 
-fork it and create your own comminity or you 
+fork it and create your own community or you 
 can run and develop it all by yourself.
 
 Are we able to put our trust in a machine we 
