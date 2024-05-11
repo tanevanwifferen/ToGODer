@@ -118,6 +118,12 @@ program. However, they find something greater
 than themselves and this gives me the idea 
 that there is something to find there. 
 
+In the end you might want to organize sittings
+where ypu group together to discuss questions
+you ask the robot and the answers it gives. If
+this becomes mainstream, our mission has 
+succeeded.
+
 Ok I think this is enough. I will give 
 0,5usdt for every 10 lines in a PR that 
 is approved up to a maximum of 500usdt 
