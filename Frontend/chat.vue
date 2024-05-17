@@ -45,13 +45,11 @@
               :placeholder="messagePlaceholder"
               autofocus
             />
-            <button class="submit" type="submit">
-              >
-              <!--<v-icon
-                name="send"
-                base-class="icon-send-message"
-                :style="{ color: iconColorProp, width: '30px' }"
-              ></v-icon>-->
+            <button class="submit" type="submit" style="width: 10%">
+              <span
+                class="fa fa-paper-plane"
+                :style="{ color: iconColorProp, width: '100%' }"
+              ></span>
             </button>
           </form>
         </div>
@@ -93,6 +91,12 @@ export default {
     return {
       youMessage: "",
     };
+  },
+
+  watch: {
+    messageListProp() {
+      this.messageScroll();
+    },
   },
 
   methods: {
@@ -184,7 +188,7 @@ export default {
   border: none;
   font-size: 0.8em;
   outline: none;
-  padding: 1.5em;
+  padding: 1em;
   width: 90%;
 }
 .chat-form {
