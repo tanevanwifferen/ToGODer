@@ -1,32 +1,28 @@
+import { ConversationApi } from "./Api/ConversationApi";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-import { OpenAIWrapper } from "./LLM/OpenAI";
-import { MainSystemPrompt } from "./LLM/prompts/systemprompts";
+import express from "express";
+import path from "path";
 
-const readline = require("readline");
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
+const app = express();
+const port = 3000;
+
+app.use(express.json());
+
+// Serve static files from the "../Frontend" directory
+app.use(express.static(path.join(__dirname, "../Frontend")));
+
+app.post("/api/chat", async (req, res) => {
+  var body: ChatCompletionMessageParam[] = req.body;
+  var conversationApi = new ConversationApi();
+  res.send(await conversationApi.getResponse(body));
 });
 
-console.log("hello world");
+// Redirect empty path to "index.html"
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../Frontend/index.html"));
+});
 
-var openai = new OpenAIWrapper();
-
-var thread: ChatCompletionMessageParam[] = [];
-
-async function run() {
-  while (true) {
-    await new Promise<void>((res, rej) => {
-      rl.question("> ", (question: string) => {
-        thread.push({ role: "user", content: question });
-        openai.getResponse(MainSystemPrompt, thread).then((response) => {
-          thread.push({ role: "assistant", content: response });
-          console.log(response);
-          res();
-        });
-      });
-    });
-  }
-}
-
-run();
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});

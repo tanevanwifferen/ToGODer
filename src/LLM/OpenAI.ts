@@ -1,7 +1,8 @@
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import { AIWrapper } from "./AIWrapper";
 
-export class OpenAIWrapper {
+export class OpenAIWrapper implements AIWrapper {
   private apiKey: string;
 
   constructor() {
@@ -23,7 +24,7 @@ export class OpenAIWrapper {
           { role: "system", content: systemPrompt },
           ...userAndAgentPrompts,
         ],
-        model: "gpt-4-turbo",
+        model: "gpt-4o",
       });
       return (await completion).choices[0].message.content!;
     } catch (error) {

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue App</title>
+    <script src="https://unpkg.com/vue@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue3-sfc-loader/dist/vue3-sfc-loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </head>
+
+  <body>
+    <div id="app">
+      <chat
+        :message-list-prop="messages"
+        @on-message-was-sent="sendMessage"
+      ></chat>
+      <!-- Your Vue app content goes here -->
+    </div>
+
+    <script>
+      const options = {
+        moduleCache: {
+          vue: Vue,
+        },
+        async getFile(url) {
+          const res = await fetch(url);
+          if (!res.ok)
+            throw Object.assign(new Error(res.statusText + " " + url), { res });
+          return {
+            getContentData: (asBinary) =>
+              asBinary ? res.arrayBuffer() : res.text(),
+          };
+        },
+        addStyle(textContent) {
+          const style = Object.assign(document.createElement("style"), {
+            textContent,
+          });
+          const ref = document.head.getElementsByTagName("style")[0] || null;
+          document.head.insertBefore(style, ref);
+        },
+      };
+
+      const { loadModule } = window["vue3-sfc-loader"];
+
+      const app = Vue.createApp({
+        components: {
+          chat: Vue.defineAsyncComponent(() =>
+            loadModule("./chat.vue", options)
+          ),
+        },
+        data() {
+          return {
+            messages: [],
+          };
+        },
+        methods: {
+          async sendMessage(message) {
+            this.messages.push(message);
+            var response = await fetch("/api/chat", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(
+                this.messages.map((x) => ({
+                  content: x.body,
+                  role: x.author == "you" ? "user" : "assistant",
+                }))
+              ),
+            });
+            if (!response.ok) {
+              throw new Error("Error sending message");
+            }
+            // Handle successful response
+            this.messages.push({
+              body: marked.parse(await response.text()),
+              author: "assistant",
+            });
+          },
+        },
+      });
+
+      app.mount("#app");
+    </script>
+  </body>
+</html>
