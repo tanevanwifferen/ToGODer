@@ -3,9 +3,11 @@ import { AIWrapper } from "../LLM/AIWrapper";
 import { OpenAIWrapper } from "../LLM/OpenAI";
 import {
   FormattingPrompt,
+  IndividuationPrompt,
   MainSystemPrompt,
   TherapistPrompt,
 } from "../LLM/prompts/systemprompts";
+import { PromptList } from "../LLM/prompts/promptlist";
 
 export class ConversationApi {
   public async getResponse(
@@ -15,12 +17,9 @@ export class ConversationApi {
 
     var firstPrompt = (<string>prompts[0].content)?.split(" ")[0];
 
-    var systemprompt = "";
-    switch (firstPrompt) {
-      case "/therapist":
-        systemprompt += TherapistPrompt;
-      default:
-        systemprompt += MainSystemPrompt;
+    var systemprompt = MainSystemPrompt;
+    if (firstPrompt in PromptList) {
+      systemprompt = PromptList[firstPrompt];
     }
     systemprompt += "\n\n" + FormattingPrompt;
     return await aiWrapper.getResponse(systemprompt, prompts);

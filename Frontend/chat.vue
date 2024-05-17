@@ -29,11 +29,17 @@
             v-if="messageListProp.length == 0 && youMessage.length == 0"
           >
             <div>
-              <button @click="youMessage += '/therapist '">Therapist</button>
+              <button
+                v-for="prompt in promptsListProp"
+                @click="youMessage += prompt + ' '"
+              >
+                {{ prompt.replace("/", "") }}
+              </button>
             </div>
           </div>
           <form @submit.prevent="handleOutboundMessage()" class="chat-form">
             <input
+              id="chatInput"
               v-model="youMessage"
               type="text"
               :placeholder="messagePlaceholder"
@@ -80,6 +86,7 @@ export default {
       default: "#f1f0f0",
     },
     messageListProp: Array,
+    promptsListProp: Array,
   },
 
   data: () => {
@@ -98,6 +105,10 @@ export default {
       this.$nextTick(() => {
         this.messageScroll();
       });
+    },
+    setPrompt(prompt) {
+      this.youMessage = prompt;
+      document.getElementById("chatInput").focus();
     },
     messageScroll() {
       let messageDisplay = this.$refs.chatArea;
@@ -152,7 +163,7 @@ export default {
   width: 100%;
 }
 .message {
-  width: 45%;
+  width: 100%;
   border-radius: 10px;
   padding: 0.5em;
   font-size: 1em;
@@ -160,7 +171,6 @@ export default {
 }
 .message-out {
   color: #ffffff;
-  margin-left: 50%;
 }
 .message-in {
   background: #f1f0f0;

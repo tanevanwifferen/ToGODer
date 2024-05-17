@@ -2,6 +2,7 @@ import { ConversationApi } from "./Api/ConversationApi";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import express from "express";
 import path from "path";
+import { PromptList } from "./LLM/prompts/promptlist";
 
 const app = express();
 const port = 3000;
@@ -15,6 +16,10 @@ app.post("/api/chat", async (req, res) => {
   var body: ChatCompletionMessageParam[] = req.body;
   var conversationApi = new ConversationApi();
   res.send(await conversationApi.getResponse(body));
+});
+
+app.get("/api/prompts", (req, res) => {
+  res.send(Object.keys(PromptList));
 });
 
 // Redirect empty path to "index.html"

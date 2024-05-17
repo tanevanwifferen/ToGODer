@@ -13,6 +13,7 @@
     <div id="app">
       <chat
         :message-list-prop="messages"
+        :prompts-list-prop="prompts"
         @on-message-was-sent="sendMessage"
       ></chat>
       <!-- Your Vue app content goes here -->
@@ -52,7 +53,12 @@
         data() {
           return {
             messages: [],
+            prompts: [],
           };
+        },
+        async created() {
+          var prompts = await fetch("/api/prompts");
+          this.prompts = await prompts.json();
         },
         methods: {
           async sendMessage(message) {
