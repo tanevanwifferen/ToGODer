@@ -7,6 +7,18 @@
           class="chat-area"
           :style="{ background: messageBackgroundColorProp }"
         >
+          <div class="placeholder" v-if="messageListProp.length == 0">
+            <p class="message message-in">
+              Hi! I'm a chatbot built to handle all your personal requests. How
+              can I help you today? I will respond in the language you ask me
+              questions in.
+              <br />
+              <br />
+              When you ask me a question, I will give you an analysis of the
+              situation. Try pressing the buttons below to get a different robot
+              that can help you with different needs.
+            </p>
+          </div>
           <p
             v-for="message in messageListProp"
             :key="message.id || message.body"
