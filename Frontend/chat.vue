@@ -1,11 +1,13 @@
 <template>
   <div>
-    <div class="chat-container" class="show">
+    <div class="chat-container show">
       <div class="chat-window">
         <div
           ref="chatArea"
           class="chat-area"
-          :style="{ background: messageBackgroundColorProp }"
+          :style="{
+            background: messageBackgroundColorProp,
+          }"
         >
           <div class="placeholder" v-if="messageListProp.length == 0">
             <p class="message message-in">
@@ -36,14 +38,11 @@
           ></p>
         </div>
         <div class="chat-input">
-          <div
-            class="promptButtons"
-            v-if="messageListProp.length == 0 && youMessage.length == 0"
-          >
+          <div class="promptButtons" v-if="messageListProp.length == 0">
             <div>
               <button
                 v-for="prompt in promptsListProp"
-                @click="youMessage += prompt + ' '"
+                @click="youMessage = prompt + ' ' + youMessage"
               >
                 {{ prompt.replace("/", "") }}
               </button>
@@ -135,7 +134,6 @@ export default {
     },
   },
   mounted() {
-    this.isOpen = this.initOpenProp || false;
     if (this.messageListProp) {
       this.messageScroll();
     }
@@ -165,9 +163,6 @@ export default {
 .chat-container.show {
   animation: scaleIn 0.15s ease-in-out 0s 1 normal forwards;
 }
-.chat-container.hide {
-  display: none;
-}
 .chat-window {
   box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.1);
   width: 100%;
@@ -195,9 +190,8 @@ export default {
   background: #f1f0f0;
   color: black;
 }
-.chat-inputs {
-  display: flex;
-  justify-content: space-between;
+.chat-input {
+  height: 3.8em;
 }
 .chat-input input {
   border: none;
@@ -228,40 +222,8 @@ export default {
 .submit-icon {
   width: 20px;
 }
-.close-chat {
-  position: absolute;
-  right: -40px;
-  top: -40px;
-  width: 35px;
-  border-radius: 50%;
-  height: 35px;
-  background: #f7f7f7;
-  cursor: pointer;
-  transform: scale(0);
-}
 .chat-container.show .close-chat {
   animation: scaleIn 0.15s ease-in-out 0.3s 1 normal forwards;
-}
-.close-chat svg {
-  position: relative;
-  left: -1px;
-  top: 6px;
-  width: 20px;
-}
-.open-chat {
-  position: fixed;
-  width: 70px;
-  right: 50px;
-  bottom: 25px;
-  cursor: pointer;
-  z-index: 900;
-  transform: scale(0);
-}
-.open-chat.hide {
-  display: none;
-}
-.open-chat.show {
-  animation: scaleIn 0.15s ease-in-out 0.15s 1 normal forwards;
 }
 @keyframes scaleIn {
   0% {

@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
     <title>Vue App</title>
     <script src="/Scripts/vue.global.js"></script>
     <script src="/Scripts/vue3-sfc-loader.js"></script>
@@ -15,6 +18,13 @@
 
   <body>
     <div id="app">
+      <div
+        id="debug"
+        style="position: fixed; top: 0; z-index: 1000000"
+        v-if="debug"
+      >
+        <p>{{windowHeight}}</p>
+      </div>
       <chat
         :message-list-prop="messages"
         :prompts-list-prop="prompts"
@@ -58,6 +68,8 @@
           return {
             messages: [],
             prompts: [],
+            windowHeight: "100vh",
+            debug: false,
           };
         },
         async created() {
@@ -66,6 +78,10 @@
         },
         methods: {
           async sendMessage(message) {
+            if (message.body.toLowerCase() == "debug") {
+              this.debug = !this.debug;
+              return;
+            }
             this.messages.push(message);
             var response = await fetch("/api/chat", {
               method: "POST",
@@ -88,6 +104,24 @@
               author: "assistant",
             });
           },
+          handleResize() {
+            var height = window.visualViewport.height ?? window.innerHeight;
+            this.windowHeight = `${height}px`;
+            // document.getElementById("body").style.height = `${height}px`;
+          },
+        },
+        created() {
+          if (window.visualViewport) {
+            window.visualViewport.addEventListener("resize", this.handleResize);
+          }
+        },
+        beforeDestroy() {
+          if (window.visualViewport) {
+            window.visualViewport.removeEventListener(
+              "resize",
+              this.handleResize
+            );
+          }
         },
       });
 
