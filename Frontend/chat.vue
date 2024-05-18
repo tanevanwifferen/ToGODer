@@ -94,8 +94,11 @@ export default {
   },
 
   watch: {
-    messageListProp() {
-      this.messageScroll();
+    messageListProp: {
+      handler() {
+        setTimeout(this.messageScroll, 5);
+      },
+      deep: true,
     },
   },
 
