@@ -23,6 +23,10 @@
               <br />
               Want to discuss or contribute? Come chat with us on
               <a href="https://t.me/toGODer">Telegram</a>!
+              <br />
+              NOTE: I will NEVER be able to read what you discuss with the AI.
+              OpenAI might be able to read your messages, but they will be
+              linked to my api key so anonymous.
             </p>
             <select
               v-model="selected"
