@@ -69,7 +69,7 @@
           >
             <div>
               <v-btn
-                @click="youMessage = prompt + ' ' + youMessage"
+                @click="setPreview(prompt)"
                 v-for="prompt in Object.keys(promptsListProp)"
               >
                 {{ prompt.replace("/", "") }}
@@ -167,6 +167,7 @@ export default {
       }
     },
     setPreview(selected) {
+      this.selected = selected;
       this.youMessage = selected;
     },
   },
