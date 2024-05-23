@@ -104,24 +104,6 @@
               author: "assistant",
             });
           },
-          handleResize() {
-            var height = window.visualViewport.height ?? window.innerHeight;
-            this.windowHeight = `${height}px`;
-            // document.getElementById("body").style.height = `${height}px`;
-          },
-        },
-        created() {
-          if (window.visualViewport) {
-            window.visualViewport.addEventListener("resize", this.handleResize);
-          }
-        },
-        beforeDestroy() {
-          if (window.visualViewport) {
-            window.visualViewport.removeEventListener(
-              "resize",
-              this.handleResize
-            );
-          }
         },
       });
 
