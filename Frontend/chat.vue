@@ -47,12 +47,12 @@
             v-if="messageListProp.length == 0 && !youMessage.startsWith('/')"
           >
             <div>
-              <button
-                v-for="prompt in promptsListProp"
+              <v-btn
                 @click="youMessage = prompt + ' ' + youMessage"
+                v-for="prompt in Object.keys(promptsListProp)"
               >
                 {{ prompt.replace("/", "") }}
-              </button>
+              </v-btn>
             </div>
           </div>
           <form @submit.prevent="handleOutboundMessage()" class="chat-form">
@@ -102,7 +102,7 @@ export default {
       default: "#f1f0f0",
     },
     messageListProp: Array,
-    promptsListProp: Array,
+    promptsListProp: Object,
   },
 
   data: () => {

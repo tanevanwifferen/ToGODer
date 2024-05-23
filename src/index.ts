@@ -19,7 +19,7 @@ app.post("/api/chat", async (req, res) => {
 });
 
 app.get("/api/prompts", (req, res) => {
-  res.send(Object.keys(PromptList));
+  res.send(PromptList);
 });
 
 // Redirect empty path to "index.html"

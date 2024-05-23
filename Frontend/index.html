@@ -10,10 +10,12 @@
     <script src="/Scripts/vue.global.js"></script>
     <script src="/Scripts/vue3-sfc-loader.js"></script>
     <script src="/Scripts/marked.min.js"></script>
+    <script src="/Scripts/vuetify.min.js"></script>
     <link
       rel="stylesheet"
       href="/Style/fontawesome-free-6.5.2-web/css/all.css"
     />
+    <link rel="stylesheet" href="/Style/vuetify.min.css" />
   </head>
 
   <body>
@@ -57,6 +59,8 @@
       };
 
       const { loadModule } = window["vue3-sfc-loader"];
+
+      var vuetify = Vuetify.createVuetify();
 
       const app = Vue.createApp({
         components: {
@@ -107,7 +111,7 @@
         },
       });
 
-      app.mount("#app");
+      app.use(vuetify).mount("#app");
     </script>
   </body>
 </html>
