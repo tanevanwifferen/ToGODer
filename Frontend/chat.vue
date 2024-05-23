@@ -19,6 +19,10 @@
               When you ask me a question, I will give you an analysis of the
               situation. Try pressing the buttons below to get a different robot
               that can help you with different needs.
+              <br />
+              <br />
+              Want to discuss or contribute? Come chat with us on
+              <a href="https://t.me/toGODer">Telegram</a>!
             </p>
           </div>
           <p
@@ -38,7 +42,10 @@
           ></p>
         </div>
         <div class="chat-input">
-          <div class="promptButtons" v-if="messageListProp.length == 0">
+          <div
+            class="promptButtons"
+            v-if="messageListProp.length == 0 && !youMessage.startsWith('/')"
+          >
             <div>
               <button
                 v-for="prompt in promptsListProp"
