@@ -1,4 +1,5 @@
 import {
+  AllSidesPrompt,
   IndividuationPrompt,
   PracticalPrompt,
   ScientificPrompt,
@@ -9,6 +10,7 @@ import {
 } from "./systemprompts";
 
 export const PromptList: Record<string, string> = {
+  "/default": AllSidesPrompt,
   "/scientific": ScientificPrompt,
   "/spiritual": SpiritualPrompt,
   "/scientificspiritual": ScientificSpiritualPrompt,

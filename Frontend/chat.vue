@@ -24,6 +24,27 @@
               Want to discuss or contribute? Come chat with us on
               <a href="https://t.me/toGODer">Telegram</a>!
             </p>
+            <select
+              v-model="selected"
+              v-on:change="setPreview(selected)"
+              style="
+                appearance: auto;
+                -webkit-appearance: auto;
+                border: 1px solid gray;
+              "
+            >
+              <option
+                v-for="prompt in Object.keys(promptsListProp)"
+                :value="prompt"
+              >
+                {{ prompt.replace("/", "") }}
+              </option>
+            </select>
+            <p class="message message-in" style="font-size: 11pt">
+              {{ selected }}
+              <br />
+              {{ promptsListProp[selected] }}
+            </p>
           </div>
           <p
             v-for="message in messageListProp"
@@ -56,7 +77,7 @@
             </div>
           </div>
           <form @submit.prevent="handleOutboundMessage()" class="chat-form">
-            <input
+            <textarea
               id="chatInput"
               v-model="youMessage"
               type="text"
@@ -108,6 +129,7 @@ export default {
   data: () => {
     return {
       youMessage: "",
+      selected: "/default",
     };
   },
 
@@ -139,11 +161,23 @@ export default {
       let messageDisplay = this.$refs.chatArea;
       messageDisplay.scrollTop = messageDisplay.scrollHeight;
     },
+    handleKeyDown(event) {
+      if (event.ctrlKey && event.key === "Enter") {
+        this.handleOutboundMessage();
+      }
+    },
+    setPreview(selected) {
+      this.youMessage = selected;
+    },
   },
   mounted() {
     if (this.messageListProp) {
       this.messageScroll();
     }
+    document.addEventListener("keydown", this.handleKeyDown);
+  },
+  beforeDestroy() {
+    document.removeEventListener("keydown", this.handleKeyDown);
   },
 };
 </script>
@@ -177,7 +211,7 @@ export default {
 }
 .chat-area {
   border-radius: 3px 3px 0 0;
-  height: calc(100% - 3.8em);
+  height: calc(100% - 6.8em);
   padding: 1em 1em 0;
   position: relative;
   overflow: auto;
@@ -189,6 +223,7 @@ export default {
   padding: 0.5em;
   font-size: 1em;
   font-family: "Arial", sans-serif;
+  margin: 0.5em;
 }
 .message-out {
   color: #ffffff;
@@ -200,7 +235,7 @@ export default {
 .chat-input {
   height: 3.8em;
 }
-.chat-input input {
+.chat-input textarea {
   border: none;
   font-size: 0.8em;
   outline: none;
