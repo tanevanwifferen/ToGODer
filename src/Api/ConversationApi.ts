@@ -6,7 +6,7 @@ import {
   FormattingPrompt,
   IndividuationPrompt,
   ScientificSpiritualPrompt,
-  TherapistPrompt,
+  CouncellorPrompt,
 } from "../LLM/prompts/systemprompts";
 import { PromptList } from "../LLM/prompts/promptlist";
 

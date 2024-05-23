@@ -6,7 +6,7 @@ import {
   ScientificSpiritualPrompt,
   SocialPrompt,
   SpiritualPrompt,
-  TherapistPrompt,
+  CouncellorPrompt as ArbitrationPrompt,
 } from "./systemprompts";
 
 export const PromptList: Record<string, string> = {
@@ -16,6 +16,6 @@ export const PromptList: Record<string, string> = {
   "/scientificspiritual": ScientificSpiritualPrompt,
   "/individuation": IndividuationPrompt,
   "/sociallife": SocialPrompt,
-  "/therapist": TherapistPrompt,
+  "/arbitration": ArbitrationPrompt,
   "/practical": PracticalPrompt,
 };
