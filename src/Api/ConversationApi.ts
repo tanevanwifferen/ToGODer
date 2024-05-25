@@ -18,9 +18,9 @@ export class ConversationApi {
 
     var firstPrompt = (<string>prompts[0].content)?.split(" ")[0];
 
-    var systemprompt = AllSidesPrompt;
+    var systemprompt = PromptList["/default"].prompt;
     if (firstPrompt in PromptList) {
-      systemprompt = PromptList[firstPrompt];
+      systemprompt = PromptList[firstPrompt].prompt;
     }
     systemprompt += "\n\n" + FormattingPrompt;
     return await aiWrapper.getResponse(systemprompt, prompts);

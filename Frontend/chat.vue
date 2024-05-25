@@ -45,7 +45,7 @@
               </option>
             </select>
             <p class="message message-in" style="font-size: 11pt">
-              {{ promptsListProp[selected] }}
+              {{ promptsListProp[selected].description }}
             </p>
           </div>
           <p
