@@ -11,6 +11,10 @@
     <script src="/Scripts/vue3-sfc-loader.js"></script>
     <script src="/Scripts/marked.min.js"></script>
     <script src="/Scripts/vuetify.min.js"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-DHKZB2XVBD"
+    ></script>
     <link
       rel="stylesheet"
       href="/Style/fontawesome-free-6.5.2-web/css/all.css"
@@ -32,22 +36,8 @@
         :prompts-list-prop="prompts"
         @on-message-was-sent="sendMessage"
       ></chat>
-      <!-- Your Vue app content goes here -->
+      <cookiebanner></cookiebanner>
     </div>
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-DHKZB2XVBD"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-
-      gtag("config", "G-DHKZB2XVBD");
-    </script>
 
     <script>
       const options = {
@@ -80,6 +70,9 @@
         components: {
           chat: Vue.defineAsyncComponent(() =>
             loadModule("./chat.vue", options)
+          ),
+          cookiebanner: Vue.defineAsyncComponent(() =>
+            loadModule("./cookiebanner.vue", options)
           ),
         },
         data() {
