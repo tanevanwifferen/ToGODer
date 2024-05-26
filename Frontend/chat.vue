@@ -1,103 +1,99 @@
 <template>
-  <div>
-    <div class="chat-container show">
-      <div class="chat-window">
-        <div
-          ref="chatArea"
-          class="chat-area"
-          :style="{
-            background: messageBackgroundColorProp,
-          }"
-        >
-          <div class="placeholder" v-if="messageListProp.length == 0">
-            <p class="message message-in">
-              Hi! I'm a chatbot built to handle all your personal requests. How
-              can I help you today? I will respond in the language you ask me
-              questions in.
-              <br />
-              <br />
-              When you ask me a question, I will give you an analysis of the
-              situation. Try pressing the buttons below to get a different robot
-              that can help you with different needs.
-              <br />
-              <br />
-              Want to discuss or contribute? Come chat with us on
-              <a href="https://t.me/toGODer">Telegram</a>!
-              <br />
-              NOTE: I will NEVER be able to read what you discuss with the AI.
-              OpenAI might be able to read your messages, but they will be
-              linked to my api key so anonymous.
-            </p>
-            <select
-              v-model="selected"
-              v-on:change="setPreview(selected)"
-              style="
-                appearance: auto;
-                -webkit-appearance: auto;
-                border: 1px solid gray;
-              "
-            >
-              <option
-                v-for="prompt in Object.keys(promptsListProp)"
-                :value="prompt"
-              >
-                {{ prompt.replace("/", "") }}
-              </option>
-            </select>
-            <p
-              class="message message-in"
-              v-if="promptsListProp && promptsListProp[selected]"
-              style="font-size: 11pt"
-            >
-              {{ promptsListProp[selected].description }}
-            </p>
-          </div>
-          <p
-            v-for="message in messageListProp"
-            :key="message.id || message.body"
-            class="message"
-            :style="[
-              message.author === 'you'
-                ? { background: messageOutColorProp }
-                : { background: messageInColorProp },
-            ]"
-            :class="{
-              'message-out': message.author === 'you',
-              'message-in': message.author !== 'you',
-            }"
-            v-html="message.body"
-          ></p>
-        </div>
-        <div class="chat-input">
-          <div
-            class="promptButtons"
-            v-if="messageListProp.length == 0 && !youMessage.startsWith('/')"
+  <div class="chat-container show">
+    <div class="chat-window">
+      <div
+        ref="chatArea"
+        class="chat-area"
+        :style="{
+          background: messageBackgroundColorProp,
+        }"
+      >
+        <div class="placeholder" v-if="messageListProp.length == 0">
+          <p class="message message-in">
+            Hi! I'm a chatbot built to handle all your personal requests. How
+            can I help you today? I will respond in the language you ask me
+            questions in.
+            <br />
+            <br />
+            When you ask me a question, I will give you an analysis of the
+            situation. Try pressing the buttons below to get a different robot
+            that can help you with different needs.
+            <br />
+            <br />
+            Want to discuss or contribute? Come chat with us on
+            <a href="https://t.me/toGODer">Telegram</a>!
+            <br />
+            NOTE: I will NEVER be able to read what you discuss with the AI.
+            OpenAI might be able to read your messages, but they will be linked
+            to my api key so anonymous.
+          </p>
+          <select
+            v-model="selected"
+            v-on:change="setPreview(selected)"
+            style="
+              appearance: auto;
+              -webkit-appearance: auto;
+              border: 1px solid gray;
+            "
           >
-            <div>
-              <v-btn
-                @click="setPreview(prompt)"
-                v-for="prompt in Object.keys(promptsListProp)"
-              >
-                {{ prompt.replace("/", "") }}
-              </v-btn>
-            </div>
-          </div>
-          <form @submit.prevent="handleOutboundMessage()" class="chat-form">
-            <textarea
-              id="chatInput"
-              v-model="youMessage"
-              type="text"
-              :placeholder="messagePlaceholder"
-              autofocus
-            />
-            <button class="submit" type="submit" style="width: 10%">
-              <span
-                class="fa fa-paper-plane"
-                :style="{ color: iconColorProp, width: '100%' }"
-              ></span>
-            </button>
-          </form>
+            <option
+              v-for="prompt in Object.keys(promptsListProp)"
+              :value="prompt"
+            >
+              {{ prompt.replace("/", "") }}
+            </option>
+          </select>
+          <p
+            class="message message-in"
+            v-if="promptsListProp && promptsListProp[selected]"
+            style="font-size: 11pt"
+          >
+            {{ promptsListProp[selected].description }}
+          </p>
         </div>
+        <p
+          v-for="message in messageListProp"
+          :key="message.id || message.body"
+          class="message"
+          :style="[
+            message.author === 'you'
+              ? { background: messageOutColorProp }
+              : { background: messageInColorProp },
+          ]"
+          :class="{
+            'message-out': message.author === 'you',
+            'message-in': message.author !== 'you',
+          }"
+          v-html="message.body"
+        ></p>
+      </div>
+      <div class="chat-input">
+        <div
+          class="promptButtons"
+          v-if="messageListProp.length == 0 && !youMessage.startsWith('/')"
+        >
+          <v-btn
+            @click="setPreview(prompt)"
+            v-for="prompt in Object.keys(promptsListProp)"
+          >
+            {{ prompt.replace("/", "") }}
+          </v-btn>
+        </div>
+        <form @submit.prevent="handleOutboundMessage()" class="chat-form">
+          <textarea
+            id="chatInput"
+            v-model="youMessage"
+            type="text"
+            :placeholder="messagePlaceholder"
+            autofocus
+          />
+          <button class="submit" type="submit" style="width: 10%">
+            <span
+              class="fa fa-paper-plane"
+              :style="{ color: iconColorProp, width: '100%' }"
+            ></span>
+          </button>
+        </form>
       </div>
     </div>
   </div>
@@ -199,30 +195,25 @@ export default {
   color: white;
 }
 .chat-container {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  top: 0;
   width: 100%;
-  z-index: 10000;
-  transform: scale(0);
+  height: 100%;
   transform-origin: right bottom;
-}
-.chat-container.show {
-  animation: scaleIn 0.15s ease-in-out 0s 1 normal forwards;
+  overflow: scroll;
 }
 .chat-window {
   box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.1);
   width: 100%;
   height: 100%;
+  display: grid;
+  grid-template-rows: auto 6.8em;
 }
 .chat-area {
   border-radius: 3px 3px 0 0;
-  height: calc(100% - 6.8em);
   padding: 1em 1em 0;
   position: relative;
   overflow: auto;
   width: 100%;
+  grid-row: 1;
 }
 .message {
   width: 100%;
@@ -239,8 +230,14 @@ export default {
   background: #f1f0f0;
   color: black;
 }
+.promptButtons {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: scroll;
+  width: 100vw;
+}
 .chat-input {
-  height: 3.8em;
+  grid-row: 2;
 }
 .chat-input textarea {
   border: none;

@@ -18,6 +18,12 @@ app.post("/api/chat", async (req, res) => {
   res.send(await conversationApi.getResponse(body));
 });
 
+app.post("/api/title", async (req, res) => {
+  var body: ChatCompletionMessageParam[] = req.body;
+  var conversationApi = new ConversationApi();
+  res.send(await conversationApi.getTitle(body));
+});
+
 app.get("/api/prompts", (req, res) => {
   res.send(PromptList);
 });
