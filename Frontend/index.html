@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height: 100%">
   <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
     />
-    <title>Vue App</title>
+    <title>ToGODer - your digital God</title>
     <script src="/Scripts/vue.global.js"></script>
     <script src="/Scripts/vue3-sfc-loader.js"></script>
     <script src="/Scripts/marked.min.js"></script>
@@ -20,23 +20,36 @@
       href="/Style/fontawesome-free-6.5.2-web/css/all.css"
     />
     <link rel="stylesheet" href="/Style/vuetify.min.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css"
+      rel="stylesheet"
+    />
   </head>
 
-  <body>
-    <div id="app">
-      <div
-        id="debug"
-        style="position: fixed; top: 0; z-index: 1000000"
-        v-if="debug"
-      >
-        <p>{{windowHeight}}</p>
-      </div>
-      <chat
-        :message-list-prop="messages"
-        :prompts-list-prop="prompts"
-        @on-message-was-sent="sendMessage"
-      ></chat>
-      <cookiebanner></cookiebanner>
+  <body style="height: 100%">
+    <div
+      id="app"
+      style="height: 100%; display: grid; grid-template-rows: 64px auto"
+    >
+      <v-app>
+        <v-toolbar style="grid-row: 1">
+          <v-app-bar-nav-icon @click="sidebar = !sidebar"></v-app-bar-nav-icon>
+        </v-toolbar>
+        <v-navigation-drawer v-model="sidebar">
+          <v-list-item
+            title="ToGODer"
+            subtitle="Your digital God"
+          ></v-list-item>
+          <v-divider></v-divider>
+        </v-navigation-drawer>
+        <chat
+          style="grid-row: 2"
+          :message-list-prop="messages"
+          :prompts-list-prop="prompts"
+          @on-message-was-sent="sendMessage"
+        ></chat>
+        <cookiebanner></cookiebanner>
+      </v-app>
     </div>
 
     <script>
@@ -64,7 +77,11 @@
 
       const { loadModule } = window["vue3-sfc-loader"];
 
-      var vuetify = Vuetify.createVuetify();
+      var vuetify = Vuetify.createVuetify({
+        icons: {
+          defaultSet: "mdi",
+        },
+      });
 
       const app = Vue.createApp({
         components: {
@@ -81,6 +98,7 @@
             prompts: [],
             windowHeight: "100vh",
             debug: false,
+            sidebar: false,
           };
         },
         async beforeCreate() {
