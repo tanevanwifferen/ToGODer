@@ -7,10 +7,30 @@ import {
   IndividuationPrompt,
   ScientificSpiritualPrompt,
   CouncellorPrompt,
-} from "../LLM/prompts/systemprompts";
+} from "../LLM/prompts/chatprompts";
 import { PromptList } from "../LLM/prompts/promptlist";
+import { GetTitlePrompt } from "../LLM/prompts/systemprompts";
 
 export class ConversationApi {
+  /**
+   * Get a short title for a conversation based on the first prompt.
+   */
+  public async getTitle(body: ChatCompletionMessageParam[]): Promise<string> {
+    if (body.length > 1) {
+      throw new Error("Only one prompt is allowed for this endpoint");
+    }
+    var aiWrapper = this.getAIWrapper();
+
+    var prompt = GetTitlePrompt + body[0].content;
+
+    return await aiWrapper.getResponse(prompt, body);
+  }
+
+  /**
+   * Get a chat completion for a conversation with the AI.
+   * @param prompts Chat history
+   * @returns string response from the AI
+   */
   public async getResponse(
     prompts: ChatCompletionMessageParam[]
   ): Promise<string> {

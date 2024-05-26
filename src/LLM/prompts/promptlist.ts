@@ -8,7 +8,7 @@ import {
   SpiritualPrompt,
   CouncellorPrompt as ArbitrationPrompt,
   NoSteeringPrompt,
-} from "./systemprompts";
+} from "./chatprompts";
 
 interface PromptListItem {
   prompt: string;
