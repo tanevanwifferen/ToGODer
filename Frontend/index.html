@@ -45,10 +45,25 @@
           <v-divider></v-divider>
           <v-list-item
             link
-            @click="chatId = chat.chatId; sidebar = false"
-            v-for="chat in chats"
-            :title="chat.title"
+            @click="createNewChat(); sidebar = false"
+            title="New chat"
           ></v-list-item>
+          <v-divider></v-divider>
+          <v-list-item
+            link
+            @click="chatId = chat.chatId; sidebar = false"
+            v-for="chat in chatsOrderedByDateDescending.filter(x => x.title != null && x.title != '')"
+          >
+            <template v-slot="content">
+              <span style="position: absolute; top: 1em">{{chat.title}}</span>
+              <v-btn
+                style="float: right"
+                variant="text"
+                @click.stop="delete chats[chat.chatId]; saveHistory()"
+                icon="mdi-trash-can-outline"
+              ></v-btn
+            ></template>
+          </v-list-item>
         </v-navigation-drawer>
         <chat
           style="grid-row: 2"
@@ -96,7 +111,7 @@
           this.chatId = chatId;
           this.messages = [];
           this.title = "";
-          this.created = new Date();
+          this.created = new Date().getTime();
         }
       }
 
@@ -113,7 +128,6 @@
           return {
             chatId: null,
             chats: {},
-            title: "",
             prompts: [],
             sidebar: false,
           };
@@ -122,10 +136,12 @@
           var prompts = await fetch("/api/prompts");
           this.prompts = await prompts.json();
           this.chats = JSON.parse(localStorage.getItem("chats") || "{}");
-          var chatId = uuidv4();
-          var toAdd = new Chat(chatId);
-          this.chats[chatId] = toAdd;
-          this.chatId = chatId;
+          for (let key of Object.keys(this.chats)) {
+            if (this.chats[key].messages.length == 0) {
+              delete this.chats[key];
+            }
+          }
+          this.createNewChat();
         },
         computed: {
           chat() {
@@ -141,12 +157,18 @@
             return this.chat.title || "ToGODer";
           },
           chatsOrderedByDateDescending() {
-            return Object.values(this.chats).sort(
-              (a, b) => b.created - a.created
-            );
+            var items = Object.values(this.chats);
+            items.sort((a, b) => b.created - a.created);
+            return items;
           },
         },
         methods: {
+          createNewChat() {
+            var chatId = uuidv4();
+            var toAdd = new Chat(chatId);
+            this.chats[chatId] = toAdd;
+            this.chatId = chatId;
+          },
           async sendMessage(message) {
             if (message.body.toLowerCase() == "debug") {
               this.debug = !this.debug;
@@ -171,7 +193,6 @@
 
             var title = await this.getTitle();
             if (title != null) {
-              this.title = title;
               this.chat.title = title;
             }
             // Handle successful response
@@ -205,6 +226,9 @@
           },
           async saveHistory() {
             localStorage.setItem("chats", JSON.stringify(this.chats));
+            if (Object.keys(this.chats).length == 0) {
+              this.createNewChat();
+            }
           },
         },
       });
