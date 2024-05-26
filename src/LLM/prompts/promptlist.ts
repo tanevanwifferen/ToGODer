@@ -20,7 +20,7 @@ export const PromptList: Record<string, PromptListItem> = {
     prompt: NoSteeringPrompt,
     description:
       "Leave the ai to decide for itself. There is no steering in what \
-    difficult to interpret and find conclusions out of. Leaves most of the \
+    to interpret and find conclusions out of. Leaves most of the \
     concluding work to you.",
   },
   "/scientific": {
