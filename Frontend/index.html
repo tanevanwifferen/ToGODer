@@ -83,7 +83,7 @@
             debug: false,
           };
         },
-        async created() {
+        async beforeCreate() {
           var prompts = await fetch("/api/prompts");
           this.prompts = await prompts.json();
         },

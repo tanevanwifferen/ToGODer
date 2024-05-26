@@ -44,7 +44,11 @@
                 {{ prompt.replace("/", "") }}
               </option>
             </select>
-            <p class="message message-in" style="font-size: 11pt">
+            <p
+              class="message message-in"
+              v-if="promptsListProp && promptsListProp[selected]"
+              style="font-size: 11pt"
+            >
               {{ promptsListProp[selected].description }}
             </p>
           </div>
