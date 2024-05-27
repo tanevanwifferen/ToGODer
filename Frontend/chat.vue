@@ -233,7 +233,7 @@ export default {
 .promptButtons {
   display: flex;
   flex-wrap: nowrap;
-  overflow: scroll;
+  overflow: auto;
   width: 100vw;
 }
 .chat-input {
