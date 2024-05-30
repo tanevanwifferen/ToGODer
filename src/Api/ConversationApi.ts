@@ -34,6 +34,9 @@ export class ConversationApi {
   public async getResponse(
     prompts: ChatCompletionMessageParam[]
   ): Promise<string> {
+    if (prompts.length == 0) {
+      return "";
+    }
     var aiWrapper = this.getAIWrapper();
 
     var firstPrompt = (<string>prompts[0].content)?.split(" ")[0];

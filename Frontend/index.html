@@ -59,7 +59,7 @@
               <v-btn
                 style="float: right"
                 variant="text"
-                @click.stop="delete chats[chat.chatId]; saveHistory()"
+                @click.stop="delete chats[chat.chatId]; saveHistory(); computedIndex++"
                 icon="mdi-trash-can-outline"
               ></v-btn
             ></template>
@@ -126,6 +126,7 @@
         },
         data() {
           return {
+            computedIndex: 0,
             chatId: null,
             chats: {},
             prompts: [],
@@ -139,6 +140,7 @@
           for (let key of Object.keys(this.chats)) {
             if (this.chats[key].messages.length == 0) {
               delete this.chats[key];
+              this.saveHistory();
             }
           }
           this.createNewChat();
@@ -157,6 +159,7 @@
             return this.chat.title || "ToGODer";
           },
           chatsOrderedByDateDescending() {
+            this.computedIndex;
             var items = Object.values(this.chats);
             items.sort((a, b) => b.created - a.created);
             return items;
