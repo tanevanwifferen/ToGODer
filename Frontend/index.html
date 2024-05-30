@@ -177,7 +177,10 @@
               this.debug = !this.debug;
               return;
             }
-            this.chat.messages.push(message);
+            this.chat.messages.push({
+              ...message,
+              date: new Date().getTime(),
+            });
             var response = await fetch("/api/chat", {
               method: "POST",
               headers: {
@@ -202,6 +205,7 @@
             this.chat.messages.push({
               body: marked.parse(await response.text()),
               author: "assistant",
+              date: new Date().getTime(),
             });
 
             this.saveHistory();
