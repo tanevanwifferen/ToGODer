@@ -7,19 +7,42 @@
     <v-navigation-drawer temporary v-model="sidebar">
       <v-list-item title="ToGODer" subtitle="Your digital God"></v-list-item>
       <v-divider></v-divider>
-      <v-list-item link @click="createNewChat(); sidebar = false" title="New chat"></v-list-item>
+      <v-list-item
+        link
+        @click="
+          createNewChat();
+          sidebar = false;
+        "
+        title="New chat"
+      ></v-list-item>
       <v-divider></v-divider>
-      <v-list-item link @click="chatId = chat.chatId; sidebar = false"
-        v-for="chat in chatsOrderedByDateDescending.filter(x => x.title != null && x.title != '')">
+      <v-list-item
+        link
+        @click="
+          chatId = chat.chatId;
+          sidebar = false;
+        "
+        v-for="chat in chatsOrderedByDateDescending.filter(
+          (x) => x.title != null && x.title != ''
+        )"
+      >
         <template v-slot="content">
           <span style="position: absolute; top: 1em">{{ chat.title }}</span>
-          <v-btn style="float: right" variant="text"
-            @click.stop="delete chats[chat.chatId]; saveHistory(); computedIndex++"
-            icon="mdi-trash-can-outline"></v-btn></template>
+          <v-btn
+            style="float: right"
+            variant="text"
+            @click.stop="deleteChat(chat.chatId)"
+            icon="mdi-trash-can-outline"
+          ></v-btn
+        ></template>
       </v-list-item>
     </v-navigation-drawer>
-    <chat style="grid-row: 2" :message-list-prop="messages" :prompts-list-prop="prompts"
-      @on-message-was-sent="sendMessage">
+    <chat
+      style="grid-row: 2"
+      :message-list-prop="messages"
+      :prompts-list-prop="prompts"
+      @on-message-was-sent="sendMessage"
+    >
     </chat>
   </div>
 </template>
@@ -36,8 +59,11 @@ class Chat {
 
 export default {
   components: {
-    chat: Vue.defineAsyncComponent(() => loadModule("/Components/chat.vue", options)),
+    chat: Vue.defineAsyncComponent(() =>
+      loadModule("/Components/chat.vue", options)
+    ),
   },
+
   data() {
     return {
       computedIndex: 0,
@@ -80,6 +106,11 @@ export default {
     },
   },
   methods: {
+    deleteChat(chatId) {
+      delete chats[chatId];
+      saveHistory();
+      computedIndex++;
+    },
     createNewChat() {
       var chatId = uuidv4();
       var toAdd = new Chat(chatId);
@@ -151,6 +182,6 @@ export default {
         this.createNewChat();
       }
     },
-  }
+  },
 };
 </script>

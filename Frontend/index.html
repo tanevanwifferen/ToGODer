@@ -9,6 +9,8 @@
     <title>ToGODer - your digital God</title>
     <script src="/Scripts/vue.global.js"></script>
     <script src="/Scripts/vue3-sfc-loader.js"></script>
+    <script src="/Scripts/vue-router.global.js"></script>
+
     <script src="/Scripts/marked.min.js"></script>
     <script src="/Scripts/vuetify.min.js"></script>
     <script src="/Scripts/uuidv4.min.js"></script>
@@ -33,7 +35,10 @@
       style="height: 100%; display: grid; grid-template-rows: 64px auto"
     >
       <v-app>
-        <chatpage></chatpage>
+        <!--  <chatpage></chatpage>-->
+        <div><router-link to="/chat">go to /chat</router-link></div>
+        <div><router-link to="/Debug">go to /debug</router-link></div>
+        <router-view />
         <cookiebanner></cookiebanner>
       </v-app>
     </div>
@@ -42,6 +47,7 @@
       const options = {
         moduleCache: {
           vue: Vue,
+          router: VueRouter,
         },
         async getFile(url) {
           const res = await fetch(url);
@@ -59,9 +65,13 @@
           const ref = document.head.getElementsByTagName("style")[0] || null;
           document.head.insertBefore(style, ref);
         },
+        log: (...args) => console.log(...args),
       };
 
       const { loadModule } = window["vue3-sfc-loader"];
+      function load(path) {
+        return window["vue3-sfc-loader"].loadModule(path, options);
+      }
 
       var vuetify = Vuetify.createVuetify({
         icons: {
@@ -69,18 +79,45 @@
         },
       });
 
+      const routes = [
+        {
+          path: "/",
+          component: () => load("/Pages/ChatPage.vue"),
+        },
+        {
+          path: "/chat",
+          component: () => load("/Pages/ChatPage.vue"),
+        },
+        {
+          path: "/Debug",
+          component: () => load("/Pages/Debug.vue"),
+        },
+      ];
+
+      const router = VueRouter.createRouter({
+        history: VueRouter.createWebHashHistory(),
+        routes,
+      });
+
       const app = Vue.createApp({
         components: {
+          /*
           chatpage: Vue.defineAsyncComponent(() =>
-            loadModule("/Pages/chatpage.vue", options)
+            loadModule("/Pages/ChatPage.vue", options)
           ),
+          */
           cookiebanner: Vue.defineAsyncComponent(() =>
             loadModule("/Components/cookiebanner.vue", options)
           ),
         },
+        watch: {
+          $route(to, from) {
+            console.log(to, from);
+          },
+        },
       });
 
-      app.use(vuetify).mount("#app");
+      app.use(vuetify).use(router).mount("#app");
     </script>
   </body>
 </html>
