@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="height:100%; display:grid; grid-template-rows: 64px auto;">
     <v-toolbar style="grid-row: 1">
       <v-app-bar-nav-icon @click="sidebar = !sidebar"></v-app-bar-nav-icon>
       <v-app-bar-title>{{ title }}</v-app-bar-title>
