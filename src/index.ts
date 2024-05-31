@@ -14,7 +14,7 @@ app.set('trust proxy', 1);
 // Rate limiter to prevent abuse
 const messageLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 2, // The first one is the initial request so we (4 + 1)
+  max: 6, // The first one is the initial request so we (4 + 1)
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
