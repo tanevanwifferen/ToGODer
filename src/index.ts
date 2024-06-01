@@ -18,7 +18,7 @@ const messageLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (req, res) => {
+  handler: (req: Request, res: Response) => {
     console.log(`Rate limit exceeded for IP: ${req.ip}`);
     res
       .status(429)
