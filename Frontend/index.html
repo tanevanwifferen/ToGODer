@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" style="height: 100%">
   <head>
     <meta charset="UTF-8" />
@@ -26,7 +26,6 @@
       rel="stylesheet"
     />
   </head>
-
   <body style="height: 100%">
     <div
       id="app"
@@ -61,8 +60,8 @@
                 variant="text"
                 @click.stop="delete chats[chat.chatId]; saveHistory(); computedIndex++"
                 icon="mdi-trash-can-outline"
-              ></v-btn
-            ></template>
+              ></v-btn>
+            </template>
           </v-list-item>
         </v-navigation-drawer>
         <chat
@@ -70,6 +69,7 @@
           :message-list-prop="messages"
           :prompts-list-prop="prompts"
           @on-message-was-sent="sendMessage"
+          :input-disabled="inputDisabled"
         ></chat>
         <cookiebanner></cookiebanner>
       </v-app>
@@ -83,26 +83,26 @@
         async getFile(url) {
           const res = await fetch(url);
           if (!res.ok)
-            throw Object.assign(new Error(res.statusText + " " + url), { res });
+            throw Object.assign(new Error(res.statusText + ' ' + url), { res });
           return {
             getContentData: (asBinary) =>
               asBinary ? res.arrayBuffer() : res.text(),
           };
         },
         addStyle(textContent) {
-          const style = Object.assign(document.createElement("style"), {
+          const style = Object.assign(document.createElement('style'), {
             textContent,
           });
-          const ref = document.head.getElementsByTagName("style")[0] || null;
+          const ref = document.head.getElementsByTagName('style')[0] || null;
           document.head.insertBefore(style, ref);
         },
       };
 
-      const { loadModule } = window["vue3-sfc-loader"];
+      const { loadModule } = window['vue3-sfc-loader'];
 
       var vuetify = Vuetify.createVuetify({
         icons: {
-          defaultSet: "mdi",
+          defaultSet: 'mdi',
         },
       });
 
@@ -110,7 +110,7 @@
         constructor(chatId) {
           this.chatId = chatId;
           this.messages = [];
-          this.title = "";
+          this.title = '';
           this.created = new Date().getTime();
         }
       }
@@ -118,10 +118,10 @@
       const app = Vue.createApp({
         components: {
           chat: Vue.defineAsyncComponent(() =>
-            loadModule("./chat.vue", options)
+            loadModule('./chat.vue', options)
           ),
           cookiebanner: Vue.defineAsyncComponent(() =>
-            loadModule("./cookiebanner.vue", options)
+            loadModule('./cookiebanner.vue', options)
           ),
         },
         data() {
@@ -131,12 +131,14 @@
             chats: {},
             prompts: [],
             sidebar: false,
+            rateLimitExceeded: false,
+            inputDisabled: false,
           };
         },
         async beforeCreate() {
-          var prompts = await fetch("/api/prompts");
+          var prompts = await fetch('/api/prompts');
           this.prompts = await prompts.json();
-          this.chats = JSON.parse(localStorage.getItem("chats") || "{}");
+          this.chats = JSON.parse(localStorage.getItem('chats') || '{}');
           for (let key of Object.keys(this.chats)) {
             if (this.chats[key].messages.length == 0) {
               delete this.chats[key];
@@ -156,7 +158,7 @@
             return this.chat.messages || [];
           },
           title() {
-            return this.chat.title || "ToGODer";
+            return this.chat.title || 'ToGODer';
           },
           chatsOrderedByDateDescending() {
             this.computedIndex;
@@ -173,62 +175,133 @@
             this.chatId = chatId;
           },
           async sendMessage(message) {
-            if (message.body.toLowerCase() == "debug") {
+            if (message.body.toLowerCase() == 'debug') {
               this.debug = !this.debug;
               return;
             }
+
             this.chat.messages.push(message);
-            var response = await fetch("/api/chat", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(
-                this.messages.map((x) => ({
-                  content: x.body,
-                  role: x.author == "you" ? "user" : "assistant",
-                }))
-              ),
-            });
-            if (!response.ok) {
-              throw new Error("Error sending message");
-            }
 
-            var title = await this.getTitle();
-            if (title != null) {
-              this.chat.title = title;
-            }
-            // Handle successful response
-            this.chat.messages.push({
-              body: marked.parse(await response.text()),
-              author: "assistant",
-            });
+            try {
+              var response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(
+                  this.messages.map((x) => ({
+                    content: x.body,
+                    role: x.author == 'you' ? 'user' : 'assistant',
+                  }))
+                ),
+              });
 
-            this.saveHistory();
+              if (response.status == 429) {
+                console.warn('Rate limit exceeded');
+
+                const retryAfter = response.headers.get('Retry-After');
+                const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
+
+                const minutes = Math.floor(waitTime / 60000);
+                const seconds = Math.floor((waitTime % 60000) / 1000);
+                const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
+
+                const rateLimitMessage = {
+                  body: retryMessage,
+                  author: 'system',
+                  id: 'rate-limit-exceeded',
+                };
+                this.chat.messages.push(rateLimitMessage);
+
+                this.inputDisabled = true;
+
+                setTimeout(() => {
+                  this.chat.messages = this.chat.messages.filter(msg => msg.id !== 'rate-limit-exceeded');
+                  this.inputDisabled = false;
+                }, waitTime);
+
+                this.rateLimitExceeded = true;
+                return;
+              }
+
+              if (!response.ok) {
+                throw new Error('Error sending message');
+              }
+
+              var responseData = await response.json();
+              var title = await this.getTitle();
+              if (title != null) {
+                this.chat.title = title;
+              }
+              // Handle successful response
+              this.chat.messages.push({
+                body: marked.parse(responseData.content),
+                author: 'assistant',
+              });
+              
+              // console.log("Chat messages: ", this.chat.messages);
+              this.saveHistory();
+              this.rateLimitExceeded = false;
+            } catch (error) {
+              console.error("Error in sendMessage: ", error);
+              this.chat.messages.pop();
+            }
           },
           async getTitle() {
             if (this.messages.length > 1) {
               return null;
             }
-            var response = await fetch("/api/title", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(
-                this.messages.map((x) => ({
-                  content: x.body,
-                  role: x.author == "you" ? "user" : "assistant",
-                }))
-              ),
-            });
-            if (!response.ok) {
-              throw new Error("Error getting title");
+            try {
+              var response = await fetch('/api/title', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(
+                  this.messages.map((x) => ({
+                    content: x.body,
+                    role: x.author == 'you' ? 'user' : 'assistant',
+                  }))
+                ),
+              });
+
+              if (response.status === 429) {
+                console.warn('Rate limit exceeded');
+
+                const retryAfter = response.headers.get('Retry-After');
+                const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
+
+                const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
+
+                const rateLimitMessage = {
+                  body: retryMessage,
+                  author: 'system',
+                  id: 'rate-limit-exceeded',
+                };
+                this.chat.messages.push(rateLimitMessage);
+                this.inputDisabled = true;
+
+                setTimeout(() => {
+                  this.chat.messages = this.chat.messages.filter(msg => msg.id !== 'rate-limit-exceeded');
+                  this.inputDisabled = false;
+                }, waitTime);
+
+                this.rateLimitExceeded = true;
+                return null;
+              }
+
+              if (!response.ok) {
+                throw new Error('Error getting title');
+              }
+
+              return (await response.json()).content;
+            } catch (error) {
+              console.error("Error in getTitle: ", error);
+              return null;
             }
-            return await response.text();
           },
           async saveHistory() {
-            localStorage.setItem("chats", JSON.stringify(this.chats));
+            localStorage.setItem('chats', JSON.stringify(this.chats));
             if (Object.keys(this.chats).length == 0) {
               this.createNewChat();
             }
@@ -236,7 +309,7 @@
         },
       });
 
-      app.use(vuetify).mount("#app");
+      app.use(vuetify).mount('#app');
     </script>
   </body>
 </html>
