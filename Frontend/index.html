@@ -69,6 +69,7 @@
           :message-list-prop="messages"
           :prompts-list-prop="prompts"
           @on-message-was-sent="sendMessage"
+          :input-disabled="inputDisabled"
         ></chat>
         <cookiebanner></cookiebanner>
       </v-app>
@@ -130,6 +131,8 @@
             chats: {},
             prompts: [],
             sidebar: false,
+            rateLimitExceeded: false,
+            inputDisabled: false,
           };
         },
         async beforeCreate() {
@@ -176,56 +179,126 @@
               this.debug = !this.debug;
               return;
             }
+
             this.chat.messages.push(message);
-            var response = await fetch('/api/chat', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(
-                this.messages.map((x) => ({
-                  content: x.body,
-                  role: x.author == 'you' ? 'user' : 'assistant',
-                }))
-              ),
-            });
-            if (!response.ok) {
-              throw new Error('Error sending message');
-            }
 
-            var responseData = await response.json();
-            var title = await this.getTitle();
-            if (title != null) {
-              this.chat.title = title;
-            }
-            // Handle successful response
-            this.chat.messages.push({
-              body: marked.parse(responseData.content),
-              author: 'assistant',
-            });
+            try {
+              var response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(
+                  this.messages.map((x) => ({
+                    content: x.body,
+                    role: x.author == 'you' ? 'user' : 'assistant',
+                  }))
+                ),
+              });
 
-            this.saveHistory();
+              if (response.status == 429) {
+                console.warn('Rate limit exceeded');
+
+                const retryAfter = response.headers.get('Retry-After');
+                const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
+
+                const minutes = Math.floor(waitTime / 60000);
+                const seconds = Math.floor((waitTime % 60000) / 1000);
+                const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
+
+                const rateLimitMessage = {
+                  body: retryMessage,
+                  author: 'system',
+                  id: 'rate-limit-exceeded',
+                };
+                this.chat.messages.push(rateLimitMessage);
+
+                this.inputDisabled = true;
+
+                setTimeout(() => {
+                  this.chat.messages = this.chat.messages.filter(msg => msg.id !== 'rate-limit-exceeded');
+                  this.inputDisabled = false;
+                }, waitTime);
+
+                this.rateLimitExceeded = true;
+                return;
+              }
+
+              if (!response.ok) {
+                throw new Error('Error sending message');
+              }
+
+              var responseData = await response.json();
+              var title = await this.getTitle();
+              if (title != null) {
+                this.chat.title = title;
+              }
+              // Handle successful response
+              this.chat.messages.push({
+                body: marked.parse(responseData.content),
+                author: 'assistant',
+              });
+              
+              // console.log("Chat messages: ", this.chat.messages);
+              this.saveHistory();
+              this.rateLimitExceeded = false;
+            } catch (error) {
+              console.error("Error in sendMessage: ", error);
+              this.chat.messages.pop();
+            }
           },
           async getTitle() {
             if (this.messages.length > 1) {
               return null;
             }
-            var response = await fetch('/api/title', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(
-                this.messages.map((x) => ({
-                  content: x.body,
-                  role: x.author == 'you' ? 'user' : 'assistant',
-                }))
-              ),
-            });
-            if (!response.ok) {
-              throw new Error('Error getting title');
+            try {
+              var response = await fetch('/api/title', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(
+                  this.messages.map((x) => ({
+                    content: x.body,
+                    role: x.author == 'you' ? 'user' : 'assistant',
+                  }))
+                ),
+              });
+
+              if (response.status === 429) {
+                console.warn('Rate limit exceeded');
+
+                const retryAfter = response.headers.get('Retry-After');
+                const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
+
+                const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
+
+                const rateLimitMessage = {
+                  body: retryMessage,
+                  author: 'system',
+                  id: 'rate-limit-exceeded',
+                };
+                this.chat.messages.push(rateLimitMessage);
+                this.inputDisabled = true;
+
+                setTimeout(() => {
+                  this.chat.messages = this.chat.messages.filter(msg => msg.id !== 'rate-limit-exceeded');
+                  this.inputDisabled = false;
+                }, waitTime);
+
+                this.rateLimitExceeded = true;
+                return null;
+              }
+
+              if (!response.ok) {
+                throw new Error('Error getting title');
+              }
+
+              return (await response.json()).content;
+            } catch (error) {
+              console.error("Error in getTitle: ", error);
+              return null;
             }
-            return (await response.json()).content;
           },
           async saveHistory() {
             localStorage.setItem('chats', JSON.stringify(this.chats));
