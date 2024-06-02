@@ -43,6 +43,14 @@
           ></v-list-item>
           <v-divider></v-divider>
           <v-list-item
+            v-for="link in links"
+            link
+            :title="link.name"
+            target="_blank"
+            :href="link.url"
+          ></v-list-item>
+          <v-divider></v-divider>
+          <v-list-item
             link
             @click="createNewChat(); sidebar = false"
             title="New chat"
@@ -133,9 +141,13 @@
             sidebar: false,
             rateLimitExceeded: false,
             inputDisabled: false,
+            links: [],
           };
         },
         async beforeCreate() {
+          var links = await fetch('/api/links');
+          this.links = await links.json();
+
           var prompts = await fetch('/api/prompts');
           this.prompts = await prompts.json();
           this.chats = JSON.parse(localStorage.getItem('chats') || '{}');
@@ -200,7 +212,9 @@
                 console.warn('Rate limit exceeded');
 
                 const retryAfter = response.headers.get('Retry-After');
-                const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
+                const waitTime = retryAfter
+                  ? parseInt(retryAfter, 10) * 1000
+                  : 60000; // default to 1 minute
 
                 const minutes = Math.floor(waitTime / 60000);
                 const seconds = Math.floor((waitTime % 60000) / 1000);
@@ -216,7 +230,9 @@
                 this.inputDisabled = true;
 
                 setTimeout(() => {
-                  this.chat.messages = this.chat.messages.filter(msg => msg.id !== 'rate-limit-exceeded');
+                  this.chat.messages = this.chat.messages.filter(
+                    (msg) => msg.id !== 'rate-limit-exceeded'
+                  );
                   this.inputDisabled = false;
                 }, waitTime);
 
@@ -238,12 +254,12 @@
                 body: marked.parse(responseData.content),
                 author: 'assistant',
               });
-              
+
               // console.log("Chat messages: ", this.chat.messages);
               this.saveHistory();
               this.rateLimitExceeded = false;
             } catch (error) {
-              console.error("Error in sendMessage: ", error);
+              console.error('Error in sendMessage: ', error);
               this.chat.messages.pop();
             }
           },
@@ -269,7 +285,9 @@
                 console.warn('Rate limit exceeded');
 
                 const retryAfter = response.headers.get('Retry-After');
-                const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
+                const waitTime = retryAfter
+                  ? parseInt(retryAfter, 10) * 1000
+                  : 60000; // default to 1 minute
 
                 const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
 
@@ -282,7 +300,9 @@
                 this.inputDisabled = true;
 
                 setTimeout(() => {
-                  this.chat.messages = this.chat.messages.filter(msg => msg.id !== 'rate-limit-exceeded');
+                  this.chat.messages = this.chat.messages.filter(
+                    (msg) => msg.id !== 'rate-limit-exceeded'
+                  );
                   this.inputDisabled = false;
                 }, waitTime);
 
@@ -296,7 +316,7 @@
 
               return (await response.json()).content;
             } catch (error) {
-              console.error("Error in getTitle: ", error);
+              console.error('Error in getTitle: ', error);
               return null;
             }
           },
