@@ -8,7 +8,8 @@ import {
   SpiritualPrompt,
   CouncellorPrompt as ArbitrationPrompt,
   NoSteeringPrompt,
-} from "./chatprompts";
+  DeescalationPrompt,
+} from './chatprompts';
 
 interface PromptListItem {
   prompt: string;
@@ -16,47 +17,47 @@ interface PromptListItem {
 }
 
 export const PromptList: Record<string, PromptListItem> = {
-  "/default": {
+  '/default': {
     prompt: NoSteeringPrompt,
     description:
-      "Leave the ai to decide for itself. There is no steering in what \
+      'Leave the ai to decide for itself. There is no steering in what \
     to interpret and find conclusions out of. Leaves most of the \
-    concluding work to you.",
+    concluding work to you.',
   },
-  "/scientific": {
+  '/scientific': {
     prompt: ScientificPrompt,
     description:
-      "Look at a problem from a scientific perspective. Gives better results \
-      but does not look at the spiritual side of things.",
+      'Look at a problem from a scientific perspective. Gives better results \
+      but does not look at the spiritual side of things.',
   },
-  "/spiritual": {
+  '/spiritual': {
     prompt: SpiritualPrompt,
     description:
-      "Look at a problem from a spiritual perspective. Helps find \
-    peace in a distorted world.",
+      'Look at a problem from a spiritual perspective. Helps find \
+    peace in a distorted world.',
   },
-  "/scientificspiritual": {
+  '/scientificspiritual': {
     prompt: ScientificSpiritualPrompt,
     description:
-      "Look at both spiritual and scientific arguments for a \
+      'Look at both spiritual and scientific arguments for a \
     problem. Better than AllSides, but not as good as spiritual or \
     scientific. For more advanced users who have taught themselves to \
-    see two sides of a coin.",
+    see two sides of a coin.',
   },
-  "/allsides": {
+  '/allsides': {
     prompt: AllSidesPrompt,
     description:
-      "Look at all sides of an issue. Most difficult to interpret and find \
-      conclusions out of. Leaves most of the concluding work to you.",
+      'Look at all sides of an issue. Most difficult to interpret and find \
+      conclusions out of. Leaves most of the concluding work to you.',
   },
-  "/individuation": {
+  '/individuation': {
     prompt: IndividuationPrompt,
     description:
-      "Asks questions about what you believe is best. \
+      'Asks questions about what you believe is best. \
     Teaches you to find yourself and help yourself. Based on the \
-    work by Carl Jung.",
+    work by Carl Jung.',
   },
-  "/sociallife": {
+  '/sociallife': {
     prompt: SocialPrompt,
     description:
       "\
@@ -64,16 +65,23 @@ export const PromptList: Record<string, PromptListItem> = {
   discover hobbies, excersize, social activities that get you more\
   connected or get to know new people.",
   },
-  "/arbitration": {
+  '/arbitration': {
     prompt: ArbitrationPrompt,
     description:
-      "\
+      '\
   An intermediary when conflicts arise with those close to you. \
   Tries to get to know a situation and then tries to find a \
-  solution where both sides are happy.",
+  solution where both sides are happy.',
   },
-  "/practical": {
+  '/deescalation': {
+    prompt: DeescalationPrompt,
+    description:
+      "Helps deescalate ramapant emotional thoughts, \
+    and helps put a situation into perspective when you can't \
+    see the forest for the trees anymore.",
+  },
+  '/practical': {
     prompt: PracticalPrompt,
-    description: "Helps with practical problems.",
+    description: 'Helps with practical problems.',
   },
 };
