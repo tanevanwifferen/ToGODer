@@ -87,6 +87,10 @@ const validateSingleChatCompletionMessage = (
   next();
 };
 
+app.get('/api/links', (req, res) => {
+  res.json(JSON.parse(process.env.LINKS || '[]'));
+});
+
 // Route handlers
 app.post(
   '/api/chat',
