@@ -219,7 +219,7 @@ export default {
   padding: 1em 1em 0;
   position: relative;
   overflow: auto;
-  width: 100%;
+  width: 100vw;
   grid-row: 1;
 }
 .message {

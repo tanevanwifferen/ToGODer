@@ -7,11 +7,17 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
     />
     <title>ToGODer - your digital God</title>
-    <script src="/Scripts/vue.global.js"></script>
-    <script src="/Scripts/vue3-sfc-loader.js"></script>
-    <script src="/Scripts/marked.min.js"></script>
-    <script src="/Scripts/vuetify.min.js"></script>
-    <script src="/Scripts/uuidv4.min.js"></script>
+    <script src="/Scripts/lib/vue.global.js"></script>
+    <script src="/Scripts/lib/vue3-sfc-loader.js"></script>
+    <script src="/Scripts/lib/vuedemi.iife.min.js"></script>
+    <script src="/Scripts/lib/vue-router.global.js"></script>
+    <script src="/Scripts/lib/marked.min.js"></script>
+    <script src="/Scripts/lib/vuetify.min.js"></script>
+    <script src="/Scripts/lib/pinia.iife.js"></script>
+    <script src="/Scripts/lib/uuidv4.min.js"></script>
+
+    <script src="/Scripts/store/chatstore.js"></script>
+    <script src="/Scripts/store/globalstore.js"></script>
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-DHKZB2XVBD"
@@ -26,60 +32,18 @@
       rel="stylesheet"
     />
   </head>
+
   <body style="height: 100%">
-    <div
-      id="app"
-      style="height: 100%; display: grid; grid-template-rows: 64px auto"
-    >
-      <v-app>
-        <v-toolbar style="grid-row: 1">
-          <v-app-bar-nav-icon @click="sidebar = !sidebar"></v-app-bar-nav-icon>
-          <v-app-bar-title>{{title}}</v-app-bar-title>
-        </v-toolbar>
-        <v-navigation-drawer temporary v-model="sidebar">
-          <v-list-item
-            title="ToGODer"
-            subtitle="Your digital God"
-          ></v-list-item>
-          <v-divider></v-divider>
-          <v-list-item
-            v-for="link in links"
-            link
-            :title="link.name"
-            target="_blank"
-            :href="link.url"
-          ></v-list-item>
-          <v-divider></v-divider>
-          <v-list-item
-            link
-            @click="createNewChat(); sidebar = false"
-            title="New chat"
-          ></v-list-item>
-          <v-divider></v-divider>
-          <v-list-item
-            link
-            @click="chatId = chat.chatId; sidebar = false"
-            v-for="chat in chatsOrderedByDateDescending.filter(x => x.title != null && x.title != '')"
-          >
-            <template v-slot="content">
-              <span style="position: absolute; top: 1em">{{chat.title}}</span>
-              <v-btn
-                style="float: right"
-                variant="text"
-                @click.stop="delete chats[chat.chatId]; saveHistory(); computedIndex++"
-                icon="mdi-trash-can-outline"
-              ></v-btn>
-            </template>
-          </v-list-item>
-        </v-navigation-drawer>
-        <chat
-          style="grid-row: 2"
-          :message-list-prop="messages"
-          :prompts-list-prop="prompts"
-          @on-message-was-sent="sendMessage"
-          :input-disabled="inputDisabled"
-        ></chat>
-        <cookiebanner></cookiebanner>
+    <div id="app" style="height: 100%">
+      <v-app class="fill-height">
+        <v-row>
+          <toolbar></toolbar>
+        </v-row>
+        <v-row class="fill-height">
+          <sidebar></sidebar>
+          <router-view class="fill-height v-col-auto"></router-view>
+          <cookiebanner></cookiebanner>
+        </v-row>
       </v-app>
     </div>
 
@@ -87,6 +51,7 @@
       const options = {
         moduleCache: {
           vue: Vue,
+          router: VueRouter,
         },
         async getFile(url) {
           const res = await fetch(url);
@@ -104,9 +69,13 @@
           const ref = document.head.getElementsByTagName('style')[0] || null;
           document.head.insertBefore(style, ref);
         },
+        log: (...args) => console.log(...args),
       };
 
       const { loadModule } = window['vue3-sfc-loader'];
+      function load(path) {
+        return window['vue3-sfc-loader'].loadModule(path, options);
+      }
 
       var vuetify = Vuetify.createVuetify({
         icons: {
@@ -114,222 +83,44 @@
         },
       });
 
-      class Chat {
-        constructor(chatId) {
-          this.chatId = chatId;
-          this.messages = [];
-          this.title = '';
-          this.created = new Date().getTime();
-        }
-      }
+      const routes = [
+        {
+          path: '/',
+          component: () => load('/Pages/ChatPage.vue'),
+        },
+        {
+          path: '/chat',
+          component: () => load('/Pages/ChatPage.vue'),
+        },
+        {
+          path: '/chat/:chatId',
+          component: () => load('/Pages/ChatPage.vue'),
+          props: true,
+        },
+      ];
+
+      const router = VueRouter.createRouter({
+        history: VueRouter.createWebHashHistory(),
+        routes,
+      });
+
+      const pinia = Pinia.createPinia();
 
       const app = Vue.createApp({
         components: {
-          chat: Vue.defineAsyncComponent(() =>
-            loadModule('./chat.vue', options)
-          ),
           cookiebanner: Vue.defineAsyncComponent(() =>
-            loadModule('./cookiebanner.vue', options)
+            load('/Components/cookiebanner.vue')
           ),
-        },
-        data() {
-          return {
-            computedIndex: 0,
-            chatId: null,
-            chats: {},
-            prompts: [],
-            sidebar: false,
-            rateLimitExceeded: false,
-            inputDisabled: false,
-            links: [],
-          };
-        },
-        async beforeCreate() {
-          var links = await fetch('/api/links');
-          this.links = await links.json();
-
-          var prompts = await fetch('/api/prompts');
-          this.prompts = await prompts.json();
-          this.chats = JSON.parse(localStorage.getItem('chats') || '{}');
-          for (let key of Object.keys(this.chats)) {
-            if (this.chats[key].messages.length == 0) {
-              delete this.chats[key];
-              this.saveHistory();
-            }
-          }
-          this.createNewChat();
-        },
-        computed: {
-          chat() {
-            if (this.chatId == null) {
-              return new Chat(uuidv4());
-            }
-            return this.chats[this.chatId];
-          },
-          messages() {
-            return this.chat.messages || [];
-          },
-          title() {
-            return this.chat.title || 'ToGODer';
-          },
-          chatsOrderedByDateDescending() {
-            this.computedIndex;
-            var items = Object.values(this.chats);
-            items.sort((a, b) => b.created - a.created);
-            return items;
-          },
-        },
-        methods: {
-          createNewChat() {
-            var chatId = uuidv4();
-            var toAdd = new Chat(chatId);
-            this.chats[chatId] = toAdd;
-            this.chatId = chatId;
-          },
-          async sendMessage(message) {
-            if (message.body.toLowerCase() == 'debug') {
-              this.debug = !this.debug;
-              return;
-            }
-
-            this.chat.messages.push(message);
-
-            try {
-              var response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(
-                  this.messages.map((x) => ({
-                    content: x.body,
-                    role: x.author == 'you' ? 'user' : 'assistant',
-                  }))
-                ),
-              });
-
-              if (response.status == 429) {
-                console.warn('Rate limit exceeded');
-
-                const retryAfter = response.headers.get('Retry-After');
-                const waitTime = retryAfter
-                  ? parseInt(retryAfter, 10) * 1000
-                  : 60000; // default to 1 minute
-
-                const minutes = Math.floor(waitTime / 60000);
-                const seconds = Math.floor((waitTime % 60000) / 1000);
-                const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
-
-                const rateLimitMessage = {
-                  body: retryMessage,
-                  author: 'system',
-                  id: 'rate-limit-exceeded',
-                };
-                this.chat.messages.push(rateLimitMessage);
-
-                this.inputDisabled = true;
-
-                setTimeout(() => {
-                  this.chat.messages = this.chat.messages.filter(
-                    (msg) => msg.id !== 'rate-limit-exceeded'
-                  );
-                  this.inputDisabled = false;
-                }, waitTime);
-
-                this.rateLimitExceeded = true;
-                return;
-              }
-
-              if (!response.ok) {
-                throw new Error('Error sending message');
-              }
-
-              var responseData = await response.json();
-              var title = await this.getTitle();
-              if (title != null) {
-                this.chat.title = title;
-              }
-              // Handle successful response
-              this.chat.messages.push({
-                body: marked.parse(responseData.content),
-                author: 'assistant',
-              });
-
-              // console.log("Chat messages: ", this.chat.messages);
-              this.saveHistory();
-              this.rateLimitExceeded = false;
-            } catch (error) {
-              console.error('Error in sendMessage: ', error);
-              this.chat.messages.pop();
-            }
-          },
-          async getTitle() {
-            if (this.messages.length > 1) {
-              return null;
-            }
-            try {
-              var response = await fetch('/api/title', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(
-                  this.messages.map((x) => ({
-                    content: x.body,
-                    role: x.author == 'you' ? 'user' : 'assistant',
-                  }))
-                ),
-              });
-
-              if (response.status === 429) {
-                console.warn('Rate limit exceeded');
-
-                const retryAfter = response.headers.get('Retry-After');
-                const waitTime = retryAfter
-                  ? parseInt(retryAfter, 10) * 1000
-                  : 60000; // default to 1 minute
-
-                const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
-
-                const rateLimitMessage = {
-                  body: retryMessage,
-                  author: 'system',
-                  id: 'rate-limit-exceeded',
-                };
-                this.chat.messages.push(rateLimitMessage);
-                this.inputDisabled = true;
-
-                setTimeout(() => {
-                  this.chat.messages = this.chat.messages.filter(
-                    (msg) => msg.id !== 'rate-limit-exceeded'
-                  );
-                  this.inputDisabled = false;
-                }, waitTime);
-
-                this.rateLimitExceeded = true;
-                return null;
-              }
-
-              if (!response.ok) {
-                throw new Error('Error getting title');
-              }
-
-              return (await response.json()).content;
-            } catch (error) {
-              console.error('Error in getTitle: ', error);
-              return null;
-            }
-          },
-          async saveHistory() {
-            localStorage.setItem('chats', JSON.stringify(this.chats));
-            if (Object.keys(this.chats).length == 0) {
-              this.createNewChat();
-            }
-          },
+          toolbar: Vue.defineAsyncComponent(() =>
+            load('/Components/toolbar.vue')
+          ),
+          sidebar: Vue.defineAsyncComponent(() =>
+            load('/Components/sidebar.vue')
+          ),
         },
       });
 
-      app.use(vuetify).mount('#app');
+      app.use(vuetify).use(pinia).use(router).mount('#app');
     </script>
   </body>
 </html>
