@@ -9,7 +9,7 @@ class Chat {
 const useChatStore = Pinia.defineStore('chats', {
   // other options...
   state: () => ({
-    chats: JSON.parse(localStorage.getItem('chats')),
+    chats: JSON.parse(localStorage.getItem('chats')) ?? {},
     chatId: null,
   }),
   getters: {
