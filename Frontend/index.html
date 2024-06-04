@@ -1,93 +1,103 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" style="height: 100%">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
+    <title>ToGODer - your digital God</title>
+    <script src="/Scripts/vue.global.js"></script>
+    <script src="/Scripts/vue3-sfc-loader.js"></script>
+    <script src="/Scripts/vue-router.global.js"></script>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>ToGODer - your digital God</title>
-  <script src="/Scripts/vue.global.js"></script>
-  <script src="/Scripts/vue3-sfc-loader.js"></script>
-  <script src="/Scripts/vue-router.global.js"></script>
+    <script src="/Scripts/marked.min.js"></script>
+    <script src="/Scripts/vuetify.min.js"></script>
+    <script src="/Scripts/uuidv4.min.js"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-DHKZB2XVBD"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="/Style/fontawesome-free-6.5.2-web/css/all.css"
+    />
+    <link rel="stylesheet" href="/Style/vuetify.min.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css"
+      rel="stylesheet"
+    />
+  </head>
 
-  <script src="/Scripts/marked.min.js"></script>
-  <script src="/Scripts/vuetify.min.js"></script>
-  <script src="/Scripts/uuidv4.min.js"></script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DHKZB2XVBD"></script>
-  <link rel="stylesheet" href="/Style/fontawesome-free-6.5.2-web/css/all.css" />
-  <link rel="stylesheet" href="/Style/vuetify.min.css" />
-  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet" />
-</head>
+  <body style="height: 100%">
+    <div id="app" style="height: 100%">
+      <v-app>
+        <router-view></router-view>
+        <cookiebanner></cookiebanner>
+      </v-app>
+    </div>
 
-<body style="height: 100%">
-  <div id="app" style="height: 100%;">
-    <v-app>
-      <router-view></router-view>
-      <cookiebanner></cookiebanner>
-    </v-app>
-  </div>
+    <script>
+      const options = {
+        moduleCache: {
+          vue: Vue,
+          router: VueRouter,
+        },
+        async getFile(url) {
+          const res = await fetch(url);
+          if (!res.ok)
+            throw Object.assign(new Error(res.statusText + ' ' + url), { res });
+          return {
+            getContentData: (asBinary) =>
+              asBinary ? res.arrayBuffer() : res.text(),
+          };
+        },
+        addStyle(textContent) {
+          const style = Object.assign(document.createElement('style'), {
+            textContent,
+          });
+          const ref = document.head.getElementsByTagName('style')[0] || null;
+          document.head.insertBefore(style, ref);
+        },
+        log: (...args) => console.log(...args),
+      };
 
-  <script>
-    const options = {
-      moduleCache: {
-        vue: Vue,
-        router: VueRouter,
-      },
-      async getFile(url) {
-        const res = await fetch(url);
-        if (!res.ok)
-          throw Object.assign(new Error(res.statusText + " " + url), { res });
-        return {
-          getContentData: (asBinary) =>
-            asBinary ? res.arrayBuffer() : res.text(),
-        };
-      },
-      addStyle(textContent) {
-        const style = Object.assign(document.createElement("style"), {
-          textContent,
-        });
-        const ref = document.head.getElementsByTagName("style")[0] || null;
-        document.head.insertBefore(style, ref);
-      },
-      log: (...args) => console.log(...args),
-    };
+      const { loadModule } = window['vue3-sfc-loader'];
+      function load(path) {
+        return window['vue3-sfc-loader'].loadModule(path, options);
+      }
 
-    const { loadModule } = window["vue3-sfc-loader"];
-    function load(path) {
-      return window["vue3-sfc-loader"].loadModule(path, options);
-    }
+      var vuetify = Vuetify.createVuetify({
+        icons: {
+          defaultSet: 'mdi',
+        },
+      });
 
-    var vuetify = Vuetify.createVuetify({
-      icons: {
-        defaultSet: "mdi",
-      },
-    });
+      const routes = [
+        {
+          path: '/',
+          component: () => load('/Pages/ChatPage.vue'),
+        },
+        {
+          path: '/chat',
+          component: () => load('/Pages/ChatPage.vue'),
+        },
+      ];
 
-    const routes = [
-      {
-        path: "/",
-        component: () => load("/Pages/ChatPage.vue"),
-      },
-      {
-        path: "/chat",
-        component: () => load("/Pages/ChatPage.vue"),
-      },
-    ];
+      const router = VueRouter.createRouter({
+        history: VueRouter.createWebHashHistory(),
+        routes,
+      });
 
-    const router = VueRouter.createRouter({
-      history: VueRouter.createWebHashHistory(),
-      routes,
-    });
+      const app = Vue.createApp({
+        components: {
+          cookiebanner: Vue.defineAsyncComponent(() =>
+            load('/Components/cookiebanner.vue')
+          ),
+        },
+      });
 
-    const app = Vue.createApp({
-      components: {
-        cookiebanner: Vue.defineAsyncComponent(() =>
-          load("/Components/cookiebanner.vue")
-        ),
-      },
-    });
-
-    app.use(vuetify).use(router).mount("#app");
-  </script>
-</body>
-
+      app.use(vuetify).use(router).mount('#app');
+    </script>
+  </body>
 </html>

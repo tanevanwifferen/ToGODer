@@ -40,7 +40,7 @@
               v-for="prompt in Object.keys(promptsListProp)"
               :value="prompt"
             >
-              {{ prompt.replace("/", "") }}
+              {{ prompt.replace('/', '') }}
             </option>
           </select>
           <p
@@ -76,7 +76,7 @@
             @click="setPreview(prompt)"
             v-for="prompt in Object.keys(promptsListProp)"
           >
-            {{ prompt.replace("/", "") }}
+            {{ prompt.replace('/', '') }}
           </v-btn>
         </div>
         <form @submit.prevent="handleOutboundMessage()" class="chat-form">
@@ -85,9 +85,15 @@
             v-model="youMessage"
             type="text"
             :placeholder="messagePlaceholder"
+            :disabled="inputDisabled"
             autofocus
           />
-          <button class="submit" type="submit" style="width: 10%">
+          <button
+            class="submit"
+            type="submit"
+            style="width: 10%"
+            :disabled="inputDisabled"
+          >
             <span
               class="fa fa-paper-plane"
               :style="{ color: iconColorProp, width: '100%' }"
@@ -101,37 +107,38 @@
 
 <script>
 export default {
-  name: "Chat",
+  name: 'Chat',
   inheritAttrs: false,
   props: {
     messagePlaceholder: {
       type: String,
-      default: "Type your message",
+      default: 'Type your message',
     },
     iconColorProp: {
       type: String,
-      default: "#e6e6e6",
+      default: '#e6e6e6',
     },
     messageBackgroundColorProp: {
       type: String,
-      default: "#ffffff",
+      default: '#ffffff',
     },
     messageOutColorProp: {
       type: String,
-      default: "#3d7e9a",
+      default: '#3d7e9a',
     },
     messageInColorProp: {
       type: String,
-      default: "#f1f0f0",
+      default: '#f1f0f0',
     },
     messageListProp: Array,
     promptsListProp: Object,
+    inputDisabled: Boolean,
   },
 
   data: () => {
     return {
-      youMessage: "",
-      selected: "/default",
+      youMessage: '',
+      selected: '/default',
     };
   },
 
@@ -149,22 +156,22 @@ export default {
       if (!this.youMessage) {
         return;
       }
-      this.$emit("onMessageWasSent", { body: this.youMessage, author: "you" });
-      this.youMessage = "";
+      this.$emit('onMessageWasSent', { body: this.youMessage, author: 'you' });
+      this.youMessage = '';
       this.$nextTick(() => {
         this.messageScroll();
       });
     },
     setPrompt(prompt) {
       this.youMessage = prompt;
-      document.getElementById("chatInput").focus();
+      document.getElementById('chatInput').focus();
     },
     messageScroll() {
       let messageDisplay = this.$refs.chatArea;
       messageDisplay.scrollTop = messageDisplay.scrollHeight;
     },
     handleKeyDown(event) {
-      if (event.ctrlKey && event.key === "Enter") {
+      if (event.ctrlKey && event.key === 'Enter') {
         this.handleOutboundMessage();
       }
     },
@@ -177,10 +184,10 @@ export default {
     if (this.messageListProp) {
       this.messageScroll();
     }
-    document.addEventListener("keydown", this.handleKeyDown);
+    document.addEventListener('keydown', this.handleKeyDown);
   },
   beforeDestroy() {
-    document.removeEventListener("keydown", this.handleKeyDown);
+    document.removeEventListener('keydown', this.handleKeyDown);
   },
 };
 </script>
@@ -220,7 +227,7 @@ export default {
   border-radius: 10px;
   padding: 0.5em;
   font-size: 1em;
-  font-family: "Arial", sans-serif;
+  font-family: 'Arial', sans-serif;
   margin: 0.5em;
 }
 .message-out {
