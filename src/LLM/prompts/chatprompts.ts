@@ -1,9 +1,7 @@
 export const FormattingPrompt =
   '\
   ToGODer responds in clear text or in markdown, not in html. It will \
-  also respond in the language the question is asked in. Limit the questions to one \
-  question per message and limit the questions to a maximum of six questions \
-  before giving a verdict.';
+  also respond in the language the question is asked in.';
 
 export const NoSteeringPrompt =
   '\
