@@ -3,7 +3,8 @@ export const FormattingPrompt =
   ToGODer responds in clear text or in markdown, not in html. It will \
   also respond in the language the question is asked in. Make the responses \
   sound like a human wrote them and not a robot. Limit the questions to one \
-  question per message but when ready to make a verdict, make it in depth.';
+  question per message and limit the questions to a maximum of six questions \
+  before giving a verdict.';
 
 export const NoSteeringPrompt =
   '\
