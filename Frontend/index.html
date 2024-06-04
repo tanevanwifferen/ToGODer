@@ -7,13 +7,17 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
     />
     <title>ToGODer - your digital God</title>
-    <script src="/Scripts/vue.global.js"></script>
-    <script src="/Scripts/vue3-sfc-loader.js"></script>
-    <script src="/Scripts/vue-router.global.js"></script>
+    <script src="/Scripts/lib/vue.global.js"></script>
+    <script src="/Scripts/lib/vue3-sfc-loader.js"></script>
+    <script src="/Scripts/lib/vuedemi.iife.min.js"></script>
+    <script src="/Scripts/lib/vue-router.global.js"></script>
+    <script src="/Scripts/lib/marked.min.js"></script>
+    <script src="/Scripts/lib/vuetify.min.js"></script>
+    <script src="/Scripts/lib/pinia.iife.js"></script>
+    <script src="/Scripts/lib/uuidv4.min.js"></script>
 
-    <script src="/Scripts/marked.min.js"></script>
-    <script src="/Scripts/vuetify.min.js"></script>
-    <script src="/Scripts/uuidv4.min.js"></script>
+    <script src="/Scripts/store/chatstore.js"></script>
+    <script src="/Scripts/store/globalstore.js"></script>
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-DHKZB2XVBD"
@@ -31,9 +35,15 @@
 
   <body style="height: 100%">
     <div id="app" style="height: 100%">
-      <v-app>
-        <router-view></router-view>
-        <cookiebanner></cookiebanner>
+      <v-app class="fill-height">
+        <v-row>
+          <toolbar></toolbar>
+        </v-row>
+        <v-row class="fill-height">
+          <sidebar></sidebar>
+          <router-view class="fill-height v-col-auto"></router-view>
+          <cookiebanner></cookiebanner>
+        </v-row>
       </v-app>
     </div>
 
@@ -82,6 +92,11 @@
           path: '/chat',
           component: () => load('/Pages/ChatPage.vue'),
         },
+        {
+          path: '/chat/:chatId',
+          component: () => load('/Pages/ChatPage.vue'),
+          props: true,
+        },
       ];
 
       const router = VueRouter.createRouter({
@@ -89,15 +104,23 @@
         routes,
       });
 
+      const pinia = Pinia.createPinia();
+
       const app = Vue.createApp({
         components: {
           cookiebanner: Vue.defineAsyncComponent(() =>
             load('/Components/cookiebanner.vue')
           ),
+          toolbar: Vue.defineAsyncComponent(() =>
+            load('/Components/toolbar.vue')
+          ),
+          sidebar: Vue.defineAsyncComponent(() =>
+            load('/Components/sidebar.vue')
+          ),
         },
       });
 
-      app.use(vuetify).use(router).mount('#app');
+      app.use(vuetify).use(pinia).use(router).mount('#app');
     </script>
   </body>
 </html>
