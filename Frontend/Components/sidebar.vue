@@ -8,6 +8,14 @@ const globalStore = useGlobalStore();
     <v-list-item title="ToGODer" subtitle="Your digital God"></v-list-item>
     <v-divider></v-divider>
     <v-list-item
+      v-for="link in links"
+      link
+      target="_blank"
+      :href="link.url"
+      :title="link.name"
+    ></v-list-item>
+    <v-divider></v-divider>
+    <v-list-item
       link
       @click="
         chatStore.createNewChat();
@@ -42,5 +50,15 @@ const globalStore = useGlobalStore();
 </template>
 
 <script>
-export default {};
+export default {
+  data() {
+    return {
+      links: [],
+    };
+  },
+  async created() {
+    var links = await fetch('/api/links');
+    this.links = await links.json();
+  },
+};
 </script>
