@@ -9,47 +9,19 @@
         }"
       >
         <div class="placeholder" v-if="messageListProp.length == 0">
-          <p class="message message-in">
-            Hi! I'm a chatbot built to handle all your personal requests. How
-            can I help you today? I will respond in the language you ask me
-            questions in.
-            <br />
-            <br />
-            When you ask me a question, I will give you an analysis of the
-            situation. Try pressing the buttons below to get a different robot
-            that can help you with different needs.
-            <br />
-            <br />
-            Want to discuss or contribute? Come chat with us on
-            <a href="https://t.me/toGODer">Telegram</a>!
-            <br />
-            NOTE: I will NEVER be able to read what you discuss with the AI.
-            OpenAI might be able to read your messages, but they will be linked
-            to my api key so anonymous.
-          </p>
-          <select
-            v-model="selected"
-            v-on:change="setPreview(selected)"
-            style="
-              appearance: auto;
-              -webkit-appearance: auto;
-              border: 1px solid gray;
-            "
-          >
-            <option
-              v-for="prompt in Object.keys(promptsListProp)"
-              :value="prompt"
+          <div class="templates">
+            <div
+              class="template"
+              v-for="template in randomExamples"
+              @click="
+                youMessage = template.type + ' ' + template.content;
+                handleOutboundMessage();
+              "
             >
-              {{ prompt.replace('/', '') }}
-            </option>
-          </select>
-          <p
-            class="message message-in"
-            v-if="promptsListProp && promptsListProp[selected]"
-            style="font-size: 11pt"
-          >
-            {{ promptsListProp[selected].description }}
-          </p>
+              <span class="template-promptselector">{{ template.title }}</span>
+              <p>{{ template.content }}</p>
+            </div>
+          </div>
         </div>
         <p
           v-for="message in messageListProp"
@@ -106,6 +78,50 @@
 </template>
 
 <script>
+const templateMessages = [
+  {
+    title: 'Individuation',
+    content:
+      'How can I take care of my family without losing myself in the process?',
+    type: '/individuation',
+  },
+  {
+    title: 'Ask ToGODer',
+    content: 'How can I get more active consistently?',
+    type: '',
+  },
+  {
+    title: 'Deescalation',
+    content: "I'm running out of money with a week to go",
+    type: '/deescalation',
+  },
+  {
+    title: 'Practical',
+    content: 'How often should I be washing my bedsheets?',
+    type: '/practical',
+  },
+  {
+    title: 'Practical',
+    content: 'How often should I be refreshing my oil?',
+    type: '/practical',
+  },
+  {
+    title: 'Scientific',
+    content: 'What is consciousness?',
+    type: '/scientific',
+  },
+  {
+    title: 'Spiritual',
+    content: 'What happens after we die?',
+    type: '/spiritual',
+  },
+  {
+    title: 'Arbitrage',
+    content: 'How do I deal with a boss that micromanages my activities?',
+    type: '/arbitrage',
+  },
+];
+
 export default {
   name: 'Chat',
   inheritAttrs: false,
@@ -139,6 +155,7 @@ export default {
     return {
       youMessage: '',
       selected: '/default',
+      templateMessages,
     };
   },
 
@@ -148,6 +165,28 @@ export default {
         setTimeout(this.messageScroll, 5);
       },
       deep: true,
+    },
+  },
+
+  computed: {
+    randomExamples() {
+      var toreturn = [];
+      var usedIndexes = [];
+      while (toreturn.length < 3) {
+        var randomIndex = Math.floor(
+          Math.random() * this.templateMessages.length
+        );
+        if (
+          !usedIndexes.includes(randomIndex) &&
+          toreturn
+            .map((x) => x.type)
+            .indexOf(this.templateMessages[randomIndex].type) == -1
+        ) {
+          toreturn.push(this.templateMessages[randomIndex]);
+          usedIndexes.push(randomIndex);
+        }
+      }
+      return toreturn;
     },
   },
 
@@ -219,7 +258,7 @@ export default {
   padding: 1em 1em 0;
   position: relative;
   overflow: auto;
-  width: 100%;
+  width: 100vw;
   grid-row: 1;
 }
 .message {
@@ -237,6 +276,31 @@ export default {
   background: #f1f0f0;
   color: black;
 }
+.templates {
+  margin-top: 10vh;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.template {
+  background: #f1f0f0;
+  border-radius: 10px;
+  border: 1px solid #e9e9e9;
+  margin: 0.5em;
+  padding: 0.5em;
+  width: 20vw;
+  min-width: 15em;
+}
+
+.template-promptselector {
+  font-size: 0.8em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  text-align: center;
+  width: 100%;
+}
+
 .promptButtons {
   display: flex;
   flex-wrap: nowrap;

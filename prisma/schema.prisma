@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// table for users, containing id, privateKeyHash, maxMessagesPerDay, messagesLeft, and chats
+model User {
+  id                String    @id @default(uuid())
+  privateKeyHash    String
+  maxMessagesPerDay Int
+  messagesLeft      Int
+  chats             Chat[]
+}
+
+// table for chats, containing id, title, date, likes, messages, and userId
+model Chat {
+  id        String    @id @default(uuid())
+  title     String
+  date      DateTime  @default(now())
+  likes     Int
+  messages  Message[]
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
+}
+
+
+// table for messages, containing id, chatId, timestamp, content, and userId
+model Message {
+  id          String    @id @default(uuid())
+  chatId      String
+  timestamp   DateTime  @default(now())
+  content     String
+  chat        Chat      @relation(fields: [chatId], references: [id])
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
