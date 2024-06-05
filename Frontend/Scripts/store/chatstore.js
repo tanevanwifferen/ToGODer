@@ -14,7 +14,9 @@ const useChatStore = Pinia.defineStore('chats', {
   }),
   getters: {
     chat() {
-      this.createNewChat();
+      if (this.chatId == null) {
+        this.createNewChat();
+      }
       return this.chats[this.chatId];
     },
     messages() {
@@ -30,14 +32,10 @@ const useChatStore = Pinia.defineStore('chats', {
     },
   },
   actions: {
-    setChats(chats) {
-      this.chats = chats;
-      this.saveChats();
-    },
     saveChats() {
       var toSave = {};
       for (let key of Object.keys(this.chats)) {
-        if (toSave[key]?.messages?.length > 0) {
+        if (this.chats[key]?.messages?.length > 0) {
           toSave[key] = this.chats[key];
         }
       }
@@ -47,7 +45,6 @@ const useChatStore = Pinia.defineStore('chats', {
       var id = uuidv4();
       this.chats[id] = new Chat(id);
       this.chatId = id;
-      this.saveChats();
     },
     selectChat(chatId) {
       this.chatId = chatId;
@@ -60,7 +57,8 @@ const useChatStore = Pinia.defineStore('chats', {
       this.saveChats();
     },
     addMessage(message) {
-      this.chat.messages.push(message);
+      this.messages.push(message);
+      this.saveChats();
     },
     setTitle(title) {
       this.chat.title = title;

@@ -37,7 +37,7 @@ export default {
           this.debug = !this.debug;
           return;
         }
-        this.chatStore.chat.messages.push({
+        this.chatStore.addMessage({
           ...message,
           date: new Date().getTime(),
         });
@@ -68,7 +68,7 @@ export default {
             author: 'system',
             id: 'rate-limit-exceeded',
           };
-          this.chatStore.chat.messages.push(rateLimitMessage);
+          this.chatStore.addMessage(rateLimitMessage);
 
           this.inputDisabled = true;
 
@@ -76,6 +76,7 @@ export default {
             this.chatStore.chat.messages = this.chatStore.chat.messages.filter(
               (msg) => msg.id !== 'rate-limit-exceeded'
             );
+            this.chatStore.saveChats();
             this.inputDisabled = false;
           }, waitTime);
 
@@ -94,17 +95,17 @@ export default {
         var response_body = await response.json();
 
         // Handle successful response
-        this.chatStore.chat.messages.push({
+        this.chatStore.addMessage({
           body: marked.parse(response_body.content),
           author: 'assistant',
           date: new Date().getTime(),
         });
 
-        this.chatStore.saveChats();
         this.rateLimitExceeded = false;
       } catch (error) {
         console.error('Error in sendMessage: ', error);
         this.chatStore.chat.messages.pop();
+        this.chatStore.saveChats();
       }
     },
     async getTitle() {
@@ -137,7 +138,7 @@ export default {
             author: 'system',
             id: 'rate-limit-exceeded',
           };
-          this.chatStore.chat.messages.push(rateLimitMessage);
+          this.chatStore.addMessage(rateLimitMessage);
           this.inputDisabled = true;
 
           setTimeout(() => {
