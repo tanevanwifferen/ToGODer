@@ -1,5 +1,24 @@
 <template>
   <div class="chat-container show">
+    <v-overlay v-model="overlay" contained class="align-center justify-center">
+      <div class="prompt-explanations">
+        <table>
+          <tr
+            @click="setPreview(prompt)"
+            v-for="prompt in Object.keys(promptsListProp)"
+          >
+            <td>
+              <p>
+                {{ prompt.replace('/', '') }}
+              </p>
+            </td>
+            <td style="padding: 4px">
+              {{ promptsListProp[prompt].description }}
+            </td>
+          </tr>
+        </table>
+      </div>
+    </v-overlay>
     <div class="chat-window">
       <div
         ref="chatArea"
@@ -22,6 +41,17 @@
               <p>{{ template.content }}</p>
             </div>
           </div>
+          <div
+            class="promptsExplanation"
+            style="
+              display: flex;
+              margin-top: 3%;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <v-btn @click="overlay = true">Show prompts help</v-btn>
+          </div>
         </div>
         <p
           v-for="message in messageListProp"
@@ -40,17 +70,6 @@
         ></p>
       </div>
       <div class="chat-input">
-        <div
-          class="promptButtons"
-          v-if="messageListProp.length == 0 && !youMessage.startsWith('/')"
-        >
-          <v-btn
-            @click="setPreview(prompt)"
-            v-for="prompt in Object.keys(promptsListProp)"
-          >
-            {{ prompt.replace('/', '') }}
-          </v-btn>
-        </div>
         <form @submit.prevent="handleOutboundMessage()" class="chat-form">
           <textarea
             id="chatInput"
@@ -156,6 +175,7 @@ export default {
       youMessage: '',
       selected: '/default',
       templateMessages,
+      overlay: false,
     };
   },
 
@@ -217,6 +237,7 @@ export default {
     setPreview(selected) {
       this.selected = selected;
       this.youMessage = selected;
+      this.overlay = false;
     },
   },
   mounted() {
@@ -245,6 +266,19 @@ export default {
   height: 100%;
   transform-origin: right bottom;
   overflow: scroll;
+}
+.prompt-explanations {
+  padding: 2em;
+  width: 90vw;
+  height: 80vh;
+  background-color: white;
+  z-index: 10;
+  box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+}
+.prompt-explanations p {
+  cursor: pointer;
+  margin: 0.5em;
 }
 .chat-window {
   box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.1);
