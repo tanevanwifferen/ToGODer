@@ -9,7 +9,20 @@
         }"
       >
         <div class="placeholder" v-if="messageListProp.length == 0">
-          <p class="message message-in">
+          <div class="templates">
+            <div
+              class="template"
+              v-for="template in templateMessages"
+              @click="
+                youMessage = template.type + ' ' + template.content;
+                handleOutboundMessage();
+              "
+            >
+              <span class="template-promptselector">{{ template.title }}</span>
+              <p>{{ template.content }}</p>
+            </div>
+          </div>
+          <!--<p class="message message-in">
             Hi! I'm a chatbot built to handle all your personal requests. How
             can I help you today? I will respond in the language you ask me
             questions in.
@@ -50,7 +63,7 @@
           >
             {{ promptsListProp[selected].description }}
           </p>
-        </div>
+        --></div>
         <p
           v-for="message in messageListProp"
           :key="message.id || message.body"
@@ -106,6 +119,24 @@
 </template>
 
 <script>
+const templateMessages = [
+  {
+    title: 'Ask ToGODer',
+    content: 'How can I get more active consistently?',
+    type: '',
+  },
+  {
+    title: 'Spiritual',
+    content: 'What happens after we die?',
+    type: '/spiritual',
+  },
+  {
+    title: 'Arbitrage',
+    content: 'How do I deal with a boss that micromanages my activities?',
+    type: '/arbitrage',
+  },
+];
+
 export default {
   name: 'Chat',
   inheritAttrs: false,
@@ -139,6 +170,7 @@ export default {
     return {
       youMessage: '',
       selected: '/default',
+      templateMessages,
     };
   },
 
@@ -237,6 +269,31 @@ export default {
   background: #f1f0f0;
   color: black;
 }
+.templates {
+  margin-top: 10vh;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.template {
+  background: #f1f0f0;
+  border-radius: 10px;
+  border: 1px solid #e9e9e9;
+  margin: 0.5em;
+  padding: 0.5em;
+  width: 20vw;
+  min-width: 15em;
+}
+
+.template-promptselector {
+  font-size: 0.8em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  text-align: center;
+  width: 100%;
+}
+
 .promptButtons {
   display: flex;
   flex-wrap: nowrap;
