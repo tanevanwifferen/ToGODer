@@ -96,7 +96,7 @@ export default {
 
         // Handle successful response
         this.chatStore.addMessage({
-          body: marked.parse(response_body.content),
+          body: response_body.content,
           author: 'assistant',
           date: new Date().getTime(),
         });

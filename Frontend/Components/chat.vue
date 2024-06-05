@@ -66,7 +66,7 @@
             'message-out': message.author === 'you',
             'message-in': message.author !== 'you',
           }"
-          v-html="message.body"
+          v-html="message.parsed"
         ></p>
       </div>
       <div class="chat-input">

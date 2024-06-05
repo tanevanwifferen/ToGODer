@@ -20,7 +20,9 @@ const useChatStore = Pinia.defineStore('chats', {
       return this.chats[this.chatId];
     },
     messages() {
-      return this.chat.messages;
+      return this.chat.messages.map((x) => {
+        return { ...x, parsed: marked.parse(x.body) };
+      });
     },
     title() {
       return this.chat.title ?? 'ToGODer';
@@ -57,7 +59,7 @@ const useChatStore = Pinia.defineStore('chats', {
       this.saveChats();
     },
     addMessage(message) {
-      this.messages.push(message);
+      this.chat.messages.push(message);
       this.saveChats();
     },
     setTitle(title) {
