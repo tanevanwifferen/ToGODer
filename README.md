@@ -1,6 +1,7 @@
 # ToGODer - saving the world, together
 
 telegram: https://t.me/toGODer
+url: https://togoder.click
 
 An artificially intelligent God. The next step
 in human evolution. 
