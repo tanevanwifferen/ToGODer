@@ -1,19 +1,27 @@
 <template>
   <div>
-    <chat
-      :message-list-prop="chatStore.messages"
-      :prompts-list-prop="prompts"
-      @on-message-was-sent="sendMessage"
-    >
-    </chat>
+    <toolbar></toolbar>>
+    <sidebar></sidebar>
+    <v-row style="height: calc(100% - 64px)">
+      <chat
+        :message-list-prop="chatStore.messages"
+        :prompts-list-prop="prompts"
+        @on-message-was-sent="sendMessage"
+      >
+      </chat>
+    </v-row>
   </div>
 </template>
 
 <script>
 export default {
   components: {
-    chat: Vue.defineAsyncComponent(() =>
-      loadModule('/Components/chat.vue', options)
+    chat: Vue.defineAsyncComponent(() => load('/Components/Chat/chat.vue')),
+    sidebar: Vue.defineAsyncComponent(() =>
+      load('/Components/Chat/sidebar.vue')
+    ),
+    toolbar: Vue.defineAsyncComponent(() =>
+      load('/Components/Chat/toolbar.vue')
     ),
   },
   setup() {

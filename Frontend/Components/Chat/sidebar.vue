@@ -5,14 +5,11 @@ const globalStore = useGlobalStore();
 
 <template>
   <v-navigation-drawer temporary v-model="globalStore.sidebarVisible">
-    <v-list-item title="ToGODer" subtitle="Your digital God"></v-list-item>
-    <v-divider></v-divider>
     <v-list-item
-      v-for="link in links"
       link
-      target="_blank"
-      :href="link.url"
-      :title="link.name"
+      href="/"
+      title="ToGODer"
+      subtitle="Your digital God"
     ></v-list-item>
     <v-divider></v-divider>
     <v-list-item
@@ -33,11 +30,6 @@ const globalStore = useGlobalStore();
     >
       <template v-slot="content">
         <span style="position: absolute; top: 1em">{{ chat.title }}</span>
-        <!--
-        <router-link :to="`/chat?chatId=${chat.chatId}`" style="width: 100%">{{
-          chat.title
-        }}</router-link>
-        -->
         <v-btn
           style="float: right"
           variant="text"
@@ -48,17 +40,3 @@ const globalStore = useGlobalStore();
     </v-list-item>
   </v-navigation-drawer>
 </template>
-
-<script>
-export default {
-  data() {
-    return {
-      links: [],
-    };
-  },
-  async created() {
-    var links = await fetch('/api/links');
-    this.links = await links.json();
-  },
-};
-</script>

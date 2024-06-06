@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
     />
-    <title>ToGODer - your AI God</title>
+    <title>ToGODer - Your AI God</title>
     <script src="/Scripts/lib/vue.global.js"></script>
     <script src="/Scripts/lib/vue3-sfc-loader.js"></script>
     <script src="/Scripts/lib/vuedemi.iife.min.js"></script>
@@ -36,12 +36,8 @@
   <body style="height: 100%">
     <div id="app" style="height: 100%">
       <v-app class="fill-height">
-        <toolbar></toolbar>
-        <v-row class="fill-height">
-          <sidebar></sidebar>
-          <router-view class="fill-height v-col-auto"></router-view>
-          <cookiebanner></cookiebanner>
-        </v-row>
+        <router-view class="fill-height"></router-view>
+        <cookiebanner></cookiebanner>
       </v-app>
     </div>
 
@@ -84,7 +80,7 @@
       const routes = [
         {
           path: '/',
-          component: () => load('/Pages/ChatPage.vue'),
+          component: () => load('/Pages/HomePage.vue'),
         },
         {
           path: '/chat',
@@ -108,12 +104,6 @@
         components: {
           cookiebanner: Vue.defineAsyncComponent(() =>
             load('/Components/cookiebanner.vue')
-          ),
-          toolbar: Vue.defineAsyncComponent(() =>
-            load('/Components/toolbar.vue')
-          ),
-          sidebar: Vue.defineAsyncComponent(() =>
-            load('/Components/sidebar.vue')
           ),
         },
       });
