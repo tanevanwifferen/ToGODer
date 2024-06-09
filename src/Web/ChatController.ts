@@ -6,6 +6,13 @@ import {
 import { RateLimitRequestHandler } from 'express-rate-limit';
 import { ConversationApi } from '../Api/ConversationApi';
 import { PromptList } from '../LLM/prompts/promptlist';
+import { ChatCompletionMessageParam } from 'openai/src/resources/index.js';
+import { HumanResponsePrompt } from '../LLM/prompts/chatprompts';
+
+export interface ChatRequest {
+  humanPrompt: boolean | undefined;
+  prompts: ChatCompletionMessageParam[];
+}
 
 export function ChatController(
   app: Express,
@@ -19,7 +26,14 @@ export function ChatController(
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const conversationApi = new ConversationApi();
-        const response = await conversationApi.getResponse(req.body);
+        let body: ChatRequest = req.body;
+        if (!('humanPrompt' in req.body)) {
+          body = {
+            humanPrompt: false,
+            prompts: req.body,
+          };
+        }
+        const response = await conversationApi.getResponse(body);
         res.json({ content: response });
       } catch (error) {
         next(error);

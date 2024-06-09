@@ -19,11 +19,18 @@ export const validateChatCompletionMessageArray = (
   next: NextFunction
 ) => {
   const body: any = req.body;
-  if (!Array.isArray(body)) {
-    return res.status(400).send('Invalid request body: Expected an array.');
+  if (!Array.isArray(body) && !Array.isArray(body.prompts)) {
+    return res
+      .status(400)
+      .send(
+        'Invalid request body: Expected an array as root or as root.prompts.'
+      );
   }
 
-  for (const item of body) {
+  var prompts: Array<ChatCompletionMessageParam> = Array.isArray(body)
+    ? body
+    : body.prompts;
+  for (const item of prompts) {
     if (!isValidChatCompletionMessageParam(item)) {
       return res
         .status(400)
