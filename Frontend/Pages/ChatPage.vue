@@ -54,41 +54,16 @@ export default {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(
-            this.chatStore.messages.map((x) => ({
+          body: JSON.stringify({
+            humanPrompt: this.chatStore.humanPrompt,
+            prompts: this.chatStore.messages.map((x) => ({
               content: x.body,
               role: x.author == 'you' ? 'user' : 'assistant',
-            }))
-          ),
+            })),
+          }),
         });
         if (response.status == 429) {
-          console.warn('Rate limit exceeded');
-
-          const retryAfter = response.headers.get('Retry-After');
-          const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
-
-          const minutes = Math.floor(waitTime / 60000);
-          const seconds = Math.floor((waitTime % 60000) / 1000);
-          const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
-
-          const rateLimitMessage = {
-            body: retryMessage,
-            author: 'system',
-            id: 'rate-limit-exceeded',
-          };
-          this.chatStore.addMessage(rateLimitMessage);
-
-          this.inputDisabled = true;
-
-          setTimeout(() => {
-            this.chatStore.chat.messages = this.chatStore.chat.messages.filter(
-              (msg) => msg.id !== 'rate-limit-exceeded'
-            );
-            this.chatStore.saveChats();
-            this.inputDisabled = false;
-          }, waitTime);
-
-          this.rateLimitExceeded = true;
+          this.handleRateLimit(response);
           return;
         }
         if (!response.ok) {
@@ -134,29 +109,7 @@ export default {
           ),
         });
         if (response.status === 429) {
-          console.warn('Rate limit exceeded');
-
-          const retryAfter = response.headers.get('Retry-After');
-          const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
-
-          const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
-
-          const rateLimitMessage = {
-            body: retryMessage,
-            author: 'system',
-            id: 'rate-limit-exceeded',
-          };
-          this.chatStore.addMessage(rateLimitMessage);
-          this.inputDisabled = true;
-
-          setTimeout(() => {
-            this.chatStore.chat.messages = this.chatStore.chat.messages.filter(
-              (msg) => msg.id !== 'rate-limit-exceeded'
-            );
-            this.inputDisabled = false;
-          }, waitTime);
-
-          this.rateLimitExceeded = true;
+          this.handleRateLimit(response);
           return null;
         }
         if (!response.ok) {
@@ -167,6 +120,31 @@ export default {
         console.error('Error in getTitle: ', error);
         return null;
       }
+    },
+    async handleRateLimit() {
+      console.warn('Rate limit exceeded');
+
+      const retryAfter = response.headers.get('Retry-After');
+      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
+
+      const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
+
+      const rateLimitMessage = {
+        body: retryMessage,
+        author: 'system',
+        id: 'rate-limit-exceeded',
+      };
+      this.chatStore.addMessage(rateLimitMessage);
+      this.inputDisabled = true;
+
+      setTimeout(() => {
+        this.chatStore.chat.messages = this.chatStore.chat.messages.filter(
+          (msg) => msg.id !== 'rate-limit-exceeded'
+        );
+        this.inputDisabled = false;
+      }, waitTime);
+
+      this.rateLimitExceeded = true;
     },
   },
 };

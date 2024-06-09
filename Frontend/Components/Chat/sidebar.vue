@@ -14,6 +14,21 @@ const globalStore = useGlobalStore();
     <v-divider></v-divider>
     <v-list-item
       link
+      title="New chat"
+      @click="chatStore.createNewChat()"
+    ></v-list-item>
+    <v-list-item @click="chatStore.humanPrompt = !chatStore.humanPrompt">
+      <template v-slot:prepend>
+        <v-list-item-action start>
+          <v-checkbox-btn :model-value="chatStore.humanPrompt"></v-checkbox-btn>
+        </v-list-item-action>
+      </template>
+
+      <v-list-item-title>Conversational Style</v-list-item-title>
+    </v-list-item>
+    <v-divider></v-divider>
+    <v-list-item
+      link
       @click="
         chatStore.createNewChat();
         globalStore.sidebarVisible = false;
