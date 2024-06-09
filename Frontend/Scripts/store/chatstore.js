@@ -6,11 +6,16 @@ class Chat {
     this.created = new Date().getTime();
   }
 }
+
+localStorage.getItem('humanPrompt') ??
+  localStorage.setItem('humanPrompt', 'true');
+
 const useChatStore = Pinia.defineStore('chats', {
   // other options...
   state: () => ({
     chats: JSON.parse(localStorage.getItem('chats')) ?? {},
     chatId: null,
+    humanPrompt: localStorage.getItem('humanPrompt') == 'true',
   }),
   getters: {
     chat() {
@@ -65,6 +70,10 @@ const useChatStore = Pinia.defineStore('chats', {
     setTitle(title) {
       this.chat.title = title;
       this.saveChats();
+    },
+    setHumanPrompt(value) {
+      this.humanPrompt = value;
+      localStorage.setItem('humanPrompt', value);
     },
   },
 });

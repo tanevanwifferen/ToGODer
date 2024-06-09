@@ -121,7 +121,7 @@ export default {
     return {
       links: [],
       slides: [
-        'Is there life after death?',
+        'Should I ask my crush out?',
         'Should I pursue a different career?',
         'How can I learn to love myself?',
         'Can we have heaven on earth?',
