@@ -73,9 +73,5 @@ const useChatStore = Pinia.defineStore('chats', {
       this.chat.title = title;
       this.saveChats();
     },
-    setHumanPrompt(value) {
-      this.humanPrompt = value;
-      localStorage.setItem('humanPrompt', value);
-    },
   },
 });
