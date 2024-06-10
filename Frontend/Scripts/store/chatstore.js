@@ -9,6 +9,7 @@ class Chat {
 
 localStorage.getItem('humanPrompt') ??
   localStorage.setItem('humanPrompt', 'true');
+localStorage.getItem('keepGoing') ?? localStorage.setItem('keepGoing', 'true');
 
 const useChatStore = Pinia.defineStore('chats', {
   // other options...
@@ -16,6 +17,7 @@ const useChatStore = Pinia.defineStore('chats', {
     chats: JSON.parse(localStorage.getItem('chats')) ?? {},
     chatId: null,
     humanPrompt: localStorage.getItem('humanPrompt') == 'true',
+    keepGoing: localStorage.getItem('keepGoing') == 'true',
   }),
   getters: {
     chat() {

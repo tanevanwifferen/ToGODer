@@ -56,6 +56,7 @@ export default {
           },
           body: JSON.stringify({
             humanPrompt: this.chatStore.humanPrompt,
+            keepGoing: this.chatStore.keepGoing,
             prompts: this.chatStore.messages.map((x) => ({
               content: x.body,
               role: x.author == 'you' ? 'user' : 'assistant',

@@ -11,6 +11,7 @@ import { HumanResponsePrompt } from '../LLM/prompts/chatprompts';
 
 export interface ChatRequest {
   humanPrompt: boolean | undefined;
+  keepGoing: boolean | undefined;
   prompts: ChatCompletionMessageParam[];
 }
 
@@ -30,6 +31,7 @@ export function ChatController(
         if (!('humanPrompt' in req.body)) {
           body = {
             humanPrompt: false,
+            keepGoing: false,
             prompts: req.body,
           };
         }
