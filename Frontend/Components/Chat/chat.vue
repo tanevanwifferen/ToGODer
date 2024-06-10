@@ -131,7 +131,7 @@ const templateMessages = [
   },
   {
     title: 'Spiritual',
-    content: 'What happens after we die?',
+    content: 'How can I feel more connected to the universe?',
     type: '/spiritual',
   },
   {
