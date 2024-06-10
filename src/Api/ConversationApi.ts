@@ -4,6 +4,7 @@ import { OpenAIWrapper } from '../LLM/OpenAI';
 import {
   FormattingPrompt,
   HumanResponsePrompt,
+  keepConversationGoingPrompt,
 } from '../LLM/prompts/chatprompts';
 import { PromptList } from '../LLM/prompts/promptlist';
 import { GetTitlePrompt } from '../LLM/prompts/systemprompts';
@@ -44,6 +45,9 @@ export class ConversationApi {
     systemprompt += '\n\n' + FormattingPrompt;
     if (input.humanPrompt) {
       systemprompt += '\n\n' + HumanResponsePrompt;
+    }
+    if (input.keepGoing) {
+      systemprompt += '\n\n' + keepConversationGoingPrompt;
     }
     return await aiWrapper.getResponse(systemprompt, input.prompts);
   }

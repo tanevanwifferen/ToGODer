@@ -26,6 +26,15 @@ const globalStore = useGlobalStore();
 
       <v-list-item-title>Conversational Style</v-list-item-title>
     </v-list-item>
+    <v-list-item @click="chatStore.keepGoing = !chatStore.keepGoing">
+      <template v-slot:prepend>
+        <v-list-item-action start>
+          <v-checkbox-btn :model-value="chatStore.keepGoing"></v-checkbox-btn>
+        </v-list-item-action>
+      </template>
+
+      <v-list-item-title>Keep chat going</v-list-item-title>
+    </v-list-item>
     <v-divider></v-divider>
     <v-list-item
       link
