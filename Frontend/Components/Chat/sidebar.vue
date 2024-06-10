@@ -1,6 +1,11 @@
 <script setup>
 const chatStore = useChatStore();
 const globalStore = useGlobalStore();
+
+chatStore.$subscribe((mutation, state) => {
+  localStorage.setItem('humanPrompt', chatStore.humanPrompt);
+  localStorage.setItem('keepGoing', chatStore.keepGoing);
+});
 </script>
 
 <template>
