@@ -17,6 +17,7 @@
                     padding: '1em',
                     backgroundPosition: '50% 50%',
                     backgroundImage: slide.background,
+                    backgroundSize: 'cover',
                   }"
                   class="fill-height"
                 >
