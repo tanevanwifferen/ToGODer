@@ -61,4 +61,8 @@ export function ChatController(
   app.get('/api/prompts', (req, res) => {
     res.send(PromptList);
   });
+
+  app.get('/api/quote', (req, res) => {
+    res.json({ quote: new ConversationApi().getQuote() });
+  });
 }
