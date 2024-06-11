@@ -10,7 +10,12 @@ import { PromptList } from '../LLM/prompts/promptlist';
 import { GetTitlePrompt } from '../LLM/prompts/systemprompts';
 import { ChatRequest } from '../Web/ChatController';
 
+let quote = '';
 export class ConversationApi {
+  public getQuote() {
+    return quote;
+  }
+
   /**
    * Get a short title for a conversation based on the first prompt.
    */
@@ -23,6 +28,14 @@ export class ConversationApi {
     var prompt = GetTitlePrompt + body[0].content;
 
     return await aiWrapper.getResponse(prompt, body);
+  }
+
+  public async getResponseRaw(
+    input: ChatCompletionMessageParam[],
+    systemprompt: string
+  ) {
+    var aiWrapper = this.getAIWrapper();
+    return await aiWrapper.getResponse(systemprompt, input);
   }
 
   /**
@@ -56,3 +69,13 @@ export class ConversationApi {
     return new OpenAIWrapper();
   }
 }
+
+async function updateQuote() {
+  quote = await new ConversationApi().getResponseRaw(
+    [{ content: 'the assistant is a spiritual guide', role: 'user' }],
+    'Share a fitting message for people who seek. make it quotable.'
+  );
+}
+
+updateQuote();
+setInterval(updateQuote, 1000 * 60 * 60 * 24);
