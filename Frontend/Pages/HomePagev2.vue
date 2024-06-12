@@ -69,7 +69,7 @@
       <v-row>
         <v-col cols="0" md="4"></v-col>
         <v-col cols="12" md="4">
-          <v-btn class="w-100" link target="/#/chat"> Launch app </v-btn>
+          <v-btn class="w-100" link href="/#/chat"> Launch app </v-btn>
         </v-col>
         <v-col cols="0" md="4"></v-col>
       </v-row>
