@@ -33,6 +33,7 @@ export function ChatController(
           body = {
             humanPrompt: false,
             keepGoing: false,
+            lessBloat: false,
             prompts: req.body,
           };
         }
