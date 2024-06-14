@@ -5,6 +5,7 @@ import {
   FormattingPrompt,
   HumanResponsePrompt,
   keepConversationGoingPrompt,
+  lessBloatPrompt,
 } from '../LLM/prompts/chatprompts';
 import { PromptList } from '../LLM/prompts/promptlist';
 import { GetTitlePrompt } from '../LLM/prompts/systemprompts';
@@ -58,6 +59,9 @@ export class ConversationApi {
     systemprompt += '\n\n' + FormattingPrompt;
     if (input.humanPrompt) {
       systemprompt += '\n\n' + HumanResponsePrompt;
+    }
+    if (input.lessBloat) {
+      systemprompt += '\n\n' + lessBloatPrompt;
     }
     if (input.keepGoing) {
       systemprompt += '\n\n' + keepConversationGoingPrompt;

@@ -5,6 +5,7 @@ const globalStore = useGlobalStore();
 chatStore.$subscribe((mutation, state) => {
   localStorage.setItem('humanPrompt', chatStore.humanPrompt);
   localStorage.setItem('keepGoing', chatStore.keepGoing);
+  localStorage.setItem('lessBloat', chatStore.lessBloat);
 });
 </script>
 
@@ -39,6 +40,15 @@ chatStore.$subscribe((mutation, state) => {
       </template>
 
       <v-list-item-title>Keep chat going</v-list-item-title>
+    </v-list-item>
+    <v-list-item @click="chatStore.lessBloat = !chatStore.lessBloat">
+      <template v-slot:prepend>
+        <v-list-item-action start>
+          <v-checkbox-btn :model-value="chatStore.lessBloat"></v-checkbox-btn>
+        </v-list-item-action>
+      </template>
+
+      <v-list-item-title>More direct responses</v-list-item-title>
     </v-list-item>
     <v-divider></v-divider>
     <v-list-item

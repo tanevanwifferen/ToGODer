@@ -1,3 +1,6 @@
+<script setup>
+const chatStore = useChatStore();
+</script>
 <template>
   <div class="chat-container show">
     <v-overlay v-model="overlay" contained class="align-center justify-center">
@@ -53,21 +56,33 @@
             <v-btn @click="overlay = true">Show prompts help</v-btn>
           </div>
         </div>
-        <p
+        <div
           v-for="message in messageListProp"
-          :key="message.id || message.body"
-          class="message"
+          class="message d-flex flex-row"
           :style="[
             message.author === 'you'
               ? { background: messageOutColorProp }
               : { background: messageInColorProp },
           ]"
+          :key="message.id || message.body"
           :class="{
             'message-out': message.author === 'you',
             'message-in': message.author !== 'you',
           }"
-          v-html="message.parsed"
-        ></p>
+        >
+          <p v-html="message.parsed" style="flex: auto"></p>
+          <v-btn
+            v-if="isSecureContext"
+            density="compact"
+            icon="mdi-checkbox-multiple-blank-outline"
+            @click="copyText(message.body)"
+          ></v-btn>
+          <v-btn
+            density="compact"
+            icon="mdi-trash-can-outline"
+            @click="chatStore.deleteMessage(message.id)"
+          ></v-btn>
+        </div>
       </div>
       <div class="chat-input">
         <form @submit.prevent="handleOutboundMessage()" class="chat-form">
@@ -189,6 +204,9 @@ export default {
   },
 
   computed: {
+    isSecureContext() {
+      return window.isSecureContext;
+    },
     randomExamples() {
       var toreturn = [];
       var usedIndexes = [];
@@ -211,6 +229,9 @@ export default {
   },
 
   methods: {
+    copyText(text) {
+      navigator.clipboard.writeText(text);
+    },
     handleOutboundMessage() {
       if (!this.youMessage) {
         return;
@@ -256,17 +277,20 @@ export default {
 * {
   box-sizing: border-box;
 }
+
 .headline {
   text-align: center;
   font-weight: 100;
   color: white;
 }
+
 .chat-container {
   width: 100%;
   height: 100%;
   transform-origin: right bottom;
   overflow: scroll;
 }
+
 .prompt-explanations {
   padding: 2em;
   width: 90vw;
@@ -276,10 +300,12 @@ export default {
   box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.1);
   overflow: auto;
 }
+
 .prompt-explanations p {
   cursor: pointer;
   margin: 0.5em;
 }
+
 .chat-window {
   box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.1);
   width: 100%;
@@ -287,6 +313,7 @@ export default {
   display: grid;
   grid-template-rows: auto 6.8em;
 }
+
 .chat-area {
   border-radius: 3px 3px 0 0;
   padding: 1em 1em 0;
@@ -295,6 +322,7 @@ export default {
   width: 100vw;
   grid-row: 1;
 }
+
 .message {
   width: 100%;
   border-radius: 10px;
@@ -303,13 +331,16 @@ export default {
   font-family: 'Arial', sans-serif;
   margin: 0.5em;
 }
+
 .message-out {
   color: #ffffff;
 }
+
 .message-in {
   background: #f1f0f0;
   color: black;
 }
+
 .templates {
   margin-top: 10vh;
   display: flex;
@@ -341,9 +372,11 @@ export default {
   overflow: auto;
   width: 100vw;
 }
+
 .chat-input {
   grid-row: 2;
 }
+
 .chat-input textarea {
   border: none;
   font-size: 0.8em;
@@ -351,6 +384,7 @@ export default {
   padding: 1em;
   width: 90%;
 }
+
 .chat-form {
   background: #ffffff;
   border-top: 1px solid #e9e9e9;
@@ -361,25 +395,31 @@ export default {
   overflow: hidden;
   width: 100%;
 }
+
 .submit {
   -webkit-appearance: none;
   background: transparent;
   border: 0;
   cursor: pointer;
 }
+
 .submit:focus {
   outline: none;
 }
+
 .submit-icon {
   width: 20px;
 }
+
 .chat-container.show .close-chat {
   animation: scaleIn 0.15s ease-in-out 0.3s 1 normal forwards;
 }
+
 @keyframes scaleIn {
   0% {
     transform: scale(0);
   }
+
   100% {
     transform: scale(1);
   }
