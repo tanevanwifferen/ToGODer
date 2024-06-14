@@ -12,6 +12,7 @@ import { HumanResponsePrompt } from '../LLM/prompts/chatprompts';
 export interface ChatRequest {
   humanPrompt: boolean | undefined;
   keepGoing: boolean | undefined;
+  lessBloat: boolean | undefined;
   prompts: ChatCompletionMessageParam[];
 }
 

@@ -18,6 +18,7 @@ const useChatStore = Pinia.defineStore('chats', {
     chatId: null,
     humanPrompt: localStorage.getItem('humanPrompt') == 'true',
     keepGoing: localStorage.getItem('keepGoing') == 'true',
+    lessBloat: localStorage.getItem('lessBloat') == 'true',
   }),
   getters: {
     chat() {
@@ -66,7 +67,12 @@ const useChatStore = Pinia.defineStore('chats', {
       this.saveChats();
     },
     addMessage(message) {
+      message.id ??= uuidv4();
       this.chat.messages.push(message);
+      this.saveChats();
+    },
+    deleteMessage(id) {
+      this.chat.messages = this.chat.messages.filter((x) => x.id != id);
       this.saveChats();
     },
     setTitle(title) {
