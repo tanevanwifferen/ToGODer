@@ -134,6 +134,9 @@ export default {
       const retryAfter = response.headers.get('Retry-After');
       const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
 
+      const minutes = Math.floor(waitTime / 60000);
+      const seconds = Math.floor((waitTime % 60000) / 1000);
+
       const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
 
       const rateLimitMessage = {
