@@ -8,5 +8,7 @@ const chatStore = useChatStore();
       @click="globalStore.sidebarVisible = !globalStore.sidebarVisible"
     ></v-app-bar-nav-icon>
     <v-app-bar-title>{{ chatStore.title }}</v-app-bar-title>
+    <v-spacer></v-spacer>
+    <v-btn @click="globalStore.donateViewVisible = true"> Donate </v-btn>
   </v-toolbar>
 </template>

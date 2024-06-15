@@ -9,6 +9,7 @@
         @on-message-was-sent="sendMessage"
       >
       </chat>
+      <donatewindow></donatewindow>
     </v-row>
   </div>
 </template>
@@ -23,10 +24,14 @@ export default {
     toolbar: Vue.defineAsyncComponent(() =>
       load('/Components/Chat/toolbar.vue')
     ),
+    donatewindow: Vue.defineAsyncComponent(() =>
+      load('/Components/Donate/donatewindow.vue')
+    ),
   },
   setup() {
     const chatStore = useChatStore();
-    return { chatStore };
+    const globalStore = useGlobalStore();
+    return { chatStore, globalStore };
   },
   data() {
     return {
