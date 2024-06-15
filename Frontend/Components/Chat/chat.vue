@@ -94,17 +94,20 @@ const chatStore = useChatStore();
             :disabled="inputDisabled"
             autofocus
           />
-          <button
-            class="submit"
-            type="submit"
-            style="width: 10%"
-            :disabled="inputDisabled"
-          >
-            <span
-              class="fa fa-paper-plane"
-              :style="{ color: iconColorProp, width: '100%' }"
-            ></span>
-          </button>
+          <div class="d-flex flex-col">
+            <span>{{ characterCount }} / 5000</span>
+            <button
+              class="submit"
+              type="submit"
+              style="width: 10%"
+              :disabled="inputDisabled"
+            >
+              <span
+                class="fa fa-paper-plane"
+                :style="{ color: iconColorProp, width: '100%' }"
+              ></span>
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -201,9 +204,17 @@ export default {
       },
       deep: true,
     },
+    characterCount() {
+      if (this.characterCount > 5000) {
+        this.youMessage = this.youMessage.slice(0, 5000);
+      }
+    },
   },
 
   computed: {
+    characterCount() {
+      return this.youMessage.length;
+    },
     isSecureContext() {
       return window.isSecureContext;
     },
