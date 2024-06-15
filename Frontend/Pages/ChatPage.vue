@@ -128,7 +128,7 @@ export default {
         return null;
       }
     },
-    async handleRateLimit() {
+    async handleRateLimit(response) {
       console.warn('Rate limit exceeded');
 
       const retryAfter = response.headers.get('Retry-After');
