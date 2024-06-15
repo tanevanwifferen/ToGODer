@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { ChatController } from './Web/ChatController';
+import { ConversationApi } from './Api/ConversationApi';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -35,6 +36,17 @@ ChatController(app, messageLimiter);
 
 app.get('/api/links', (req, res) => {
   res.json(JSON.parse(process.env.LINKS || '[]'));
+});
+
+app.get('/api/global_config', (req, res) => {
+  var links = JSON.parse(process.env.LINKS || '[]');
+  var donateOptions = JSON.parse(process.env.DONATE_OPTIONS || '[]');
+  var quote = new ConversationApi().getQuote();
+  res.json({
+    links: links,
+    donateOptions: donateOptions,
+    quote: quote,
+  });
 });
 
 app.get('/', (req, res) => {

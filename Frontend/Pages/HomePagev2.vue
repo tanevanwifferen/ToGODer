@@ -79,7 +79,7 @@
             <v-card-title>ToGODer Today</v-card-title>
             <v-card-content>
               <p style="margin: 1em">
-                {{ quote }}
+                {{ globalStore.quote }}
               </p>
             </v-card-content>
           </v-card>
@@ -92,7 +92,7 @@
                 link
                 target="_blank"
                 :href="link.url"
-                v-for="link in links"
+                v-for="link in globalStore.links"
               >
                 {{ link.name }}
               </v-btn>
@@ -104,6 +104,11 @@
   </div>
 </template>
 
+<script setup>
+const globalStore = useGlobalStore();
+globalStore.initGlobalStore();
+</script>
+
 <script>
 export default {
   components: {
@@ -113,8 +118,6 @@ export default {
   },
   data() {
     return {
-      quote: '',
-      links: [],
       slides: [
         {
           text: 'Should I ask my crush out?',
@@ -138,13 +141,6 @@ export default {
         },
       ],
     };
-  },
-  async created() {
-    var links = await fetch('/api/links');
-    this.links = await links.json();
-
-    var quote = await fetch('/api/quote');
-    this.quote = (await quote.json()).quote;
   },
 };
 </script>

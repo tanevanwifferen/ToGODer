@@ -1,14 +1,3 @@
-<script setup>
-const chatStore = useChatStore();
-const globalStore = useGlobalStore();
-
-chatStore.$subscribe((mutation, state) => {
-  localStorage.setItem('humanPrompt', chatStore.humanPrompt);
-  localStorage.setItem('keepGoing', chatStore.keepGoing);
-  localStorage.setItem('lessBloat', chatStore.lessBloat);
-});
-</script>
-
 <template>
   <v-navigation-drawer temporary v-model="globalStore.sidebarVisible">
     <v-list-item
@@ -72,10 +61,33 @@ chatStore.$subscribe((mutation, state) => {
         <v-btn
           style="float: right"
           variant="text"
-          @click.stop="chatStore.deleteChat(chat.chatId)"
+          @click.stop="deleteChat(chat.chatId)"
           icon="mdi-trash-can-outline"
         ></v-btn
       ></template>
     </v-list-item>
   </v-navigation-drawer>
 </template>
+
+<script>
+export default {
+  setup() {
+    const globalStore = useGlobalStore();
+    const chatStore = useChatStore();
+
+    chatStore.$subscribe((mutation, state) => {
+      localStorage.setItem('humanPrompt', chatStore.humanPrompt);
+      localStorage.setItem('keepGoing', chatStore.keepGoing);
+      localStorage.setItem('lessBloat', chatStore.lessBloat);
+    });
+    return { chatStore, globalStore };
+  },
+  methods: {
+    deleteChat(chatId) {
+      // TODO confirm with user
+      this.chatStore.deleteChat(chatId);
+      this.globalStore.askForDonation();
+    },
+  },
+};
+</script>
