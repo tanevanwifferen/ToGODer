@@ -1,4 +1,5 @@
 const lastDonateKey = 'lastDonateQuestion';
+const minage = 1000 * 60 * 60 * 24;
 
 localStorage.getItem(lastDonateKey) ||
   localStorage.setItem(lastDonateKey, new Date().getTime());
@@ -31,14 +32,15 @@ const useGlobalStore = Pinia.defineStore('global', {
       localStorage.setItem(lastDonateKey, this.lastDonateQuestion);
     },
     askForDonation() {
-      debugger;
-      if (
-        new Date().getTime() - this.lastDonateQuestion >
-        1000 * 60 * 60 * 24
-      ) {
-        this.donateViewVisible = true;
-        this.setLastDonateQuestion();
+      if (!this.donateOptions || this.donateOptions.length == 0) {
+        return;
       }
+      let time = new Date().getTime();
+      if (time - this.lastDonateQuestion < minage) {
+        return;
+      }
+      this.donateViewVisible = true;
+      this.setLastDonateQuestion();
     },
   },
 });
