@@ -2,7 +2,8 @@
   <v-navigation-drawer temporary v-model="globalStore.sidebarVisible">
     <v-list-item
       link
-      href="/"
+      href="#"
+      @click="chatStore.createNewChat()"
       title="ToGODer"
       subtitle="Your digital God"
     ></v-list-item>
