@@ -1,6 +1,6 @@
 <template>
   <div>
-    <toolbar></toolbar>>
+    <toolbar></toolbar>
     <sidebar></sidebar>
     <v-row style="height: calc(100% - 64px)">
       <chat
