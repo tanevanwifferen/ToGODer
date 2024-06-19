@@ -7,18 +7,25 @@ class Chat {
   }
 }
 
-localStorage.getItem('humanPrompt') ??
-  localStorage.setItem('humanPrompt', 'true');
-localStorage.getItem('keepGoing') ?? localStorage.setItem('keepGoing', 'true');
+const humanPromptKey = 'humanPrompt';
+const keepGoingKey = 'keepGoing';
+const communicationStyleKey = 'communicationStyle';
+
+localStorage.getItem(humanPromptKey) ??
+  localStorage.setItem(humanPromptKey, 'true');
+localStorage.getItem(keepGoingKey) ??
+  localStorage.setItem(keepGoingKey, 'true');
+localStorage.getItem(communicationStyleKey) ??
+  localStorage.setItem(communicationStyleKey, '0');
 
 const useChatStore = Pinia.defineStore('chats', {
   // other options...
   state: () => ({
     chats: JSON.parse(localStorage.getItem('chats')) ?? {},
     chatId: null,
-    humanPrompt: localStorage.getItem('humanPrompt') == 'true',
-    keepGoing: localStorage.getItem('keepGoing') == 'true',
-    lessBloat: localStorage.getItem('lessBloat') == 'true',
+    humanPrompt: localStorage.getItem(humanPromptKey) == 'true',
+    keepGoing: localStorage.getItem(humanPromptKey) == 'true',
+    communicationStyle: parseInt(localStorage.getItem(communicationStyleKey)),
   }),
   getters: {
     chat() {

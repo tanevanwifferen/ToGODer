@@ -1,5 +1,6 @@
 <script setup>
 const chatStore = useChatStore();
+const globalStore = useGlobalStore();
 </script>
 <template>
   <div class="chat-container show">
@@ -31,6 +32,17 @@ const chatStore = useChatStore();
         }"
       >
         <div class="placeholder" v-if="messageListProp.length == 0">
+          <div
+            class="templates"
+            style="width: 60%; margin: auto; margin-top: 5em"
+          >
+            <div class="template" style="width: 100%">
+              <p>
+                {{ globalStore.quote }}
+                - ToGODer Today
+              </p>
+            </div>
+          </div>
           <div class="templates">
             <div
               class="template"
@@ -353,7 +365,7 @@ export default {
 }
 
 .templates {
-  margin-top: 10vh;
+  margin-top: 5vh;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;

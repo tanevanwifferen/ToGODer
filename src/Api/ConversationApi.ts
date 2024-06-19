@@ -2,6 +2,7 @@ import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { AIWrapper } from '../LLM/AIWrapper';
 import { OpenAIWrapper } from '../LLM/OpenAI';
 import {
+  AdaptToConversantsCommunicationStyle,
   FormattingPrompt,
   HumanResponsePrompt,
   keepConversationGoingPrompt,
@@ -9,7 +10,10 @@ import {
 } from '../LLM/prompts/chatprompts';
 import { PromptList } from '../LLM/prompts/promptlist';
 import { GetTitlePrompt } from '../LLM/prompts/systemprompts';
-import { ChatRequest } from '../Web/ChatController';
+import {
+  ChatRequest,
+  ChatRequestCommunicationStyle,
+} from '../Models/ChatRequest';
 
 let quote = '';
 export class ConversationApi {
@@ -60,9 +64,18 @@ export class ConversationApi {
     if (input.humanPrompt) {
       systemprompt += '\n\n' + HumanResponsePrompt;
     }
-    if (input.lessBloat) {
-      systemprompt += '\n\n' + lessBloatPrompt;
+
+    switch (input.communcationStyle) {
+      case ChatRequestCommunicationStyle.Default:
+        break;
+      case ChatRequestCommunicationStyle.LessBloat:
+        systemprompt += '\n\n' + lessBloatPrompt;
+        break;
+      case ChatRequestCommunicationStyle.AdaptToConversant:
+        systemprompt += '\n\n' + AdaptToConversantsCommunicationStyle;
+        break;
     }
+
     if (input.keepGoing) {
       systemprompt += '\n\n' + keepConversationGoingPrompt;
     }

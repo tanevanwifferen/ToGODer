@@ -39,11 +39,9 @@ app.get('/api/links', (req, res) => {
 });
 
 app.get('/api/global_config', (req, res) => {
-  var links = JSON.parse(process.env.LINKS || '[]');
   var donateOptions = JSON.parse(process.env.DONATE_OPTIONS || '[]');
   var quote = new ConversationApi().getQuote();
   res.json({
-    links: links,
     donateOptions: donateOptions,
     quote: quote,
   });

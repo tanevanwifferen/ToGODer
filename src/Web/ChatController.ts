@@ -6,15 +6,10 @@ import {
 import { RateLimitRequestHandler } from 'express-rate-limit';
 import { ConversationApi } from '../Api/ConversationApi';
 import { PromptList } from '../LLM/prompts/promptlist';
-import { ChatCompletionMessageParam } from 'openai/src/resources/index.js';
-import { HumanResponsePrompt } from '../LLM/prompts/chatprompts';
-
-export interface ChatRequest {
-  humanPrompt: boolean | undefined;
-  keepGoing: boolean | undefined;
-  lessBloat: boolean | undefined;
-  prompts: ChatCompletionMessageParam[];
-}
+import {
+  ChatRequest,
+  ChatRequestCommunicationStyle,
+} from '../Models/ChatRequest';
 
 export function ChatController(
   app: Express,
@@ -33,7 +28,7 @@ export function ChatController(
           body = {
             humanPrompt: false,
             keepGoing: false,
-            lessBloat: false,
+            communcationStyle: ChatRequestCommunicationStyle.Default,
             prompts: req.body,
           };
         }

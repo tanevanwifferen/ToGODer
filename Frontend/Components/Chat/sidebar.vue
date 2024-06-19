@@ -31,14 +31,22 @@
 
       <v-list-item-title>Keep chat going</v-list-item-title>
     </v-list-item>
-    <v-list-item @click="chatStore.lessBloat = !chatStore.lessBloat">
-      <template v-slot:prepend>
-        <v-list-item-action start>
-          <v-checkbox-btn :model-value="chatStore.lessBloat"></v-checkbox-btn>
-        </v-list-item-action>
-      </template>
 
-      <v-list-item-title>More direct responses</v-list-item-title>
+    <v-list-item>
+      <v-list-item-title>Communication Style</v-list-item-title>
+      <v-select
+        density="compact"
+        v-model="chatStore.communicationStyle"
+        key="key"
+        item-title="key"
+        item-value="value"
+        :items="[
+          { key: 'Default', value: 0 },
+          { key: 'Less Bloat', value: 1 },
+          { key: 'Adapt Style', value: 2 },
+        ]"
+      >
+      </v-select>
     </v-list-item>
     <v-divider></v-divider>
     <v-list-item
@@ -79,7 +87,7 @@ export default {
     chatStore.$subscribe((mutation, state) => {
       localStorage.setItem('humanPrompt', chatStore.humanPrompt);
       localStorage.setItem('keepGoing', chatStore.keepGoing);
-      localStorage.setItem('lessBloat', chatStore.lessBloat);
+      localStorage.setItem('communicationStyle', chatStore.communicationStyle);
     });
     return { chatStore, globalStore };
   },
