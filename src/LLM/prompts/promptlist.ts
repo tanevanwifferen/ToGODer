@@ -9,6 +9,7 @@ import {
   CouncellorPrompt as ArbitrationPrompt,
   NoSteeringPrompt,
   DeescalationPrompt,
+  SocialConversationPrompt,
 } from './chatprompts';
 
 interface PromptListItem {
@@ -83,5 +84,9 @@ export const PromptList: Record<string, PromptListItem> = {
   '/practical': {
     prompt: PracticalPrompt,
     description: 'Helps with practical problems.',
+  },
+  '/SocialConversation': {
+    prompt: SocialConversationPrompt,
+    description: 'Have a social conversation with ToGODer.',
   },
 };
