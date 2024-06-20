@@ -97,7 +97,7 @@ export default {
       localStorage.setItem('humanPrompt', chatStore.humanPrompt);
       localStorage.setItem('keepGoing', chatStore.keepGoing);
       localStorage.setItem('communicationStyle', chatStore.communicationStyle);
-      localStorage.setItem('model', globalStore.model);
+      localStorage.setItem('model', chatStore.model);
     });
     return { chatStore, globalStore };
   },
