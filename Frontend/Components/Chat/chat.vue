@@ -218,8 +218,8 @@ export default {
       deep: true,
     },
     characterCount() {
-      if (this.characterCount > characterMax) {
-        this.youMessage = this.youMessage.slice(0, characterMax);
+      if (this.characterCount > this.characterMax) {
+        this.youMessage = this.youMessage.slice(0, this.characterMax);
       }
     },
   },
