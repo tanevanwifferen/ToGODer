@@ -15,7 +15,14 @@ export class OpenRouterWrapper implements AIWrapper {
       );
     this.apiKey = apiKey;
 
-    this.openAI = new OpenAI({ apiKey: this.apiKey, baseURL: this.url });
+    this.openAI = new OpenAI({
+      apiKey: this.apiKey,
+      baseURL: this.url,
+      defaultHeaders: {
+        'HTTP-Referer': 'https://chat.togoder.click', // Optional, for including your app on openrouter.ai rankings.
+        'X-Title': 'ToGODer', // Optional. Shows in rankings on openrouter.ai.
+      },
+    });
   }
 
   async getResponse(
