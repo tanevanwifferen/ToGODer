@@ -2,7 +2,7 @@
   <div>
     <toolbar></toolbar>
     <sidebar></sidebar>
-    <v-row style="height: calc(100% - 64px)">
+    <v-row style="height: calc(100% - 64px); margin-top: 0">
       <chat
         :message-list-prop="chatStore.messages"
         :prompts-list-prop="prompts"
