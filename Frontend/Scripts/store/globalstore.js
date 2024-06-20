@@ -26,7 +26,7 @@ const useGlobalStore = Pinia.defineStore('global', {
         this.quote = data.quote;
         this.models = data.models;
         localStorage.getItem('model') ??
-          localStorage.setItem('model', models[0]);
+          localStorage.setItem('model', data.models[0]);
       } catch (e) {
         console.warn('error initializing global store', e);
       }
