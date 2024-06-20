@@ -14,6 +14,9 @@ import {
   ChatRequest,
   ChatRequestCommunicationStyle,
 } from '../Models/ChatRequest';
+import { AIProvider } from '../Models/AIProvider';
+import { OpenRouterWrapper } from '../LLM/OpenRouter';
+import { ModelApi } from './ModelApi';
 
 let quote = '';
 export class ConversationApi {
@@ -24,11 +27,14 @@ export class ConversationApi {
   /**
    * Get a short title for a conversation based on the first prompt.
    */
-  public async getTitle(body: ChatCompletionMessageParam[]): Promise<string> {
+  public async getTitle(
+    model: AIProvider,
+    body: ChatCompletionMessageParam[]
+  ): Promise<string> {
     if (body.length > 1) {
       throw new Error('Only one prompt is allowed for this endpoint');
     }
-    var aiWrapper = this.getAIWrapper();
+    var aiWrapper = this.getAIWrapper(model);
 
     var prompt = GetTitlePrompt + body[0].content;
 
@@ -39,7 +45,7 @@ export class ConversationApi {
     input: ChatCompletionMessageParam[],
     systemprompt: string
   ) {
-    var aiWrapper = this.getAIWrapper();
+    var aiWrapper = this.getAIWrapper(new ModelApi().GetDefaultModel());
     return await aiWrapper.getResponse(systemprompt, input);
   }
 
@@ -52,7 +58,7 @@ export class ConversationApi {
     if (input.prompts.length == 0) {
       return '';
     }
-    var aiWrapper = this.getAIWrapper();
+    var aiWrapper = this.getAIWrapper(input.model);
 
     var firstPrompt = (<string>input.prompts[0].content)?.split(' ')[0];
 
@@ -82,15 +88,22 @@ export class ConversationApi {
     return await aiWrapper.getResponse(systemprompt, input.prompts);
   }
 
-  private getAIWrapper(): AIWrapper {
-    return new OpenAIWrapper();
+  private getAIWrapper(model: AIProvider): AIWrapper {
+    switch (model) {
+      case AIProvider.Gpt4o:
+        return new OpenAIWrapper();
+      case AIProvider.Claude3SonnetBeta:
+        return new OpenRouterWrapper('anthropic/claude-3.5-sonnet:beta');
+      default:
+        return new OpenAIWrapper();
+    }
   }
 }
 
 async function updateQuote() {
   quote = await new ConversationApi().getResponseRaw(
     [{ content: 'the assistant is a spiritual guide', role: 'user' }],
-    'Share a fitting message for people who seek. make it quotable.'
+    'Share a short fitting message for people who seek. make it quotable.'
   );
 }
 

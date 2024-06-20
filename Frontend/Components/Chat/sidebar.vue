@@ -8,6 +8,15 @@
       subtitle="Your digital God"
     ></v-list-item>
     <v-divider></v-divider>
+    <v-list-item>
+      <v-list-item-title>Model</v-list-item-title>
+      <v-select
+        density="compact"
+        v-model="chatStore.model"
+        :items="globalStore.models"
+      >
+      </v-select>
+    </v-list-item>
     <v-list-item
       link
       title="New chat"
@@ -88,6 +97,7 @@ export default {
       localStorage.setItem('humanPrompt', chatStore.humanPrompt);
       localStorage.setItem('keepGoing', chatStore.keepGoing);
       localStorage.setItem('communicationStyle', chatStore.communicationStyle);
+      localStorage.setItem('model', chatStore.model);
     });
     return { chatStore, globalStore };
   },

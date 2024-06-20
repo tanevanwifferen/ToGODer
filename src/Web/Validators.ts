@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
+import { AIProvider } from '../Models/AIProvider';
 
 export const isValidChatCompletionMessageParam = (
   obj: any
@@ -38,6 +39,59 @@ export const validateChatCompletionMessageArray = (
           "Invalid request body: Each item must have 'role' and 'content' as strings, with 'role' being 'user', 'assistant', or 'system'."
         );
     }
+
+    if (!Array.isArray(body)) {
+      var model = body.model;
+      if (model != null) {
+        try {
+          validateModel(model);
+        } catch (err: any) {
+          return res.status(400).send(err.message);
+        }
+      }
+    }
+  }
+
+  next();
+};
+
+const validateModel = (model: string) => {
+  if (Object.values(AIProvider).indexOf(model as AIProvider) === -1) {
+    throw new Error(
+      'Invalid "model" parameter. Expected one of: ' +
+        Object.values(AIProvider).join(', ')
+    );
+  }
+};
+
+export const validateTitleMessage = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const body: ChatCompletionMessageParam[] = req.body.content;
+  if (!req.body.content) {
+    return res
+      .status(400)
+      .send(
+        'Invalid request body: Expected an object with "content" as an array of ChatCompletionMessageParam objects.'
+      );
+  }
+  if (body.length != 1) {
+    return res.status(400).send('Only one prompt is allowed for this endpoint');
+  }
+  if (!isValidChatCompletionMessageParam(body[0])) {
+    return res
+      .status(400)
+      .send(
+        "Invalid request body: Expected an object with 'role' and 'content' as strings, with 'role' being 'user', 'assistant', or 'system'."
+      );
+  }
+  const model: string = req.body.model;
+  try {
+    validateModel(model);
+  } catch (err: any) {
+    return res.status(400).send(err.message);
   }
 
   next();

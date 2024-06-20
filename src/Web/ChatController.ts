@@ -1,7 +1,7 @@
 import { Express, Request, Response, NextFunction } from 'express';
 import {
   validateChatCompletionMessageArray,
-  validateSingleChatCompletionMessage,
+  validateTitleMessage,
 } from './Validators';
 import { RateLimitRequestHandler } from 'express-rate-limit';
 import { ConversationApi } from '../Api/ConversationApi';
@@ -10,6 +10,8 @@ import {
   ChatRequest,
   ChatRequestCommunicationStyle,
 } from '../Models/ChatRequest';
+import { AIProvider } from '../Models/AIProvider';
+import { ModelApi } from '../Api/ModelApi';
 
 export function ChatController(
   app: Express,
@@ -26,6 +28,7 @@ export function ChatController(
         let body: ChatRequest = req.body;
         if (!('humanPrompt' in req.body)) {
           body = {
+            model: new ModelApi().GetDefaultModel(),
             humanPrompt: false,
             keepGoing: false,
             communcationStyle: ChatRequestCommunicationStyle.Default,
@@ -43,11 +46,14 @@ export function ChatController(
   app.post(
     '/api/title',
     messageLimiter,
-    validateSingleChatCompletionMessage,
+    validateTitleMessage,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const conversationApi = new ConversationApi();
-        const response = await conversationApi.getTitle(req.body);
+        const response = await conversationApi.getTitle(
+          req.body.model ?? new ModelApi().GetDefaultModel(),
+          req.body.content
+        );
         res.json({ content: response });
       } catch (error) {
         next(error);

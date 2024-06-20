@@ -60,6 +60,7 @@ export default {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            model: this.chatStore.model,
             humanPrompt: this.chatStore.humanPrompt,
             keepGoing: this.chatStore.keepGoing,
             communicationStyleKey: this.chatStore.communicationStyle,
@@ -108,12 +109,13 @@ export default {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(
-            this.chatStore.messages.map((x) => ({
+          body: JSON.stringify({
+            model: this.chatStore.model,
+            content: this.chatStore.messages.map((x) => ({
               content: x.body,
               role: x.author == 'you' ? 'user' : 'assistant',
-            }))
-          ),
+            })),
+          }),
         });
         if (response.status === 429) {
           this.handleRateLimit(response);
