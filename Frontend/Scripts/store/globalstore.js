@@ -13,6 +13,7 @@ const useGlobalStore = Pinia.defineStore('global', {
     initialized: false,
     donateViewVisible: false,
     lastDonateQuestion: Number(localStorage.getItem(lastDonateKey)),
+    models: [],
   }),
   actions: {
     async initGlobalStore() {
@@ -23,6 +24,9 @@ const useGlobalStore = Pinia.defineStore('global', {
         this.links = data.links;
         this.donateOptions = data.donateOptions;
         this.quote = data.quote;
+        this.models = data.models;
+        localStorage.getItem('model') ??
+          localStorage.setItem('model', models[0]);
       } catch (e) {
         console.warn('error initializing global store', e);
       }

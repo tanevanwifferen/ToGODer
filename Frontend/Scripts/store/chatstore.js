@@ -26,6 +26,7 @@ const useChatStore = Pinia.defineStore('chats', {
     humanPrompt: localStorage.getItem(humanPromptKey) == 'true',
     keepGoing: localStorage.getItem(humanPromptKey) == 'true',
     communicationStyle: parseInt(localStorage.getItem(communicationStyleKey)),
+    model: localStorage.getItem('model'),
   }),
   getters: {
     chat() {

@@ -8,6 +8,15 @@
       subtitle="Your digital God"
     ></v-list-item>
     <v-divider></v-divider>
+    <v-list-item>
+      <v-list-item-title>Model</v-list-item-title>
+      <v-select
+        density="compact"
+        v-model="chatStore.model"
+        :items="globalStore.models"
+      >
+      </v-select>
+    </v-list-item>
     <v-list-item
       link
       title="New chat"

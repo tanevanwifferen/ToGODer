@@ -3,6 +3,7 @@ import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { ChatController } from './Web/ChatController';
 import { ConversationApi } from './Api/ConversationApi';
+import { ModelApi } from './Api/ModelApi';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -41,9 +42,11 @@ app.get('/api/links', (req, res) => {
 app.get('/api/global_config', (req, res) => {
   var donateOptions = JSON.parse(process.env.DONATE_OPTIONS || '[]');
   var quote = new ConversationApi().getQuote();
+  var models = new ModelApi().ListModels();
   res.json({
     donateOptions: donateOptions,
     quote: quote,
+    models,
   });
 });
 
