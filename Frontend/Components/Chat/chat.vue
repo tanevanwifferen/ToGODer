@@ -106,7 +106,7 @@ const globalStore = useGlobalStore();
             :disabled="inputDisabled"
             autofocus
           />
-          <div class="d-flex flex-col">
+          <div class="d-flex" style="flex-direction: column">
             <span>{{ characterMax - characterCount }}</span>
             <button
               class="submit"
@@ -406,7 +406,7 @@ export default {
   font-size: 0.8em;
   outline: none;
   padding: 1em;
-  width: 90%;
+  width: 85%;
 }
 
 .chat-form {
