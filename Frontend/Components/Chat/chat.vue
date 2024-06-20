@@ -106,8 +106,8 @@ const globalStore = useGlobalStore();
             :disabled="inputDisabled"
             autofocus
           />
-          <div class="d-flex flex-col">
-            <span>{{ characterCount }} / 5000</span>
+          <div class="d-flex" style="flex-direction: column">
+            <span>{{ characterMax - characterCount }}</span>
             <button
               class="submit"
               type="submit"
@@ -206,6 +206,7 @@ export default {
       selected: '/default',
       templateMessages,
       overlay: false,
+      characterMax: 10000,
     };
   },
 
@@ -217,8 +218,8 @@ export default {
       deep: true,
     },
     characterCount() {
-      if (this.characterCount > 5000) {
-        this.youMessage = this.youMessage.slice(0, 5000);
+      if (this.characterCount > characterMax) {
+        this.youMessage = this.youMessage.slice(0, characterMax);
       }
     },
   },
@@ -405,7 +406,7 @@ export default {
   font-size: 0.8em;
   outline: none;
   padding: 1em;
-  width: 90%;
+  width: 85%;
 }
 
 .chat-form {
