@@ -107,7 +107,7 @@ const globalStore = useGlobalStore();
             autofocus
           />
           <div class="d-flex" style="flex-direction: column">
-            <span>{{ characterMax - characterCount }}</span>
+            <span>{{ charactersLeft }}</span>
             <button
               class="submit"
               type="submit"
@@ -227,6 +227,9 @@ export default {
   computed: {
     characterCount() {
       return this.youMessage.length;
+    },
+    charactersLeft() {
+      return this.characterMax - this.characterCount;
     },
     isSecureContext() {
       return window.isSecureContext;
