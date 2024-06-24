@@ -28,9 +28,10 @@ export default {
       load('/Components/Donate/donatewindow.vue')
     ),
   },
-  setup() {
+  async setup() {
     const chatStore = useChatStore();
     const globalStore = useGlobalStore();
+    await globalStore.initGlobalStore();
     return { chatStore, globalStore };
   },
   data() {
