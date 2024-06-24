@@ -31,7 +31,6 @@
 
 <script setup>
 const globalStore = useGlobalStore();
-globalStore.initGlobalStore();
 </script>
 
 <script>
