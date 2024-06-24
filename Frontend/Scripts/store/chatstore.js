@@ -18,7 +18,7 @@ localStorage.getItem(keepGoingKey) ??
   localStorage.setItem(keepGoingKey, 'true');
 localStorage.getItem(communicationStyleKey) ??
   localStorage.setItem(communicationStyleKey, '0');
-localStorage.getItem(modelKey) ?? localStorage.setItem(modelKey, 'gpt-40');
+localStorage.getItem(modelKey) ?? localStorage.setItem(modelKey, 'gpt-4o');
 
 const useChatStore = Pinia.defineStore('chats', {
   // other options...
