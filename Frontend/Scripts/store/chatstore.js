@@ -10,6 +10,7 @@ class Chat {
 const humanPromptKey = 'humanPrompt';
 const keepGoingKey = 'keepGoing';
 const communicationStyleKey = 'communicationStyle';
+const modelKey = 'model';
 
 localStorage.getItem(humanPromptKey) ??
   localStorage.setItem(humanPromptKey, 'true');
@@ -17,6 +18,7 @@ localStorage.getItem(keepGoingKey) ??
   localStorage.setItem(keepGoingKey, 'true');
 localStorage.getItem(communicationStyleKey) ??
   localStorage.setItem(communicationStyleKey, '0');
+localStorage.getItem(modelKey) ?? localStorage.setItem(modelKey, 'gpt-40');
 
 const useChatStore = Pinia.defineStore('chats', {
   // other options...
