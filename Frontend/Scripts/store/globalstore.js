@@ -1,8 +1,12 @@
 const lastDonateKey = 'lastDonateQuestion';
+const viewsSinceLastDonate = 'viewsSinceLastDonate';
 const minage = 1000 * 60 * 60 * 24;
 
 localStorage.getItem(lastDonateKey) ||
   localStorage.setItem(lastDonateKey, new Date().getTime());
+
+localStorage.getItem(viewsSinceLastDonate) ||
+  localStorage.setItem(viewsSinceLastDonate, 0);
 
 const useGlobalStore = Pinia.defineStore('global', {
   state: () => ({
@@ -27,6 +31,14 @@ const useGlobalStore = Pinia.defineStore('global', {
         this.models = data.models;
         localStorage.getItem('model') ??
           localStorage.setItem('model', data.models[0]);
+
+        var views = parseInt(localStorage.getItem(viewsSinceLastDonate));
+        if (views > 4) {
+          this.donateViewVisible = true;
+          localStorage.setItem(viewsSinceLastDonate, 0);
+        } else {
+          localStorage.setItem(viewsSinceLastDonate, views + 1);
+        }
       } catch (e) {
         console.warn('error initializing global store', e);
       }
