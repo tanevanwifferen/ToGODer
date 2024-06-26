@@ -57,7 +57,7 @@ export default {
   data() {
     return {
       tooltipText: copyText,
-      donationMethod: null,
+      donationMethod: this.globalStore.donateOptions[0]?.address,
     };
   },
   computed: {
