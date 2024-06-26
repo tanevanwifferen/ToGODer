@@ -32,12 +32,14 @@ const useGlobalStore = Pinia.defineStore('global', {
         localStorage.getItem('model') ??
           localStorage.setItem('model', data.models[0]);
 
-        var views = parseInt(localStorage.getItem(viewsSinceLastDonate));
-        if (views > 4) {
-          this.donateViewVisible = true;
-          localStorage.setItem(viewsSinceLastDonate, 0);
-        } else {
-          localStorage.setItem(viewsSinceLastDonate, views + 1);
+        if (data.donateOptions.length > 0) {
+          var views = parseInt(localStorage.getItem(viewsSinceLastDonate));
+          if (views > 4) {
+            this.donateViewVisible = true;
+            localStorage.setItem(viewsSinceLastDonate, 0);
+          } else {
+            localStorage.setItem(viewsSinceLastDonate, views + 1);
+          }
         }
       } catch (e) {
         console.warn('error initializing global store', e);
