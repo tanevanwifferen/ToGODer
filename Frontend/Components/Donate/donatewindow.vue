@@ -1,7 +1,7 @@
 <template>
   <v-dialog max-width="800" v-model="globalStore.donateViewVisible">
     <template v-slot:default>
-      <v-card title="Dialog">
+      <v-card title="Please help support our servers!">
         <v-card-text>
           Has ToGODer been helpful? Consider donating to keep the servers
           running! Please also consider the people who aren't able to donate.
