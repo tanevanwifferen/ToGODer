@@ -1,5 +1,5 @@
 <template>
-  <v-dialog max-width="800" v-model="globalStore.donateViewVisible">
+  <v-dialog max-width="800" v-model="globalStore.donateViewVisible" persistent>
     <template v-slot:default>
       <v-card title="Please help support our servers!">
         <v-card-text>
