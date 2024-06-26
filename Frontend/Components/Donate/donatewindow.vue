@@ -14,7 +14,24 @@
             item-value="address"
           ></v-select>
           <p v-if="donationMethod != null">
-            Please send your donations here: {{ donationMethod }}
+            <template v-if="!!donationUrl">
+              Please send your donations here:
+              <a :href="donationUrl" target="_blank">{{ donationMethod }}</a>
+            </template>
+            <template v-else>
+              Please send your donations here:
+              <v-tooltip :text="tooltipText" location="top">
+                <template v-slot:activator="{ props }">
+                  <span
+                    v-bind="props"
+                    style="border-bottom: 1px dotted; cursor: pointer"
+                    @click="copyToClipboard()"
+                  >
+                    {{ donationMethod }}
+                  </span>
+                </template>
+              </v-tooltip>
+            </template>
           </p>
         </v-card-text>
 
@@ -29,16 +46,35 @@
   </v-dialog>
 </template>
 
-<script setup>
-const globalStore = useGlobalStore();
-</script>
-
 <script>
+const copyText = 'Copy to clipboard';
+const copiedText = 'Copied!';
 export default {
+  setup() {
+    const globalStore = useGlobalStore();
+    return { globalStore };
+  },
   data() {
     return {
+      tooltipText: copyText,
       donationMethod: null,
     };
+  },
+  computed: {
+    donationUrl() {
+      return this.globalStore.donateOptions.find(
+        (option) => option.address === this.donationMethod
+      )?.url;
+    },
+  },
+  methods: {
+    copyToClipboard() {
+      navigator.clipboard.writeText(this.donationMethod);
+      this.tooltipText = copiedText;
+      setTimeout(() => {
+        this.tooltipText = copyText;
+      }, 1000);
+    },
   },
 };
 </script>
