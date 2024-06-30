@@ -22,6 +22,7 @@ start with the basics. What is your name? How old are you? Are you here by \
 yourself or have you brought people with you?";
 
 export const TranslationPrompt =
-  '\
-Please translate the following text into \
-';
+  "\
+Please translate the following text. Don't add other text as padding, only \
+return the translated text. Translate it into \
+";
