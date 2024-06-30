@@ -11,10 +11,12 @@ import {
   DeescalationPrompt,
   SocialConversationPrompt,
 } from './chatprompts';
+import { ExperiencePrompt } from './experienceprompts';
 
 interface PromptListItem {
   prompt: string;
   description: string;
+  display: boolean;
 }
 
 export const PromptList: Record<string, PromptListItem> = {
@@ -24,18 +26,21 @@ export const PromptList: Record<string, PromptListItem> = {
       'Leave the ai to decide for itself. There is no steering in what \
     to interpret and find conclusions out of. Leaves most of the \
     concluding work to you.',
+    display: true,
   },
   '/scientific': {
     prompt: ScientificPrompt,
     description:
       'Look at a problem from a scientific perspective. Gives better results \
       but does not look at the spiritual side of things.',
+    display: true,
   },
   '/spiritual': {
     prompt: SpiritualPrompt,
     description:
       'Look at a problem from a spiritual perspective. Helps find \
     peace in a distorted world.',
+    display: true,
   },
   '/scientificspiritual': {
     prompt: ScientificSpiritualPrompt,
@@ -44,12 +49,14 @@ export const PromptList: Record<string, PromptListItem> = {
     problem. Better than AllSides, but not as good as spiritual or \
     scientific. For more advanced users who have taught themselves to \
     see two sides of a coin.',
+    display: true,
   },
   '/allsides': {
     prompt: AllSidesPrompt,
     description:
       'Look at all sides of an issue. Most difficult to interpret and find \
       conclusions out of. Leaves most of the concluding work to you.',
+    display: true,
   },
   '/individuation': {
     prompt: IndividuationPrompt,
@@ -57,6 +64,7 @@ export const PromptList: Record<string, PromptListItem> = {
       'Asks questions about what you believe is best. \
     Teaches you to find yourself and help yourself. Based on the \
     work by Carl Jung.',
+    display: true,
   },
   '/sociallife': {
     prompt: SocialPrompt,
@@ -65,6 +73,7 @@ export const PromptList: Record<string, PromptListItem> = {
   Helps with your social life if you're looking for it. Helps you \
   discover hobbies, excersize, social activities that get you more\
   connected or get to know new people.",
+    display: true,
   },
   '/arbitration': {
     prompt: ArbitrationPrompt,
@@ -73,6 +82,7 @@ export const PromptList: Record<string, PromptListItem> = {
   An intermediary when conflicts arise with those close to you. \
   Tries to get to know a situation and then tries to find a \
   solution where both sides are happy.',
+    display: true,
   },
   '/deescalation': {
     prompt: DeescalationPrompt,
@@ -80,13 +90,21 @@ export const PromptList: Record<string, PromptListItem> = {
       "Helps deescalate ramapant emotional thoughts, \
     and helps put a situation into perspective when you can't \
     see the forest for the trees anymore.",
+    display: true,
   },
   '/practical': {
     prompt: PracticalPrompt,
     description: 'Helps with practical problems.',
+    display: true,
   },
   '/SocialConversation': {
     prompt: SocialConversationPrompt,
     description: 'Have a social conversation with ToGODer.',
+    display: true,
+  },
+  '/experience': {
+    prompt: ExperiencePrompt,
+    description: 'Let ToGODer lead the conversation.',
+    display: false,
   },
 };

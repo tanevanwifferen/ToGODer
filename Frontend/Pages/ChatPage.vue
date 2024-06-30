@@ -7,6 +7,7 @@
         :message-list-prop="chatStore.messages"
         :prompts-list-prop="prompts"
         @on-message-was-sent="sendMessage"
+        @on-experience-start="startExperience"
       >
       </chat>
       <donatewindow></donatewindow>
@@ -45,6 +46,23 @@ export default {
     this.prompts = await prompts.json();
   },
   methods: {
+    async startExperience(evt) {
+      var experiencePrompt = await fetch('/api/experience', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: this.chatStore.model,
+          language: evt.language,
+        }),
+      });
+      this.chatStore.addMessage({
+        body: (await experiencePrompt.json()).content,
+        author: 'assistant',
+        date: new Date().getTime(),
+      });
+    },
     async sendMessage(message) {
       try {
         if (message.body.toLowerCase() == 'debug') {

@@ -9,9 +9,12 @@ import { PromptList } from '../LLM/prompts/promptlist';
 import {
   ChatRequest,
   ChatRequestCommunicationStyle,
+  ExperienceRequest,
 } from '../Models/ChatRequest';
 import { AIProvider } from '../Models/AIProvider';
 import { ModelApi } from '../Api/ModelApi';
+import { ExperienceSeedPrompt } from '../LLM/prompts/experienceprompts';
+import { start } from 'repl';
 
 export function ChatController(
   app: Express,
@@ -37,6 +40,25 @@ export function ChatController(
         }
         const response = await conversationApi.getResponse(body);
         res.json({ content: response });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.post(
+    '/api/experience',
+    messageLimiter,
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const conversationApi = new ConversationApi();
+        let body: ExperienceRequest = req.body;
+        let startText = await conversationApi.TranslateText(
+          ExperienceSeedPrompt,
+          body.language
+        );
+        startText = '/experience ' + startText;
+        res.json({ content: startText });
       } catch (error) {
         next(error);
       }

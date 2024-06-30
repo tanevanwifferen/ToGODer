@@ -4,12 +4,29 @@ const globalStore = useGlobalStore();
 </script>
 <template>
   <div class="chat-container show">
+    <v-overlay
+      v-model="experience"
+      contained
+      class="align-center justify-center"
+    >
+      <div class="experience-window">
+        <v-text-field
+          v-model="experience_language"
+          :rules="rules"
+          hide-details="auto"
+          label="Language"
+        ></v-text-field>
+        <v-btn @click="startExperience()">Start Experience</v-btn>
+      </div>
+    </v-overlay>
     <v-overlay v-model="overlay" contained class="align-center justify-center">
       <div class="prompt-explanations">
         <table>
           <tr
             @click="setPreview(prompt)"
-            v-for="prompt in Object.keys(promptsListProp)"
+            v-for="prompt in Object.keys(promptsListProp).filter(
+              (x) => promptsListProp[x].display
+            )"
           >
             <td>
               <p>
@@ -67,6 +84,19 @@ const globalStore = useGlobalStore();
           >
             <v-btn @click="overlay = true">Show prompts help</v-btn>
           </div>
+          <div
+            class="promptsExplanation"
+            style="
+              display: flex;
+              margin-top: 3%;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <v-btn color="green" @click="experience = true"
+              >Not sure? Click here to start Experience</v-btn
+            >
+          </div>
         </div>
         <div
           v-for="message in messageListProp"
@@ -82,7 +112,10 @@ const globalStore = useGlobalStore();
             'message-in': message.author !== 'you',
           }"
         >
-          <p v-html="message.parsed" style="flex: auto"></p>
+          <p
+            v-html="message.parsed.replace('/experience', '')"
+            style="flex: auto"
+          ></p>
           <v-btn
             v-if="isSecureContext"
             density="compact"
@@ -206,6 +239,8 @@ export default {
       selected: '/default',
       templateMessages,
       overlay: false,
+      experience: false,
+      experience_language: 'English',
       characterMax: 10000,
     };
   },
@@ -256,6 +291,10 @@ export default {
   },
 
   methods: {
+    startExperience() {
+      this.experience = false;
+      this.$emit('onExperienceStart', { language: this.experience_language });
+    },
     copyText(text) {
       navigator.clipboard.writeText(text);
     },
@@ -316,6 +355,16 @@ export default {
   height: 100%;
   transform-origin: right bottom;
   overflow: scroll;
+}
+
+.experience-window {
+  padding: 2em;
+  width: 300px;
+  height: 150px;
+  background-color: white;
+  z-index: 10;
+  box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.1);
+  overflow: auto;
 }
 
 .prompt-explanations {

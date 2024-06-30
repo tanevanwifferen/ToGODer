@@ -17,6 +17,7 @@ import {
 import { AIProvider } from '../Models/AIProvider';
 import { OpenRouterWrapper } from '../LLM/OpenRouter';
 import { ModelApi } from './ModelApi';
+import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
 
 let quote = '';
 export class ConversationApi {
@@ -97,6 +98,18 @@ export class ConversationApi {
       default:
         return new OpenAIWrapper();
     }
+  }
+
+  public async TranslateText(
+    text: string,
+    language: string = 'English',
+    model: AIProvider = AIProvider.Gpt4o
+  ): Promise<string> {
+    var aiWrapper = this.getAIWrapper(model);
+    var result = await aiWrapper.getResponse(TranslationPrompt + language, [
+      { content: text, role: 'user' },
+    ]);
+    return result;
   }
 }
 

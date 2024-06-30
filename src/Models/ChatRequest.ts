@@ -14,3 +14,8 @@ export interface ChatRequest {
   communcationStyle: ChatRequestCommunicationStyle | undefined;
   prompts: ChatCompletionMessageParam[];
 }
+
+export interface ExperienceRequest {
+  model: AIProvider;
+  language: string;
+}
