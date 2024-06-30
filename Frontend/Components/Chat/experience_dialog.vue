@@ -11,7 +11,7 @@
         "
       >
         <v-btn color="green" v-bind="activatorProps"
-          >Not sure? Click here to start Experience</v-btn
+          >Let ToGODer take the initiative</v-btn
         >
       </div>
     </template>
