@@ -4,21 +4,6 @@ const globalStore = useGlobalStore();
 </script>
 <template>
   <div class="chat-container show">
-    <v-overlay
-      v-model="experience"
-      contained
-      class="align-center justify-center"
-    >
-      <div class="experience-window">
-        <v-text-field
-          v-model="experience_language"
-          :rules="rules"
-          hide-details="auto"
-          label="Language"
-        ></v-text-field>
-        <v-btn @click="startExperience()">Start Experience</v-btn>
-      </div>
-    </v-overlay>
     <v-overlay v-model="overlay" contained class="align-center justify-center">
       <div class="prompt-explanations">
         <table>
@@ -84,19 +69,7 @@ const globalStore = useGlobalStore();
           >
             <v-btn @click="overlay = true">Show prompts help</v-btn>
           </div>
-          <div
-            class="promptsExplanation"
-            style="
-              display: flex;
-              margin-top: 3%;
-              align-items: center;
-              justify-content: center;
-            "
-          >
-            <v-btn color="green" @click="experience = true"
-              >Not sure? Click here to start Experience</v-btn
-            >
-          </div>
+          <experience-dialog @submit="startExperience" />
         </div>
         <div
           v-for="message in messageListProp"
@@ -207,6 +180,11 @@ const templateMessages = [
 export default {
   name: 'Chat',
   inheritAttrs: false,
+  components: {
+    experienceDialog: Vue.defineAsyncComponent(() =>
+      load('/Components/Chat/experience_dialog.vue')
+    ),
+  },
   props: {
     messagePlaceholder: {
       type: String,
@@ -239,8 +217,6 @@ export default {
       selected: '/default',
       templateMessages,
       overlay: false,
-      experience: false,
-      experience_language: 'English',
       characterMax: 10000,
     };
   },
@@ -291,9 +267,9 @@ export default {
   },
 
   methods: {
-    startExperience() {
+    startExperience(language) {
       this.experience = false;
-      this.$emit('onExperienceStart', { language: this.experience_language });
+      this.$emit('onExperienceStart', { language });
     },
     copyText(text) {
       navigator.clipboard.writeText(text);
@@ -359,8 +335,8 @@ export default {
 
 .experience-window {
   padding: 2em;
-  width: 300px;
-  height: 150px;
+  width: 500px;
+  height: 300px;
   background-color: white;
   z-index: 10;
   box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.1);
