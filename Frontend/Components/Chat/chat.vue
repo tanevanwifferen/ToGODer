@@ -500,4 +500,8 @@ export default {
     transform: scale(1);
   }
 }
+
+:deep(code) {
+  white-space: pre-wrap;
+}
 </style>

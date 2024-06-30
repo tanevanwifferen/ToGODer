@@ -47,7 +47,7 @@ export default {
   },
   methods: {
     async startExperience(evt) {
-      var experiencePrompt = await fetch('/api/experience', {
+      var response = await fetch('/api/experience', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,11 +57,20 @@ export default {
           language: evt.language,
         }),
       });
+      if (response.status == 429) {
+        this.handleRateLimit(response);
+        return;
+      }
       this.chatStore.addMessage({
-        body: (await experiencePrompt.json()).content,
+        body: (await response.json()).content,
         author: 'assistant',
         date: new Date().getTime(),
       });
+
+      var title = await this.getTitle();
+      if (title != null) {
+        this.chatStore.setTitle(title);
+      }
     },
     async sendMessage(message) {
       try {
