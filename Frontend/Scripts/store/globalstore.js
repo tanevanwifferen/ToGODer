@@ -1,12 +1,12 @@
 const lastDonateKey = 'lastDonateQuestion';
-const viewsSinceLastDonate = 'viewsSinceLastDonate';
+const viewsSinceLastDonateKey = 'viewsSinceLastDonate';
 const minage = 1000 * 60 * 60 * 24;
 
 localStorage.getItem(lastDonateKey) ||
   localStorage.setItem(lastDonateKey, new Date().getTime());
 
-localStorage.getItem(viewsSinceLastDonate) ||
-  localStorage.setItem(viewsSinceLastDonate, 0);
+localStorage.getItem(viewsSinceLastDonateKey) ||
+  localStorage.setItem(viewsSinceLastDonateKey, 0);
 
 const useGlobalStore = Pinia.defineStore('global', {
   state: () => ({
@@ -33,12 +33,11 @@ const useGlobalStore = Pinia.defineStore('global', {
           localStorage.setItem('model', data.models[0]);
 
         if (data.donateOptions.length > 0) {
-          var views = parseInt(localStorage.getItem(viewsSinceLastDonate));
+          var views = parseInt(localStorage.getItem(viewsSinceLastDonateKey));
           if (views > 4) {
-            this.donateViewVisible = true;
-            localStorage.setItem(viewsSinceLastDonate, 0);
+            this.askForDonation();
           } else {
-            localStorage.setItem(viewsSinceLastDonate, views + 1);
+            localStorage.setItem(viewsSinceLastDonateKey, views + 1);
           }
         }
       } catch (e) {
@@ -59,6 +58,7 @@ const useGlobalStore = Pinia.defineStore('global', {
       }
       this.donateViewVisible = true;
       this.setLastDonateQuestion();
+      localStorage.setItem(viewsSinceLastDonateKey, 0);
     },
   },
 });
