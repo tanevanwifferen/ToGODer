@@ -47,24 +47,25 @@
 </template>
 
 <script>
-const experience_language_key = "experience_language";
-localStorage.getItem(experience_language_key) ?? localStorage.setItem(experience_language_key, "English"
+const experience_language_key = 'experience_language';
+localStorage.getItem(experience_language_key) ??
+  localStorage.setItem(experience_language_key, 'English');
 export default {
-    data() {
-        return {
-            experience_language: localStorage.getItem(experience_language_key),
-            rules: [(v) => !!v || 'Language is required'],
-        };
-    },
-    watch{
+  data() {
+    return {
+      experience_language: localStorage.getItem(experience_language_key),
+      rules: [(v) => !!v || 'Language is required'],
+    };
+  },
+  watch: {
     experience_language(newVal) {
-        localStorage.setItem(experience_language_key, newVal);
+      localStorage.setItem(experience_language_key, newVal);
     },
-},
-methods: {
+  },
+  methods: {
     submitForm() {
-        this.$emit('submit', this.experience_language);
+      this.$emit('submit', this.experience_language);
     },
-},
+  },
 };
 </script>
