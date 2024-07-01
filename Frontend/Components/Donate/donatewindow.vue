@@ -1,10 +1,17 @@
 <template>
   <v-dialog max-width="800" v-model="globalStore.donateViewVisible" persistent>
     <template v-slot:default>
-      <v-card title="Please help support our servers!">
+      <v-card
+        title="Please help us out!"
+        variant="outlined"
+        color="red"
+        style="background-color: white"
+      >
         <v-card-text>
-          Has ToGODer been helpful? Consider donating to keep the servers
-          running! Please also consider the people who aren't able to donate.
+          Our servers belong to the most expensive in the world. AI costs a lot
+          per request, and we want you to have the best models available. Please
+          consider donating so we can keep the servers online. Please also keep
+          in mind the people who are not able to donate.
           <v-spacer></v-spacer>
           <v-select
             label="Method"
