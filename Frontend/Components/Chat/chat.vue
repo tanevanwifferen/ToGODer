@@ -39,6 +39,9 @@ const globalStore = useGlobalStore();
             style="width: 60%; margin: auto; margin-top: 5em"
           >
             <div class="template" style="width: 100%">
+              <h1 style="width: 100%; text-align: center; font-size: 15px">
+                Come chat with us. let us provide insight.
+              </h1>
               <p>
                 {{ globalStore.quote }}
                 - ToGODer Today
