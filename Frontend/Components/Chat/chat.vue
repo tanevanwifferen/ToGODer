@@ -374,7 +374,6 @@ export default {
   padding: 1em 1em 0;
   position: relative;
   overflow: auto;
-  width: 100vw;
   grid-row: 1;
 }
 
@@ -384,7 +383,7 @@ export default {
   padding: 0.5em;
   font-size: 1em;
   font-family: 'Arial', sans-serif;
-  margin: 0.5em;
+  margin: 0.5em 0;
 }
 
 .message-out {
