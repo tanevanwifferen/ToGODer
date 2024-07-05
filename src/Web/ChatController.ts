@@ -1,4 +1,4 @@
-import { Express, Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, Router } from 'express';
 import {
   validateChatCompletionMessageArray,
   validateTitleMessage,
@@ -11,17 +11,13 @@ import {
   ChatRequestCommunicationStyle,
   ExperienceRequest,
 } from '../Models/ChatRequest';
-import { AIProvider } from '../Models/AIProvider';
 import { ModelApi } from '../Api/ModelApi';
 import { ExperienceSeedPrompt } from '../LLM/prompts/experienceprompts';
-import { start } from 'repl';
 
-export function ChatController(
-  app: Express,
-  messageLimiter: RateLimitRequestHandler
-) {
+export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
+  const chatRouter = Router();
   // Route handlers
-  app.post(
+  chatRouter.post(
     '/api/chat',
     messageLimiter,
     validateChatCompletionMessageArray,
@@ -34,6 +30,7 @@ export function ChatController(
             model: new ModelApi().GetDefaultModel(),
             humanPrompt: false,
             keepGoing: false,
+            outsideBox: false,
             communcationStyle: ChatRequestCommunicationStyle.Default,
             prompts: req.body,
           };
@@ -46,7 +43,7 @@ export function ChatController(
     }
   );
 
-  app.post(
+  chatRouter.post(
     '/api/experience',
     messageLimiter,
     async (req: Request, res: Response, next: NextFunction) => {
@@ -65,7 +62,7 @@ export function ChatController(
     }
   );
 
-  app.post(
+  chatRouter.post(
     '/api/title',
     messageLimiter,
     validateTitleMessage,
@@ -83,11 +80,13 @@ export function ChatController(
     }
   );
 
-  app.get('/api/prompts', (req, res) => {
+  chatRouter.get('/api/prompts', (req, res) => {
     res.send(PromptList);
   });
 
-  app.get('/api/quote', (req, res) => {
+  chatRouter.get('/api/quote', (req, res) => {
     res.json({ quote: new ConversationApi().getQuote() });
   });
+
+  return chatRouter;
 }

@@ -9,6 +9,7 @@ class Chat {
 
 const humanPromptKey = 'humanPrompt';
 const keepGoingKey = 'keepGoing';
+const outsideBoxKey = 'outsideBox';
 const communicationStyleKey = 'communicationStyle';
 const modelKey = 'model';
 
@@ -18,6 +19,8 @@ localStorage.getItem(keepGoingKey) ??
   localStorage.setItem(keepGoingKey, 'true');
 localStorage.getItem(communicationStyleKey) ??
   localStorage.setItem(communicationStyleKey, '0');
+localStorage.getItem(outsideBoxKey) ??
+  localStorage.setItem(outsideBoxKey, 'true');
 localStorage.getItem(modelKey) ?? localStorage.setItem(modelKey, 'gpt-4o');
 
 const useChatStore = Pinia.defineStore('chats', {
@@ -27,6 +30,7 @@ const useChatStore = Pinia.defineStore('chats', {
     chatId: null,
     humanPrompt: localStorage.getItem(humanPromptKey) == 'true',
     keepGoing: localStorage.getItem(humanPromptKey) == 'true',
+    outsideBox: localStorage.getItem(outsideBoxKey) == 'true',
     communicationStyle: parseInt(localStorage.getItem(communicationStyleKey)),
     model: localStorage.getItem('model'),
   }),

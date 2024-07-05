@@ -11,6 +11,7 @@ export interface ChatRequest {
   model: AIProvider;
   humanPrompt: boolean | undefined;
   keepGoing: boolean | undefined;
+  outsideBox: boolean | undefined;
   communcationStyle: ChatRequestCommunicationStyle | undefined;
   prompts: ChatCompletionMessageParam[];
 }

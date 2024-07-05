@@ -7,6 +7,7 @@ import {
   HumanResponsePrompt,
   keepConversationGoingPrompt,
   lessBloatPrompt,
+  outsideBoxPrompt,
 } from '../LLM/prompts/chatprompts';
 import { PromptList } from '../LLM/prompts/promptlist';
 import { GetTitlePrompt } from '../LLM/prompts/systemprompts';
@@ -83,6 +84,10 @@ export class ConversationApi {
         break;
     }
 
+    if (input.outsideBox) {
+      systemprompt += '\n\n' + outsideBoxPrompt;
+    }
+
     if (input.keepGoing) {
       systemprompt += '\n\n' + keepConversationGoingPrompt;
     }
@@ -92,11 +97,15 @@ export class ConversationApi {
   private getAIWrapper(model: AIProvider): AIWrapper {
     switch (model) {
       case AIProvider.Gpt4o:
-        return new OpenAIWrapper();
+        return new OpenAIWrapper(AIProvider.Gpt4o);
+      case AIProvider.Gpt35turbo:
+        return new OpenAIWrapper(AIProvider.Gpt35turbo);
       case AIProvider.Claude3SonnetBeta:
-        return new OpenRouterWrapper('anthropic/claude-3.5-sonnet:beta');
+        return new OpenRouterWrapper(AIProvider.Claude3SonnetBeta);
+      case AIProvider.LLama3:
+        return new OpenRouterWrapper(AIProvider.LLama3);
       default:
-        return new OpenAIWrapper();
+        return new OpenAIWrapper(AIProvider.Gpt4o);
     }
   }
 

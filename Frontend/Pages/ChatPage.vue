@@ -91,6 +91,7 @@ export default {
             model: this.chatStore.model,
             humanPrompt: this.chatStore.humanPrompt,
             keepGoing: this.chatStore.keepGoing,
+            outsideBox: this.chatStore.outsideBox,
             communicationStyleKey: this.chatStore.communicationStyle,
             prompts: this.chatStore.messages.map((x) => ({
               content: x.body,
