@@ -4,10 +4,9 @@ import { AIWrapper } from './AIWrapper';
 
 export class OpenAIWrapper implements AIWrapper {
   private apiKey: string;
-  private model = process.env.OPENAI_MODEL || 'gpt-4o';
   private openAI: OpenAI;
 
-  constructor() {
+  constructor(private model: string) {
     let apiKey = process.env.OPENAI_API_KEY;
     if (apiKey == null) throw new Error('OpenAI API key is required');
     this.apiKey = apiKey;

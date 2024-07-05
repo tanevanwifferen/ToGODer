@@ -1,9 +1,10 @@
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
-import { ChatController } from './Web/ChatController';
+import { GetChatRouter } from './Web/ChatController';
 import { ConversationApi } from './Api/ConversationApi';
 import { ModelApi } from './Api/ModelApi';
+import { GetAuthRouter } from './Web/AuthController';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,7 +34,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../Frontend')));
 
 // controllers
-ChatController(app, messageLimiter);
+const chatRouter = GetChatRouter(messageLimiter);
+const authRouter = GetAuthRouter();
+
+app.use(chatRouter);
+app.use(authRouter);
 
 app.get('/api/links', (req, res) => {
   res.json(JSON.parse(process.env.LINKS || '[]'));
@@ -42,7 +47,9 @@ app.get('/api/links', (req, res) => {
 app.get('/api/global_config', (req, res) => {
   var donateOptions = JSON.parse(process.env.DONATE_OPTIONS || '[]');
   var quote = new ConversationApi().getQuote();
-  var models = new ModelApi().ListModels();
+  var models = new ModelApi()
+    .ListModels()
+    .map((x) => ({ model: x, title: ModelApi.GetName(x) }));
   res.json({
     donateOptions: donateOptions,
     quote: quote,

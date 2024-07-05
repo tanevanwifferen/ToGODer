@@ -13,6 +13,8 @@
       <v-select
         density="compact"
         v-model="chatStore.model"
+        item-title="title"
+        item-value="model"
         :items="globalStore.models"
       >
       </v-select>
@@ -34,6 +36,16 @@
       </template>
 
       <v-list-item-title>Keep chat going</v-list-item-title>
+    </v-list-item>
+
+    <v-list-item @click="chatStore.outsideBox = !chatStore.outsideBox">
+      <template v-slot:prepend>
+        <v-list-item-action start>
+          <v-checkbox-btn :model-value="chatStore.outsideBox"></v-checkbox-btn>
+        </v-list-item-action>
+      </template>
+
+      <v-list-item-title>Deep thought</v-list-item-title>
     </v-list-item>
 
     <v-list-item>
@@ -93,6 +105,7 @@ export default {
       localStorage.setItem('keepGoing', chatStore.keepGoing);
       localStorage.setItem('communicationStyle', chatStore.communicationStyle);
       localStorage.setItem('model', chatStore.model);
+      localStorage.setItem('outsideBox', chatStore.outsideBox);
     });
     return { chatStore, globalStore };
   },
