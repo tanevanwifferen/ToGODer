@@ -56,4 +56,10 @@ export class Mailer {
     const body = `Please click the following link to verify your email address: ${process.env.HOST_URL}/api/auth/verify/${userId}/${verificationCode}`;
     this.sendMail(recipient, subject, body);
   }
+
+  public sendForgotPasswordEmail(email: string, signature: string) {
+    const subject = 'Reset your password';
+    const body = `Please click the following link to reset your password: ${process.env.HOST_URL}/api/auth/resetPassword/${signature}`;
+    this.sendMail(email, subject, body);
+  }
 }

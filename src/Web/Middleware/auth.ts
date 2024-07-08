@@ -14,22 +14,37 @@ export const authenticated = (
     if (!req.headers.authorization) return res.status(401).json('Unauthorized');
 
     const token = req.headers.authorization.split(' ')[1];
-    jwt.verify(token, process.env.JWT_SECRET!);
+    const { id, date } = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string;
+      date: number;
+    };
+
+    if (date < new Date().getTime() - 1000 * 60 * 60 * 24) {
+      return res.status(401).json('Token expired');
+    }
+
     next();
   } catch {
     res.status(401).json({ logout: true });
   }
 };
 
-const onlyOwner = async (req: Request, res: Response, next: NextFunction) => {
+export const onlyOwner = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     if (!req.headers.authorization) return res.status(401).json('Unauthorized');
 
     const token = req.headers.authorization.split(' ')[1];
-    const decodedToken = <{ id: string }>(
+    const decodedToken = <{ id: string; date: number }>(
       jwt.verify(token, process.env.JWT_SECRET!)
     );
-    if (decodedToken.id === req.params.id) {
+    if (
+      decodedToken.id === req.params.id &&
+      decodedToken.date > new Date().getTime() - 1000 * 60 * 60 * 24
+    ) {
       next();
     } else {
       res.status(401).json('nope');
