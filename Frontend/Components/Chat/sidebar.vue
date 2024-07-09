@@ -82,7 +82,16 @@
       )"
     >
       <template v-slot="content">
-        <span style="position: absolute; top: 1em">{{ chat.title }}</span>
+        <span
+          style="
+            position: absolute;
+            top: 1em;
+            text-wrap: nowrap;
+            max-width: 68%;
+            overflow: hidden;
+          "
+          >{{ chat.title }}</span
+        >
         <v-btn
           style="float: right"
           variant="text"

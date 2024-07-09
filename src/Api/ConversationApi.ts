@@ -67,6 +67,12 @@ export class ConversationApi {
     var systemprompt = PromptList['/default'].prompt;
     if (firstPrompt in PromptList) {
       systemprompt = PromptList[firstPrompt].prompt;
+    } else if (
+      Object.values(PromptList).some((x) => x.aliases?.includes(firstPrompt))
+    ) {
+      systemprompt = Object.values(PromptList).find((x) =>
+        x.aliases?.includes(firstPrompt)
+      )?.prompt!;
     }
     systemprompt += '\n\n' + FormattingPrompt;
     if (input.humanPrompt) {

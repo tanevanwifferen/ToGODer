@@ -3,7 +3,7 @@ import {
   IndividuationPrompt,
   PracticalPrompt,
   ScientificPrompt,
-  ScientificSpiritualPrompt,
+  YinYangPrompt,
   SocialPrompt,
   SpiritualPrompt,
   CouncellorPrompt as ArbitrationPrompt,
@@ -17,6 +17,7 @@ interface PromptListItem {
   prompt: string;
   description: string;
   display: boolean;
+  aliases?: string[];
 }
 
 export const PromptList: Record<string, PromptListItem> = {
@@ -42,14 +43,15 @@ export const PromptList: Record<string, PromptListItem> = {
     peace in a distorted world.',
     display: true,
   },
-  '/scientificspiritual': {
-    prompt: ScientificSpiritualPrompt,
+  '/yinyang': {
+    prompt: YinYangPrompt,
     description:
-      'Look at both spiritual and scientific arguments for a \
-    problem. Better than AllSides, but not as good as spiritual or \
-    scientific. For more advanced users who have taught themselves to \
-    see two sides of a coin.',
+      'Take a dualistic approach for a problem. Easier to interpret \
+      than AllSides, but not as easy as spiritual or scientific. For \
+      more advanced users who have taught themselves to see two sides \
+      of a coin.',
     display: true,
+    aliases: ['/scientificspiritual'],
   },
   '/allsides': {
     prompt: AllSidesPrompt,
