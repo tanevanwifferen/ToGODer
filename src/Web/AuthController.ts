@@ -79,7 +79,6 @@ export function GetAuthRouter() {
 
   // SIGN IN
   authRouter.post('/api/auth/signIn', async (req, res) => {
-    console.log('signIn req.body', req.body);
     const db = getDbContext();
     const user = await db.user.findUnique({ where: { email: req.body.email } });
 
