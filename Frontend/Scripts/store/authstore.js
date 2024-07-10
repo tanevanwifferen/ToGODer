@@ -80,6 +80,27 @@ const useAuthStore = Pinia.defineStore('auth', {
         console.error('error logging in', e);
       }
     },
+    async createUser() {
+      try {
+        var response = await fetch('/api/auth/signUp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: this.email,
+            password: this.password,
+          }),
+        });
+        if (!response.ok) {
+          console.error('error creating user', data.error);
+          return 'An error has occurrec. Please try again later.';
+        }
+        return 'A verification email has been sent to your email address. Please verify your email address to login.';
+      } catch (e) {
+        console.error('error creating user', e);
+      }
+    },
     async logout() {
       this.token = '';
       this.userId = '';

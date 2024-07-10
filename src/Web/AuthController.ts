@@ -74,7 +74,7 @@ export function GetAuthRouter() {
       return res.status(400).send('Invalid verification code');
     }
     await db.user.update({ where: { id: id }, data: { verified: true } });
-    res.redirect('/login');
+    res.send('Verification succesful! you can now close this tab and login.');
   });
 
   // SIGN IN

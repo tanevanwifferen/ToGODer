@@ -5,12 +5,12 @@
         authStore.token ? authStore.email : 'Login'
       }}</v-btn>
     </template>
-    <login-view style="width: 500px" v-if="authStore.token == ''"></login-view>
-    <v-card v-if="authStore.token != ''">
+    <login-view style="width: 500px" v-if="view == 'login'"></login-view>
+    <v-card v-if="view == 'logout'">
       <!-- TODO: show account info -->
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="authStore.logout()">Logout</v-btn>
+        <v-btn @click="logout()">Logout</v-btn>
       </v-card-actions>
     </v-card>
   </v-menu>
@@ -32,6 +32,17 @@ export default {
     return {
       menu: false,
     };
+  },
+  computed: {
+    view() {
+      return this.authStore.token == '' ? 'login' : 'logout';
+    },
+  },
+  methods: {
+    logout() {
+      this.authStore.logout();
+      this.menu = false;
+    },
   },
 };
 </script>
