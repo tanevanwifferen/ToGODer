@@ -14,6 +14,7 @@
     >
       Donate
     </v-btn>
+    <user-details></user-details>
   </v-toolbar>
 </template>
 
@@ -23,6 +24,11 @@ export default {
     const globalStore = useGlobalStore();
     const chatStore = useChatStore();
     return { globalStore, chatStore };
+  },
+  components: {
+    UserDetails: Vue.defineAsyncComponent(() =>
+      load('/Components/Auth/UserDetails.vue')
+    ),
   },
   computed: {
     title() {

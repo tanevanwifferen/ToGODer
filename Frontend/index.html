@@ -1,106 +1,125 @@
 <!doctype html>
 <html lang="en" style="height: 100%">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
+    <meta
+      name="description"
+      content="Ever wanted to chat with a digital God? Our AI ToGODer allows you to do that."
+    />
+    <title>ToGODer - Your digital AI God</title>
+    <script src="/Scripts/lib/vue.global.js"></script>
+    <script src="/Scripts/lib/vue3-sfc-loader.js"></script>
+    <script src="/Scripts/lib/vuedemi.iife.min.js"></script>
+    <script src="/Scripts/lib/vue-router.global.js"></script>
+    <script src="/Scripts/lib/marked.min.js"></script>
+    <script src="/Scripts/lib/vuetify.min.js"></script>
+    <script src="/Scripts/lib/pinia.iife.js"></script>
+    <script src="/Scripts/lib/uuidv4.min.js"></script>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <meta name="description" content="Ever wanted to chat with a digital God? Our AI ToGODer allows you to do that.">
-  <title>ToGODer - Your digital AI God</title>
-  <script src="/Scripts/lib/vue.global.js"></script>
-  <script src="/Scripts/lib/vue3-sfc-loader.js"></script>
-  <script src="/Scripts/lib/vuedemi.iife.min.js"></script>
-  <script src="/Scripts/lib/vue-router.global.js"></script>
-  <script src="/Scripts/lib/marked.min.js"></script>
-  <script src="/Scripts/lib/vuetify.min.js"></script>
-  <script src="/Scripts/lib/pinia.iife.js"></script>
-  <script src="/Scripts/lib/uuidv4.min.js"></script>
+    <script src="/Scripts/store/chatstore.js"></script>
+    <script src="/Scripts/store/globalstore.js"></script>
+    <script src="/Scripts/store/authstore.js"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-DHKZB2XVBD"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="/Style/fontawesome-free-6.5.2-web/css/all.css"
+    />
+    <link rel="stylesheet" href="/Style/vuetify.min.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .v-row {
+        margin: 0 !important;
+      }
+    </style>
+  </head>
 
-  <script src="/Scripts/store/chatstore.js"></script>
-  <script src="/Scripts/store/globalstore.js"></script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DHKZB2XVBD"></script>
-  <link rel="stylesheet" href="/Style/fontawesome-free-6.5.2-web/css/all.css" />
-  <link rel="stylesheet" href="/Style/vuetify.min.css" />
-  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet" />
-  <style>
-    .v-row {
-      margin: 0 !important;
-    }
-  </style>
-</head>
+  <body style="height: 100%">
+    <div id="app" style="height: 100%">
+      <v-app class="fill-height">
+        <router-view class="fill-height"></router-view>
+        <cookiebanner></cookiebanner>
+      </v-app>
+    </div>
 
-<body style="height: 100%">
-  <div id="app" style="height: 100%">
-    <v-app class="fill-height">
-      <router-view class="fill-height"></router-view>
-      <cookiebanner></cookiebanner>
-    </v-app>
-  </div>
+    <script>
+      const options = {
+        moduleCache: {
+          vue: Vue,
+          router: VueRouter,
+        },
+        async getFile(url) {
+          const res = await fetch(url);
+          if (!res.ok)
+            throw Object.assign(new Error(res.statusText + ' ' + url), { res });
+          return {
+            getContentData: (asBinary) =>
+              asBinary ? res.arrayBuffer() : res.text(),
+          };
+        },
+        addStyle(textContent) {
+          const style = Object.assign(document.createElement('style'), {
+            textContent,
+          });
+          const ref = document.head.getElementsByTagName('style')[0] || null;
+          document.head.insertBefore(style, ref);
+        },
+        log: (...args) => console.log(...args),
+      };
 
-  <script>
-    const options = {
-      moduleCache: {
-        vue: Vue,
-        router: VueRouter,
-      },
-      async getFile(url) {
-        const res = await fetch(url);
-        if (!res.ok)
-          throw Object.assign(new Error(res.statusText + ' ' + url), { res });
-        return {
-          getContentData: (asBinary) =>
-            asBinary ? res.arrayBuffer() : res.text(),
-        };
-      },
-      addStyle(textContent) {
-        const style = Object.assign(document.createElement('style'), {
-          textContent,
-        });
-        const ref = document.head.getElementsByTagName('style')[0] || null;
-        document.head.insertBefore(style, ref);
-      },
-      log: (...args) => console.log(...args),
-    };
+      const { loadModule } = window['vue3-sfc-loader'];
+      function load(path) {
+        return window['vue3-sfc-loader'].loadModule(path, options);
+      }
 
-    const { loadModule } = window['vue3-sfc-loader'];
-    function load(path) {
-      return window['vue3-sfc-loader'].loadModule(path, options);
-    }
+      var vuetify = Vuetify.createVuetify({
+        icons: {
+          defaultSet: 'mdi',
+        },
+      });
 
-    var vuetify = Vuetify.createVuetify({
-      icons: {
-        defaultSet: 'mdi',
-      },
-    });
+      const routes = [
+        {
+          path: '/',
+          component: () => load('/Pages/ChatPage.vue'),
+        },
+        {
+          path: '/chat/:chatId',
+          component: () => load('/Pages/ChatPage.vue'),
+          props: true,
+        },
+      ];
 
-    const routes = [
-      {
-        path: '/',
-        component: () => load('/Pages/ChatPage.vue'),
-      },
-      {
-        path: '/chat/:chatId',
-        component: () => load('/Pages/ChatPage.vue'),
-        props: true,
-      },
-    ];
+      const router = VueRouter.createRouter({
+        history: VueRouter.createWebHashHistory(),
+        routes,
+      });
 
-    const router = VueRouter.createRouter({
-      history: VueRouter.createWebHashHistory(),
-      routes,
-    });
+      const pinia = Pinia.createPinia();
 
-    const pinia = Pinia.createPinia();
+      const app = Vue.createApp({
+        setup() {
+          const authstore = useAuthStore();
+          authstore.initAuthStore();
+          return { authstore };
+        },
+        components: {
+          cookiebanner: Vue.defineAsyncComponent(() =>
+            load('/Components/cookiebanner.vue')
+          ),
+        },
+      });
 
-    const app = Vue.createApp({
-      components: {
-        cookiebanner: Vue.defineAsyncComponent(() =>
-          load('/Components/cookiebanner.vue')
-        ),
-      },
-    });
-
-    app.use(vuetify).use(pinia).use(router).mount('#app');
-  </script>
-</body>
-
+      app.use(vuetify).use(pinia).use(router).mount('#app');
+    </script>
+  </body>
 </html>

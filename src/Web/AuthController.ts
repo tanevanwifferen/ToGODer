@@ -94,7 +94,7 @@ export function GetAuthRouter() {
         const tosign = { id: user.id, date: new Date().getTime() };
         const token = jwt.sign(tosign, process.env.JWT_SECRET!);
 
-        res.json({ token: token, userId: user.id, expires: tosign.date });
+        res.json({ token: token, userId: user.id, date: tosign.date });
       } else {
         res.status(401).send('Invalid email or password.');
       }
