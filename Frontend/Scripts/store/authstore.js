@@ -52,6 +52,27 @@ const useAuthStore = Pinia.defineStore('auth', {
         this.logout();
       }
     },
+    async createUser() {
+      try {
+        var response = await fetch('/api/auth/signUp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: this.email,
+            password: this.password,
+          }),
+        });
+        if (!response.ok) {
+          console.error('error creating user', data.error);
+          return 'An error has occurred. Please try again later.';
+        }
+        return 'A verification email has been sent to your email address. Please verify your email address to login.';
+      } catch (e) {
+        console.error('error creating user', e);
+      }
+    },
     async login() {
       try {
         var response = await fetch('/api/auth/signIn', {
@@ -80,9 +101,33 @@ const useAuthStore = Pinia.defineStore('auth', {
         console.error('error logging in', e);
       }
     },
-    async createUser() {
+    async logout() {
+      this.token = '';
+      this.userId = '';
+      localStorage.removeItem(tokenKey);
+      localStorage.removeItem(tokenExpiresKey);
+      localStorage.removeItem(userIdKey);
+    },
+    async sendForgotPasswordEmail() {
       try {
-        var response = await fetch('/api/auth/signUp', {
+        var response = await fetch('/api/auth/forgotPassword/' + this.email, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          console.error('error sending request', data.error);
+          return 'An error has occurred. Please try again later.';
+        }
+        return 'If this account exists, a password reset email will be sent. Copy the code into the next view.';
+      } catch (e) {
+        console.error('error creating user', e);
+      }
+    },
+    async setNewPassword(code) {
+      try {
+        var response = await fetch('/api/auth/resetPassword/' + code, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -93,20 +138,13 @@ const useAuthStore = Pinia.defineStore('auth', {
           }),
         });
         if (!response.ok) {
-          console.error('error creating user', data.error);
-          return 'An error has occurrec. Please try again later.';
+          console.error('error sending request', data.error);
+          return 'An error has occurred. Please try again later.';
         }
-        return 'A verification email has been sent to your email address. Please verify your email address to login.';
+        return await response.text();
       } catch (e) {
         console.error('error creating user', e);
       }
-    },
-    async logout() {
-      this.token = '';
-      this.userId = '';
-      localStorage.removeItem(tokenKey);
-      localStorage.removeItem(tokenExpiresKey);
-      localStorage.removeItem(userIdKey);
     },
   },
 });

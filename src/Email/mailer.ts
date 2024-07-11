@@ -59,7 +59,7 @@ export class Mailer {
 
   public sendForgotPasswordEmail(email: string, signature: string) {
     const subject = 'Reset your password';
-    const body = `Please click the following link to reset your password: ${process.env.HOST_URL}/api/auth/resetPassword/${signature}`;
+    const body = `Please copy this code to ToGODer toreset your password: \n\n ${signature}`;
     this.sendMail(email, subject, body);
   }
 }
