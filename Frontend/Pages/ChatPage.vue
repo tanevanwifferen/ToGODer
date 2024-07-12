@@ -76,6 +76,9 @@ export default {
           this.debug = !this.debug;
           return;
         }
+        if (this.chatStore.messages.length == 0 && message.body[0] != '/') {
+          message.body = this.chatStore.defaultPrompt + ' ' + message.body;
+        }
         this.chatStore.addMessage({
           ...message,
           date: new Date().getTime(),
@@ -84,11 +87,6 @@ export default {
           content: x.body,
           role: x.author == 'you' ? 'user' : 'assistant',
         }));
-        var firstMessage = messages[0];
-        if (firstMessage.content[0] != '/') {
-          firstMessage.content =
-            this.chatStore.defaultPrompt + ' ' + firstMessage.content;
-        }
 
         var response = await fetch('/api/chat', {
           method: 'POST',
