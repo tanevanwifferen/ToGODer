@@ -13,6 +13,7 @@ import {
 } from '../Models/ChatRequest';
 import { ModelApi } from '../Api/ModelApi';
 import { ExperienceSeedPrompt } from '../LLM/prompts/experienceprompts';
+import jwt from 'jsonwebtoken';
 
 export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
   const chatRouter = Router();
@@ -36,6 +37,10 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
           };
         }
         const response = await conversationApi.getResponse(body);
+        const signature = jwt.sign(
+          body.prompts.map((x) => x.content).join(' '),
+          process.env.JWT_SECRET!
+        );
         res.json({ content: response });
       } catch (error) {
         next(error);

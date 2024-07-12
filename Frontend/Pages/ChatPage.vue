@@ -5,7 +5,7 @@
     <v-row style="height: calc(100% - 64px)" class="ma-0">
       <chat
         :message-list-prop="chatStore.messages"
-        :prompts-list-prop="prompts"
+        :prompts-list-prop="chatStore.prompts"
         @on-message-was-sent="sendMessage"
         @on-experience-start="startExperience"
       >
@@ -37,13 +37,11 @@ export default {
   },
   data() {
     return {
-      prompts: [],
       rateLimitExceeded: false,
     };
   },
   async beforeCreate() {
-    var prompts = await fetch('/api/prompts');
-    this.prompts = await prompts.json();
+    await this.chatStore.initChatStore();
   },
   methods: {
     async startExperience(evt) {
@@ -82,6 +80,16 @@ export default {
           ...message,
           date: new Date().getTime(),
         });
+        var messages = this.chatStore.messages.map((x) => ({
+          content: x.body,
+          role: x.author == 'you' ? 'user' : 'assistant',
+        }));
+        var firstMessage = messages[0];
+        if (firstMessage.content[0] != '/') {
+          firstMessage.content =
+            this.chatStore.defaultPrompt + ' ' + firstMessage.content;
+        }
+
         var response = await fetch('/api/chat', {
           method: 'POST',
           headers: {
@@ -93,10 +101,7 @@ export default {
             keepGoing: this.chatStore.keepGoing,
             outsideBox: this.chatStore.outsideBox,
             communicationStyleKey: this.chatStore.communicationStyle,
-            prompts: this.chatStore.messages.map((x) => ({
-              content: x.body,
-              role: x.author == 'you' ? 'user' : 'assistant',
-            })),
+            prompts: messages,
           }),
         });
         if (response.status == 429) {
@@ -117,6 +122,7 @@ export default {
         // Handle successful response
         this.chatStore.addMessage({
           body: response_body.content,
+          signature: response_body.signature,
           author: 'assistant',
           date: new Date().getTime(),
         });

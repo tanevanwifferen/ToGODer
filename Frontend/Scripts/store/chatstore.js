@@ -12,6 +12,7 @@ const keepGoingKey = 'keepGoing';
 const outsideBoxKey = 'outsideBox';
 const communicationStyleKey = 'communicationStyle';
 const modelKey = 'model';
+const defaultPromptKey = 'defaultPrompt';
 
 localStorage.getItem(humanPromptKey) ??
   localStorage.setItem(humanPromptKey, 'true');
@@ -22,6 +23,8 @@ localStorage.getItem(communicationStyleKey) ??
 localStorage.getItem(outsideBoxKey) ??
   localStorage.setItem(outsideBoxKey, 'true');
 localStorage.getItem(modelKey) ?? localStorage.setItem(modelKey, 'gpt-4o');
+localStorage.getItem(defaultPromptKey) ??
+  localStorage.setItem(defaultPromptKey, '/default');
 
 const useChatStore = Pinia.defineStore('chats', {
   // other options...
@@ -32,7 +35,9 @@ const useChatStore = Pinia.defineStore('chats', {
     keepGoing: localStorage.getItem(humanPromptKey) == 'true',
     outsideBox: localStorage.getItem(outsideBoxKey) == 'true',
     communicationStyle: parseInt(localStorage.getItem(communicationStyleKey)),
-    model: localStorage.getItem('model'),
+    model: localStorage.getItem(modelKey),
+    defaultPrompt: localStorage.getItem(defaultPromptKey),
+    prompts: null,
   }),
   getters: {
     chat() {
@@ -54,8 +59,15 @@ const useChatStore = Pinia.defineStore('chats', {
       items.sort((a, b) => b.created - a.created);
       return items;
     },
+    promptsToDisplay() {
+      return Object.keys(this.prompts).filter((x) => this.prompts[x].display);
+    },
   },
   actions: {
+    async initChatStore() {
+      var prompts = await fetch('/api/prompts');
+      this.prompts = await prompts.json();
+    },
     saveChats() {
       var toSave = {};
       for (let key of Object.keys(this.chats)) {

@@ -9,8 +9,8 @@ const globalStore = useGlobalStore();
         <table>
           <tr
             @click="setPreview(prompt)"
-            v-for="prompt in Object.keys(promptsListProp).filter(
-              (x) => promptsListProp[x].display
+            v-for="prompt in Object.keys(chatStore.prompts).filter(
+              (x) => chatStore.prompts[x].display
             )"
           >
             <td>
@@ -19,7 +19,7 @@ const globalStore = useGlobalStore();
               </p>
             </td>
             <td style="padding: 4px">
-              {{ promptsListProp[prompt].description }}
+              {{ chatStore.prompts[prompt].description }}
             </td>
           </tr>
         </table>
@@ -210,7 +210,6 @@ export default {
       default: '#f1f0f0',
     },
     messageListProp: Array,
-    promptsListProp: Object,
     inputDisabled: Boolean,
   },
 
