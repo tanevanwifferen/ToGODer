@@ -15,12 +15,16 @@ const useGlobalStore = Pinia.defineStore('global', {
     donateOptions: [],
     quote: '',
     initialized: false,
+    showLogin: false,
     donateViewVisible: false,
     lastDonateQuestion: Number(localStorage.getItem(lastDonateKey)),
     models: [],
   }),
   actions: {
     async initGlobalStore() {
+      if (this.initialized) {
+        return;
+      }
       this.initialized = true;
       try {
         var response = await fetch('/api/global_config');
@@ -29,6 +33,7 @@ const useGlobalStore = Pinia.defineStore('global', {
         this.donateOptions = data.donateOptions;
         this.quote = data.quote;
         this.models = data.models;
+        this.showLogin = data.showLogin;
         localStorage.getItem('model') ??
           localStorage.setItem('model', data.models[0]);
 

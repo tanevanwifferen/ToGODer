@@ -46,6 +46,7 @@ app.get('/api/links', (req, res) => {
 
 app.get('/api/global_config', (req, res) => {
   var donateOptions = JSON.parse(process.env.DONATE_OPTIONS || '[]');
+  var showLogin = JSON.parse(process.env.SHOW_LOGIN || 'false');
   var quote = new ConversationApi().getQuote();
   var models = new ModelApi()
     .ListModels()
@@ -54,6 +55,7 @@ app.get('/api/global_config', (req, res) => {
     donateOptions: donateOptions,
     quote: quote,
     models,
+    showLogin,
   });
 });
 

@@ -10,6 +10,7 @@ import {
   NoSteeringPrompt,
   DeescalationPrompt,
   SocialConversationPrompt,
+  PhilosophicalGuidancePrompt,
 } from './chatprompts';
 import { ExperiencePrompt } from './experienceprompts';
 
@@ -102,6 +103,11 @@ export const PromptList: Record<string, PromptListItem> = {
   '/SocialConversation': {
     prompt: SocialConversationPrompt,
     description: 'Have a social conversation with ToGODer.',
+    display: true,
+  },
+  '/medium': {
+    prompt: PhilosophicalGuidancePrompt,
+    description: 'Classical medium conversation',
     display: true,
   },
   '/experience': {

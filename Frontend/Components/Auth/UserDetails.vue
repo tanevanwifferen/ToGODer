@@ -1,5 +1,11 @@
 <template>
-  <v-menu v-model="menu" :close-on-content-click="false" offset-y bottom>
+  <v-menu
+    v-if="globalStore.showLogin"
+    v-model="menu"
+    :close-on-content-click="false"
+    offset-y
+    bottom
+  >
     <template v-slot:activator="{ props }">
       <v-btn v-bind="props">{{
         authStore.token ? authStore.email : 'Login'
@@ -20,8 +26,9 @@
 export default {
   setup() {
     const authStore = useAuthStore();
+    const globalStore = useGlobalStore();
     authStore.initAuthStore();
-    return { authStore };
+    return { authStore, globalStore };
   },
   components: {
     loginView: Vue.defineAsyncComponent(() =>
