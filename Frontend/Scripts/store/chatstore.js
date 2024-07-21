@@ -23,7 +23,9 @@ localStorage.getItem(communicationStyleKey) ??
 localStorage.getItem(outsideBoxKey) ??
   localStorage.setItem(outsideBoxKey, 'true');
 localStorage.getItem(modelKey) ?? localStorage.setItem(modelKey, 'gpt-4o');
-localStorage.getItem(defaultPromptKey) ??
+
+var existingDefaultPrompt = localStorage.getItem(defaultPromptKey);
+(!!existingDefaultPrompt && existingDefaultPrompt != 'undefined') ||
   localStorage.setItem(defaultPromptKey, '/default');
 
 const useChatStore = Pinia.defineStore('chats', {
