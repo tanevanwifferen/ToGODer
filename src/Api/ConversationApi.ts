@@ -30,8 +30,8 @@ export class ConversationApi {
    * Get a short title for a conversation based on the first prompt.
    */
   public async getTitle(
-    model: AIProvider,
-    body: ChatCompletionMessageParam[]
+    body: ChatCompletionMessageParam[],
+    model: AIProvider
   ): Promise<string> {
     if (body.length > 1) {
       throw new Error('Only one prompt is allowed for this endpoint');
@@ -45,9 +45,10 @@ export class ConversationApi {
 
   public async getResponseRaw(
     input: ChatCompletionMessageParam[],
-    systemprompt: string
+    systemprompt: string,
+    model: AIProvider = new ModelApi().GetDefaultModel()
   ) {
-    var aiWrapper = this.getAIWrapper(new ModelApi().GetDefaultModel());
+    var aiWrapper = this.getAIWrapper(model);
     return await aiWrapper.getResponse(systemprompt, input);
   }
 
@@ -102,23 +103,24 @@ export class ConversationApi {
 
   private getAIWrapper(model: AIProvider): AIWrapper {
     switch (model) {
+      case AIProvider.Gpt4oMini:
       case AIProvider.Gpt4o:
-        return new OpenAIWrapper(AIProvider.Gpt4o);
       case AIProvider.Gpt35turbo:
-        return new OpenAIWrapper(AIProvider.Gpt35turbo);
+        return new OpenAIWrapper(model);
       case AIProvider.Claude3SonnetBeta:
-        return new OpenRouterWrapper(AIProvider.Claude3SonnetBeta);
       case AIProvider.LLama3:
-        return new OpenRouterWrapper(AIProvider.LLama3);
+      case AIProvider.LLama3170b:
+      case AIProvider.LLama31405b:
+        return new OpenRouterWrapper(model);
       default:
-        return new OpenAIWrapper(AIProvider.Gpt4o);
+        return new OpenAIWrapper(AIProvider.Gpt4oMini);
     }
   }
 
   public async TranslateText(
     text: string,
     language: string = 'English',
-    model: AIProvider = AIProvider.Gpt4o
+    model: AIProvider = AIProvider.Gpt4oMini
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model);
     var result = await aiWrapper.getResponse(TranslationPrompt + language, [

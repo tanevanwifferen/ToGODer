@@ -75,8 +75,8 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
       try {
         const conversationApi = new ConversationApi();
         const response = await conversationApi.getTitle(
-          req.body.model ?? new ModelApi().GetDefaultModel(),
-          req.body.content
+          req.body.content,
+          req.body.model ?? new ModelApi().GetDefaultModel()
         );
         res.json({ content: response });
       } catch (error) {

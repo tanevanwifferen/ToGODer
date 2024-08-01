@@ -8,14 +8,20 @@ export class ModelApi {
 
   public static GetName(privider: AIProvider): string {
     switch (privider) {
+      case AIProvider.Gpt4oMini:
+        return 'GPT-4o-mini';
       case AIProvider.Gpt4o:
         return 'GPT-4o';
       case AIProvider.Gpt35turbo:
         return 'GPT-3.5 Turbo';
       case AIProvider.Claude3SonnetBeta:
-        return 'Claude3 Sonnet Beta';
+        return 'Claude3.5 Sonnet Beta';
       case AIProvider.LLama3:
         return 'LLama3 sonar 32k';
+      case AIProvider.LLama3170b:
+        return 'Llama 3.1 70b';
+      case AIProvider.LLama31405b:
+        return 'Llama 3.1 405b';
       default:
         throw new Error('Unknown AIProvider');
     }
@@ -26,8 +32,11 @@ export class ModelApi {
       return ModelApi.modelCache;
     }
     ModelApi.modelCache = [
-      AIProvider.Gpt35turbo,
+      AIProvider.Gpt4oMini,
+      AIProvider.LLama31405b,
+      AIProvider.LLama3170b,
       AIProvider.Gpt4o,
+      AIProvider.Gpt35turbo,
       AIProvider.Claude3SonnetBeta,
       AIProvider.LLama3,
     ].filter((x) => {
@@ -35,13 +44,14 @@ export class ModelApi {
         var a: AIWrapper | null = null;
         switch (x) {
           case AIProvider.Gpt4o:
+          case AIProvider.Gpt4oMini:
           case AIProvider.Gpt35turbo:
             a = new OpenAIWrapper(x);
             break;
           case AIProvider.Claude3SonnetBeta:
-            a = new OpenRouterWrapper(x);
-            break;
           case AIProvider.LLama3:
+          case AIProvider.LLama3170b:
+          case AIProvider.LLama31405b:
             a = new OpenRouterWrapper(x);
             break;
         }
