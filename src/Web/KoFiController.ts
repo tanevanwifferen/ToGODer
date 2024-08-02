@@ -21,5 +21,6 @@ export function setupKoFi(app: Express) {
         });
       }
     },
+    verificationToken: process.env.KOFI_WEBHOOK_TOKEN!,
   });
 }
