@@ -1,16 +1,22 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { AIWrapper } from './AIWrapper';
+import ChatCompletion = OpenAI.ChatCompletion;
+import { AIProvider } from '../Models/AIProvider';
 
 export class OpenAIWrapper implements AIWrapper {
   private apiKey: string;
   private openAI: OpenAI;
 
-  constructor(private model: string) {
+  constructor(private model: AIProvider) {
     let apiKey = process.env.OPENAI_API_KEY;
     if (apiKey == null) throw new Error('OpenAI API key is required');
     this.apiKey = apiKey;
     this.openAI = new OpenAI({ apiKey: this.apiKey });
+  }
+
+  public get Model(): AIProvider {
+    return this.model;
   }
 
   private async getModeration(
@@ -35,23 +41,46 @@ export class OpenAIWrapper implements AIWrapper {
     }
   }
 
+  private ErrorCompletion: ChatCompletion = {
+    id: 'empty',
+    created: new Date().getTime(),
+    object: 'chat.completion',
+    model: this.model,
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: 'assistant',
+          content:
+            'OpenAI has flagged this conversation as potentially harmful. If available, it is recommended to change the model and try again.',
+        },
+        finish_reason: 'stop',
+        logprobs: null,
+      },
+    ],
+    usage: {
+      completion_tokens: 0,
+      prompt_tokens: 0,
+      total_tokens: 0,
+    },
+  };
+
   async getResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[]
-  ): Promise<string> {
+  ): Promise<ChatCompletion> {
     try {
       var isFlagged = await this.getModeration(userAndAgentPrompts);
       if (isFlagged) {
-        return 'OpenAI has flagged this conversation as potentially harmful. If available, it is recommended to change the model and try again.';
+        return this.ErrorCompletion;
       }
-      const completion = await this.openAI.chat.completions.create({
+      return await this.openAI.chat.completions.create({
         messages: [
           { role: 'system', content: systemPrompt },
           ...userAndAgentPrompts,
         ],
         model: this.model,
       });
-      return completion.choices[0].message.content!;
     } catch (error) {
       console.error('Error:', error);
       throw new Error('Failed to get response from OpenAI API');

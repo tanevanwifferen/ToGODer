@@ -1,10 +1,12 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { GetChatRouter } from './Web/ChatController';
 import { ConversationApi } from './Api/ConversationApi';
-import { ModelApi } from './Api/ModelApi';
 import { GetAuthRouter } from './Web/AuthController';
+import { GetModelName, ListModels } from './Models/AIProvider';
+import { GetBillingRouter } from './Web/BillingController';
+import { setupKoFi } from './Web/KoFiController';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -30,15 +32,30 @@ const messageLimiter = rateLimit({
 
 app.use(express.json());
 
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
+
 // Serve static files from the "../Frontend" directory
 app.use(express.static(path.join(__dirname, '../Frontend')));
 
 // controllers
 const chatRouter = GetChatRouter(messageLimiter);
 const authRouter = GetAuthRouter();
+const billingRouter = GetBillingRouter(messageLimiter);
 
 app.use(chatRouter);
 app.use(authRouter);
+app.use(billingRouter);
+
+const donateoptions: { address: string }[] = JSON.parse(
+  process.env.DONATE_OPTIONS || '[]'
+);
+if (donateoptions.filter((x) => x.address.includes('ko-fi.com')).length > 0) {
+  setupKoFi(app);
+}
 
 app.get('/api/links', (req, res) => {
   res.json(JSON.parse(process.env.LINKS || '[]'));
@@ -48,9 +65,7 @@ app.get('/api/global_config', (req, res) => {
   var donateOptions = JSON.parse(process.env.DONATE_OPTIONS || '[]');
   var showLogin = JSON.parse(process.env.SHOW_LOGIN || 'false');
   var quote = new ConversationApi().getQuote();
-  var models = new ModelApi()
-    .ListModels()
-    .map((x) => ({ model: x, title: ModelApi.GetName(x) }));
+  var models = ListModels().map((x) => ({ model: x, title: GetModelName(x) }));
   res.json({
     donateOptions: donateOptions,
     quote: quote,

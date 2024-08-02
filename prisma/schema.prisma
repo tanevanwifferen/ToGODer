@@ -18,7 +18,15 @@ model Payment {
   id         String   @id @default(uuid())
   user_email String
   timestamp  DateTime @default(now())
-  amount     Int
+  amount     Decimal
+}
+
+model Usage {
+  id         String   @id @default(uuid())
+  user_email String
+  year       Int
+  month      Int
+  amount     Decimal
 }
 
 // table for chats, containing id, title, date, likes, messages, and userId

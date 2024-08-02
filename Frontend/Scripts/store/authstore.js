@@ -13,6 +13,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     tokenExpires:
       parseInt(localStorage.getItem(tokenExpiresKey)) || new Date().getTime(),
     refreshIntervalId: null,
+    cost: 0,
   }),
   actions: {
     initAuthStore() {
@@ -32,13 +33,36 @@ const useAuthStore = Pinia.defineStore('auth', {
         );
       }
     },
+    async refreshBilling() {
+      try {
+        var response = await fetch('/api/billing', {
+          method: 'GET',
+          headers: {
+            Authorization: 'Bearer ' + this.token,
+          },
+        });
+        var data = await response.json();
+        if (data.error) {
+          console.error('error refreshing billing', data.error);
+          return;
+        }
+        this.cost = data.balance;
+      } catch (e) {
+        console.error('error refreshing billing', e);
+        await this.logout();
+      }
+    },
     async refreshToken() {
       try {
         var response = await fetch('/api/auth/updateToken', {
           method: 'POST',
           headers: {
             Authorization: 'Bearer ' + this.token,
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            userId: this.userId,
+          }),
         });
         var data = await response.json();
         if (data.error) {
@@ -49,7 +73,7 @@ const useAuthStore = Pinia.defineStore('auth', {
         localStorage.setItem(tokenKey, this.token);
       } catch (e) {
         console.error('error refreshing token', e);
-        this.logout();
+        await this.logout();
       }
     },
     async createUser() {
@@ -75,7 +99,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async login() {
       try {
-        var response = await fetch('/api/auth/signIn', {
+        const response = await fetch('/api/auth/signIn', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -85,7 +109,7 @@ const useAuthStore = Pinia.defineStore('auth', {
             password: this.password,
           }),
         });
-        var data = await response.json();
+        const data = await response.json();
         if (data.error) {
           console.error('error logging in', data.error);
           return;
@@ -97,6 +121,7 @@ const useAuthStore = Pinia.defineStore('auth', {
         localStorage.setItem(tokenKey, this.token);
         localStorage.setItem(userIdKey, this.userId);
         localStorage.setItem(emailKey, this.email);
+        this.refreshBilling();
       } catch (e) {
         console.error('error logging in', e);
       }
@@ -110,12 +135,13 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async sendForgotPasswordEmail() {
       try {
-        var response = await fetch('/api/auth/forgotPassword/' + this.email, {
+        const response = await fetch('/api/auth/forgotPassword/' + this.email, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
         });
+        const data = await response.json();
         if (!response.ok) {
           console.error('error sending request', data.error);
           return 'An error has occurred. Please try again later.';
@@ -127,7 +153,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async setNewPassword(code) {
       try {
-        var response = await fetch('/api/auth/resetPassword/' + code, {
+        const response = await fetch('/api/auth/resetPassword/' + code, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -137,6 +163,7 @@ const useAuthStore = Pinia.defineStore('auth', {
             password: this.password,
           }),
         });
+        const data = await response.json();
         if (!response.ok) {
           console.error('error sending request', data.error);
           return 'An error has occurred. Please try again later.';

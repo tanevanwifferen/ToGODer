@@ -1,6 +1,7 @@
-import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
-import { AIWrapper } from '../LLM/AIWrapper';
-import { OpenAIWrapper } from '../LLM/OpenAI';
+import {
+  ChatCompletion,
+  ChatCompletionMessageParam,
+} from 'openai/resources/index.mjs';
 import {
   AdaptToConversantsCommunicationStyle,
   FormattingPrompt,
@@ -15,52 +16,76 @@ import {
   ChatRequest,
   ChatRequestCommunicationStyle,
 } from '../Models/ChatRequest';
-import { AIProvider } from '../Models/AIProvider';
-import { OpenRouterWrapper } from '../LLM/OpenRouter';
-import { ModelApi } from './ModelApi';
+import {
+  AIProvider,
+  getAIWrapper,
+  getDefaultModel,
+} from '../Models/AIProvider';
 import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
+import { User } from '@prisma/client';
+import { BillingDecorator } from '../Decorators/BillingDecorator';
 
 let quote = '';
+
+function CompletionToContent(completion: ChatCompletion): string {
+  return completion.choices[0].message.content!;
+}
+
 export class ConversationApi {
   public getQuote() {
     return quote;
+  }
+
+  private getAIWrapper(provider: AIProvider, user: User | null | undefined) {
+    var aiWrapper = getAIWrapper(provider);
+    if (user != null) {
+      aiWrapper = new BillingDecorator(aiWrapper, user);
+    }
+    return aiWrapper;
   }
 
   /**
    * Get a short title for a conversation based on the first prompt.
    */
   public async getTitle(
+    body: ChatCompletionMessageParam[],
     model: AIProvider,
-    body: ChatCompletionMessageParam[]
+    user: User | null | undefined
   ): Promise<string> {
     if (body.length > 1) {
       throw new Error('Only one prompt is allowed for this endpoint');
     }
-    var aiWrapper = this.getAIWrapper(model);
+    var aiWrapper = this.getAIWrapper(model, user);
 
     var prompt = GetTitlePrompt + body[0].content;
 
-    return await aiWrapper.getResponse(prompt, body);
+    return CompletionToContent(await aiWrapper.getResponse(prompt, body));
   }
 
   public async getResponseRaw(
     input: ChatCompletionMessageParam[],
-    systemprompt: string
-  ) {
-    var aiWrapper = this.getAIWrapper(new ModelApi().GetDefaultModel());
-    return await aiWrapper.getResponse(systemprompt, input);
+    systemPrompt: string,
+    model: AIProvider = getDefaultModel(),
+    user: User | null | undefined
+  ): Promise<ChatCompletion> {
+    var aiWrapper = this.getAIWrapper(model, user);
+    return await aiWrapper.getResponse(systemPrompt, input);
   }
 
   /**
    * Get a chat completion for a conversation with the AI.
-   * @param prompts Chat history
+   * @param input Chat history
+   * @param user User to bill for the conversation
    * @returns string response from the AI
    */
-  public async getResponse(input: ChatRequest): Promise<string> {
+  public async getResponse(
+    input: ChatRequest,
+    user: User | null | undefined
+  ): Promise<string> {
     if (input.prompts.length == 0) {
       return '';
     }
-    var aiWrapper = this.getAIWrapper(input.model);
+    var aiWrapper = this.getAIWrapper(input.model, user);
 
     var firstPrompt = (<string>input.prompts[0].content)?.split(' ')[0];
 
@@ -97,42 +122,33 @@ export class ConversationApi {
     if (input.keepGoing) {
       systemprompt += '\n\n' + keepConversationGoingPrompt;
     }
-    return await aiWrapper.getResponse(systemprompt, input.prompts);
-  }
-
-  private getAIWrapper(model: AIProvider): AIWrapper {
-    switch (model) {
-      case AIProvider.Gpt4o:
-        return new OpenAIWrapper(AIProvider.Gpt4o);
-      case AIProvider.Gpt35turbo:
-        return new OpenAIWrapper(AIProvider.Gpt35turbo);
-      case AIProvider.Claude3SonnetBeta:
-        return new OpenRouterWrapper(AIProvider.Claude3SonnetBeta);
-      case AIProvider.LLama3:
-        return new OpenRouterWrapper(AIProvider.LLama3);
-      default:
-        return new OpenAIWrapper(AIProvider.Gpt4o);
-    }
+    return CompletionToContent(
+      await aiWrapper.getResponse(systemprompt, input.prompts)
+    );
   }
 
   public async TranslateText(
     text: string,
     language: string = 'English',
-    model: AIProvider = AIProvider.Gpt4o
+    model: AIProvider = AIProvider.Gpt4oMini,
+    user: User | null | undefined
   ): Promise<string> {
-    var aiWrapper = this.getAIWrapper(model);
+    var aiWrapper = this.getAIWrapper(model, user);
     var result = await aiWrapper.getResponse(TranslationPrompt + language, [
       { content: text, role: 'user' },
     ]);
-    return result;
+    return CompletionToContent(result);
   }
 }
 
 async function updateQuote() {
-  quote = await new ConversationApi().getResponseRaw(
+  var q = await new ConversationApi().getResponseRaw(
     [{ content: 'the assistant is a spiritual guide', role: 'user' }],
-    'Share a short fitting message for people who seek. make it quotable.'
+    'Share a short fitting message for people who seek. make it quotable.',
+    getDefaultModel(),
+    null
   );
+  quote = CompletionToContent(q);
 }
 
 updateQuote();
