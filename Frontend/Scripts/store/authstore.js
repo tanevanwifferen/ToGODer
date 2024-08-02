@@ -88,6 +88,7 @@ const useAuthStore = Pinia.defineStore('auth', {
             password: this.password,
           }),
         });
+        var data = await response.json();
         if (!response.ok) {
           console.error('error creating user', data.error);
           return 'An error has occurred. Please try again later.';
