@@ -2,7 +2,6 @@ import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { AIWrapper } from './AIWrapper';
 import ChatCompletion = OpenAI.ChatCompletion;
-import { randomUUID } from 'node:crypto';
 import { AIProvider } from '../Models/AIProvider';
 
 export class OpenAIWrapper implements AIWrapper {
@@ -75,14 +74,13 @@ export class OpenAIWrapper implements AIWrapper {
       if (isFlagged) {
         return this.ErrorCompletion;
       }
-      const completion = await this.openAI.chat.completions.create({
+      return await this.openAI.chat.completions.create({
         messages: [
           { role: 'system', content: systemPrompt },
           ...userAndAgentPrompts,
         ],
         model: this.model,
       });
-      return completion;
     } catch (error) {
       console.error('Error:', error);
       throw new Error('Failed to get response from OpenAI API');

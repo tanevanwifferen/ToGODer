@@ -47,7 +47,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
           body.prompts.map((x) => x.content).join(' '),
           process.env.JWT_SECRET!
         );
-        res.json({ content: response });
+        res.json({ content: response, signature: signature });
       } catch (error) {
         next(error);
       }

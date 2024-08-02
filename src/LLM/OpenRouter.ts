@@ -36,14 +36,13 @@ export class OpenRouterWrapper implements AIWrapper {
     userAndAgentPrompts: ChatCompletionMessageParam[]
   ): Promise<ChatCompletion> {
     try {
-      const completion = await this.openAI.chat.completions.create({
+      return await this.openAI.chat.completions.create({
         messages: [
           { role: 'system', content: systemPrompt },
           ...userAndAgentPrompts,
         ],
         model: this.model,
       });
-      return completion;
     } catch (error) {
       console.error('Error:', error);
       throw new Error('Failed to get response from OpenRouter API');

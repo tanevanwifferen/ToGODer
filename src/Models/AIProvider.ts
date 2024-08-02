@@ -2,7 +2,6 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { AIWrapper } from '../LLM/AIWrapper';
 import { OpenAIWrapper } from '../LLM/OpenAI';
 import { OpenRouterWrapper } from '../LLM/OpenRouter';
-import { generateKeyPair } from 'node:crypto';
 
 export interface AICost {
   input_cost_per_million: Decimal;

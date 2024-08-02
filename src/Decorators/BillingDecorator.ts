@@ -3,9 +3,7 @@ import {
   ChatCompletion,
 } from 'openai/resources/index.mjs';
 import { AIWrapper } from '../LLM/AIWrapper';
-import { getDbContext } from '../Entity/Database';
 import { BillingApi } from '../Api/BillingApi';
-import { Decimal } from '@prisma/client/runtime/binary';
 import { AIProvider, getTokenCost } from '../Models/AIProvider';
 import { User } from '@prisma/client';
 
@@ -28,7 +26,6 @@ export class BillingDecorator implements AIWrapper {
       userAndAgentPrompts
     );
 
-    const db = getDbContext();
     const price = getTokenCost(this.aiWrapper.Model);
 
     const inputPrice = price.input_cost_per_million
@@ -38,8 +35,8 @@ export class BillingDecorator implements AIWrapper {
       .mul(result.usage!.completion_tokens)
       .div('1000000');
 
-    const billingapi = new BillingApi();
-    await billingapi.BillForMonth(this.user.email, inputPrice.add(outputPrice));
+    const billingApi = new BillingApi();
+    await billingApi.BillForMonth(this.user.email, inputPrice.add(outputPrice));
 
     return result;
   }

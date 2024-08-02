@@ -31,7 +31,9 @@ export class BillingApi {
     amount: Decimal
   ): Promise<void> {
     const db = getDbContext();
-    const balance = await this.GetBalance(user_email);
+
+    // throws if user not found
+    await this.GetBalance(user_email);
 
     const date = new Date();
     const year = date.getFullYear();

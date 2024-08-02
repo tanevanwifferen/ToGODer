@@ -39,8 +39,7 @@ export const authenticated = (
     if (!req.headers.authorization) return res.status(401).json('Unauthorized');
 
     const token = req.headers.authorization.split(' ')[1];
-    const { id, date } = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: string;
+    const { date } = jwt.verify(token, process.env.JWT_SECRET!) as {
       date: number;
     };
 

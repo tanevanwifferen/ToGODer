@@ -2,8 +2,6 @@ import {
   ChatCompletion,
   ChatCompletionMessageParam,
 } from 'openai/resources/index.mjs';
-import { AIWrapper } from '../LLM/AIWrapper';
-import { OpenAIWrapper } from '../LLM/OpenAI';
 import {
   AdaptToConversantsCommunicationStyle,
   FormattingPrompt,
@@ -23,7 +21,6 @@ import {
   getAIWrapper,
   getDefaultModel,
 } from '../Models/AIProvider';
-import { OpenRouterWrapper } from '../LLM/OpenRouter';
 import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
 import { User } from '@prisma/client';
 import { BillingDecorator } from '../Decorators/BillingDecorator';
@@ -77,7 +74,8 @@ export class ConversationApi {
 
   /**
    * Get a chat completion for a conversation with the AI.
-   * @param prompts Chat history
+   * @param input Chat history
+   * @param user User to bill for the conversation
    * @returns string response from the AI
    */
   public async getResponse(
