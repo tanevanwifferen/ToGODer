@@ -65,8 +65,6 @@ export const onlyOwner = async (
     const decodedToken = <{ id: string; date: number }>(
       jwt.verify(token, process.env.JWT_SECRET!)
     );
-    console.log('decodedToken', decodedToken);
-    console.log('body', req.body);
     if (
       decodedToken.id === req.body.userId &&
       decodedToken.date > new Date().getTime() - 1000 * 60 * 60 * 24
