@@ -1,13 +1,15 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { AIWrapper } from './AIWrapper';
+import ChatCompletion = OpenAI.ChatCompletion;
+import { AIProvider } from '../Models/AIProvider';
 
 export class OpenRouterWrapper implements AIWrapper {
   private apiKey: string;
   private url: string = 'https://openrouter.ai/api/v1';
   private openAI: OpenAI;
 
-  constructor(private model: string = 'anthropic/claude-3.5-sonnet:beta') {
+  constructor(private model: AIProvider = AIProvider.Claude3SonnetBeta) {
     let apiKey = process.env.OPENROUTER_API_KEY;
     if (apiKey == null)
       throw new Error(
@@ -25,10 +27,14 @@ export class OpenRouterWrapper implements AIWrapper {
     });
   }
 
+  public get Model() {
+    return this.model;
+  }
+
   async getResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[]
-  ): Promise<string> {
+  ): Promise<ChatCompletion> {
     try {
       const completion = await this.openAI.chat.completions.create({
         messages: [
@@ -37,7 +43,7 @@ export class OpenRouterWrapper implements AIWrapper {
         ],
         model: this.model,
       });
-      return completion.choices[0].message.content!;
+      return completion;
     } catch (error) {
       console.error('Error:', error);
       throw new Error('Failed to get response from OpenRouter API');

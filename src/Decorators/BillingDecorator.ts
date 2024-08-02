@@ -1,0 +1,46 @@
+import {
+  ChatCompletionMessageParam,
+  ChatCompletion,
+} from 'openai/resources/index.mjs';
+import { AIWrapper } from '../LLM/AIWrapper';
+import { getDbContext } from '../Entity/Database';
+import { BillingApi } from '../Api/BillingApi';
+import { Decimal } from '@prisma/client/runtime/binary';
+import { AIProvider, getTokenCost } from '../Models/AIProvider';
+import { User } from '@prisma/client';
+
+export class BillingDecorator implements AIWrapper {
+  public constructor(
+    private aiWrapper: AIWrapper,
+    private user: User
+  ) {}
+
+  public get Model(): AIProvider {
+    return this.aiWrapper.Model;
+  }
+
+  async getResponse(
+    systemPrompt: string,
+    userAndAgentPrompts: ChatCompletionMessageParam[]
+  ): Promise<ChatCompletion> {
+    const result = await this.aiWrapper.getResponse(
+      systemPrompt,
+      userAndAgentPrompts
+    );
+
+    const db = getDbContext();
+    const price = getTokenCost(this.aiWrapper.Model);
+
+    const inputPrice = price.input_cost_per_million
+      .mul(result.usage!.prompt_tokens)
+      .div('1000000');
+    const outputPrice = price.output_cost_per_million
+      .mul(result.usage!.completion_tokens)
+      .div('1000000');
+
+    const billingapi = new BillingApi();
+    await billingapi.BillForMonth(this.user.email, inputPrice.add(outputPrice));
+
+    return result;
+  }
+}

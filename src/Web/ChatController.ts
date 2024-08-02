@@ -11,9 +11,11 @@ import {
   ChatRequestCommunicationStyle,
   ExperienceRequest,
 } from '../Models/ChatRequest';
-import { ModelApi } from '../Api/ModelApi';
 import { ExperienceSeedPrompt } from '../LLM/prompts/experienceprompts';
 import jwt from 'jsonwebtoken';
+import { getDefaultModel } from '../Models/AIProvider';
+import { setAuthUser } from './Middleware/auth';
+import { ToGODerRequest } from './Model/ToGODerRequest';
 
 export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
   const chatRouter = Router();
@@ -22,13 +24,14 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     '/api/chat',
     messageLimiter,
     validateChatCompletionMessageArray,
+    setAuthUser,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const conversationApi = new ConversationApi();
         let body: ChatRequest = req.body;
         if (!('humanPrompt' in req.body)) {
           body = {
-            model: new ModelApi().GetDefaultModel(),
+            model: getDefaultModel(),
             humanPrompt: false,
             keepGoing: false,
             outsideBox: false,
@@ -36,7 +39,10 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
             prompts: req.body,
           };
         }
-        const response = await conversationApi.getResponse(body);
+        const response = await conversationApi.getResponse(
+          body,
+          (req as ToGODerRequest).togoder_auth?.user
+        );
         const signature = jwt.sign(
           body.prompts.map((x) => x.content).join(' '),
           process.env.JWT_SECRET!
@@ -51,13 +57,16 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
   chatRouter.post(
     '/api/experience',
     messageLimiter,
+    setAuthUser,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const conversationApi = new ConversationApi();
         let body: ExperienceRequest = req.body;
         let startText = await conversationApi.TranslateText(
           ExperienceSeedPrompt,
-          body.language
+          body.language,
+          getDefaultModel(),
+          (req as ToGODerRequest).togoder_auth?.user
         );
         startText = '/experience ' + startText;
         res.json({ content: startText });
@@ -71,12 +80,14 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     '/api/title',
     messageLimiter,
     validateTitleMessage,
+    setAuthUser,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const conversationApi = new ConversationApi();
         const response = await conversationApi.getTitle(
           req.body.content,
-          req.body.model ?? new ModelApi().GetDefaultModel()
+          req.body.model ?? getDefaultModel(),
+          (req as ToGODerRequest).togoder_auth?.user
         );
         res.json({ content: response });
       } catch (error) {

@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     async startExperience(evt) {
-      var response = await fetch('/api/experience', {
+      let response = await fetch('/api/experience', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,8 +55,8 @@ export default {
           language: evt.language,
         }),
       });
-      if (response.status == 429) {
-        this.handleRateLimit(response);
+      if (response.status === 429) {
+        await this.handleRateLimit(response);
         return;
       }
       this.chatStore.addMessage({
@@ -65,30 +65,30 @@ export default {
         date: new Date().getTime(),
       });
 
-      var title = await this.getTitle();
+      let title = await this.getTitle();
       if (title != null) {
         this.chatStore.setTitle(title);
       }
     },
     async sendMessage(message) {
       try {
-        if (message.body.toLowerCase() == 'debug') {
+        if (message.body.toLowerCase() === 'debug') {
           this.debug = !this.debug;
           return;
         }
-        if (this.chatStore.messages.length == 0 && message.body[0] != '/') {
+        if (this.chatStore.messages.length === 0 && message.body[0] !== '/') {
           message.body = this.chatStore.defaultPrompt + ' ' + message.body;
         }
         this.chatStore.addMessage({
           ...message,
           date: new Date().getTime(),
         });
-        var messages = this.chatStore.messages.map((x) => ({
+        let messages = this.chatStore.messages.map((x) => ({
           content: x.body,
-          role: x.author == 'you' ? 'user' : 'assistant',
+          role: x.author === 'you' ? 'user' : 'assistant',
         }));
 
-        var response = await fetch('/api/chat', {
+        let response = await fetch('/api/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -102,20 +102,20 @@ export default {
             prompts: messages,
           }),
         });
-        if (response.status == 429) {
-          this.handleRateLimit(response);
+        if (response.status === 429) {
+          await this.handleRateLimit(response);
           return;
         }
         if (!response.ok) {
           throw new Error('Error sending message');
         }
 
-        var title = await this.getTitle();
+        let title = await this.getTitle();
         if (title != null) {
           this.chatStore.setTitle(title);
         }
 
-        var response_body = await response.json();
+        let response_body = await response.json();
 
         // Handle successful response
         this.chatStore.addMessage({
@@ -137,7 +137,7 @@ export default {
         return null;
       }
       try {
-        var response = await fetch('/api/title', {
+        let response = await fetch('/api/title', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -146,12 +146,12 @@ export default {
             model: this.chatStore.model,
             content: this.chatStore.messages.map((x) => ({
               content: x.body,
-              role: x.author == 'you' ? 'user' : 'assistant',
+              role: x.author === 'you' ? 'user' : 'assistant',
             })),
           }),
         });
         if (response.status === 429) {
-          this.handleRateLimit(response);
+          await this.handleRateLimit(response);
           return null;
         }
         if (!response.ok) {

@@ -3,8 +3,8 @@ import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { GetChatRouter } from './Web/ChatController';
 import { ConversationApi } from './Api/ConversationApi';
-import { ModelApi } from './Api/ModelApi';
 import { GetAuthRouter } from './Web/AuthController';
+import { GetModelName, ListModels } from './Models/AIProvider';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -48,9 +48,7 @@ app.get('/api/global_config', (req, res) => {
   var donateOptions = JSON.parse(process.env.DONATE_OPTIONS || '[]');
   var showLogin = JSON.parse(process.env.SHOW_LOGIN || 'false');
   var quote = new ConversationApi().getQuote();
-  var models = new ModelApi()
-    .ListModels()
-    .map((x) => ({ model: x, title: ModelApi.GetName(x) }));
+  var models = ListModels().map((x) => ({ model: x, title: GetModelName(x) }));
   res.json({
     donateOptions: donateOptions,
     quote: quote,
