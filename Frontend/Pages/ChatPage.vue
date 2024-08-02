@@ -33,7 +33,8 @@ export default {
     const chatStore = useChatStore();
     const globalStore = useGlobalStore();
     await globalStore.initGlobalStore();
-    return { chatStore, globalStore };
+    const authStore = userAuthStore();
+    return { chatStore, globalStore, authStore };
   },
   data() {
     return {
@@ -49,6 +50,7 @@ export default {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.authStore.token}`,
         },
         body: JSON.stringify({
           model: this.chatStore.model,
@@ -92,6 +94,7 @@ export default {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.authStore.token}`,
           },
           body: JSON.stringify({
             model: this.chatStore.model,
@@ -141,6 +144,7 @@ export default {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.authStore.token}`,
           },
           body: JSON.stringify({
             model: this.chatStore.model,
