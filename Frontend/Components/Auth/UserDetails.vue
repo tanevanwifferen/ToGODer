@@ -15,7 +15,11 @@
     <v-card v-if="view === 'logout'">
       <!-- TODO: show account info -->
       <v-card-actions>
-        <p>Balance: ${{ authStore.cost }}</p>
+        <v-tooltip text="Donate on ko-fi to increase" location="bottom">
+          <template v-slot:activator="{ props }">
+            <p v-bind="props">Balance: ${{ authStore.cost }}</p>
+          </template>
+        </v-tooltip>
         <v-spacer></v-spacer>
         <v-btn @click="logout()">Logout</v-btn>
       </v-card-actions>
