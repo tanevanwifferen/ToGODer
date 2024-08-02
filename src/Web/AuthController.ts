@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getDbContext } from '../Entity/Database';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Mailer } from '../Email/mailer';
 import { onlyOwner } from './Middleware/auth';
 
@@ -14,10 +14,12 @@ export function GetAuthRouter() {
     onlyOwner,
     async (req, res, next) => {
       try {
-        const { id, date } = jwt.verify(
-          req.body.token,
-          process.env.JWT_SECRET!
-        ) as { id: string; date: number };
+        const { id, date } = <{ id: string; date: number }>(
+          (jwt.verify(
+            req.headers.authorization!.split(' ')[1],
+            process.env.JWT_SECRET!
+          ) as JwtPayload)
+        );
 
         const token = jwt.sign(
           { id: req.body.userId, date: new Date().getTime() },

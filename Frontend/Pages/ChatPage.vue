@@ -33,7 +33,7 @@ export default {
     const chatStore = useChatStore();
     const globalStore = useGlobalStore();
     await globalStore.initGlobalStore();
-    const authStore = userAuthStore();
+    const authStore = useAuthStore();
     return { chatStore, globalStore, authStore };
   },
   data() {

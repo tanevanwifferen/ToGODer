@@ -1,10 +1,11 @@
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { GetChatRouter } from './Web/ChatController';
 import { ConversationApi } from './Api/ConversationApi';
 import { GetAuthRouter } from './Web/AuthController';
 import { GetModelName, ListModels } from './Models/AIProvider';
+import { GetBillingRouter } from './Web/BillingController';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -36,9 +37,11 @@ app.use(express.static(path.join(__dirname, '../Frontend')));
 // controllers
 const chatRouter = GetChatRouter(messageLimiter);
 const authRouter = GetAuthRouter();
+const billingRouter = GetBillingRouter(messageLimiter);
 
 app.use(chatRouter);
 app.use(authRouter);
+app.use(billingRouter);
 
 app.get('/api/links', (req, res) => {
   res.json(JSON.parse(process.env.LINKS || '[]'));
@@ -62,7 +65,7 @@ app.get('/', (req, res) => {
 });
 
 // Centralized error handling middleware
-app.use((err: Error, req: Request, res: Response) => {
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Unhandled error at ' + new Date() + ':', err);
   res.status(500).send('Internal Server Error');
 });

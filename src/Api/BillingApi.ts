@@ -49,7 +49,7 @@ export class BillingApi {
         amount: new Decimal(0),
       };
     }
-    usageForMonth.amount.add(amount);
+    usageForMonth.amount = usageForMonth.amount.add(amount);
     await db.usage.upsert({
       where: { id: usageForMonth.id },
       create: usageForMonth,
