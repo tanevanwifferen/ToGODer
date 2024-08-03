@@ -50,7 +50,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
         let response =
           'Please create a free account or login to have longer conversations.';
         if (
-          body.prompts.length <= 10 ||
+          body.prompts.length <= 20 ||
           (req as ToGODerRequest).togoder_auth?.user !== null
         ) {
           response = await conversationApi.getResponse(
