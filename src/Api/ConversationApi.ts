@@ -15,7 +15,7 @@ import { GetTitlePrompt } from '../LLM/prompts/systemprompts';
 import {
   ChatRequest,
   ChatRequestCommunicationStyle,
-} from '../LLM/Model/ChatRequest';
+} from '../Model/ChatRequest';
 import {
   AIProvider,
   getAIWrapper,
@@ -122,6 +122,10 @@ export class ConversationApi {
     if (input.keepGoing) {
       systemPrompt += '\n\n' + keepConversationGoingPrompt;
     }
+    systemPrompt = systemPrompt.replace(
+      /\{\{ name \}\}/g,
+      () => input.assistant_name!
+    );
     return CompletionToContent(
       await aiWrapper.getResponse(systemPrompt, input.prompts)
     );
