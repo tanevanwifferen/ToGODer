@@ -1,4 +1,5 @@
-import Vue from 'vue';
+//import Vue from 'vue';
+Vue = window.Vue || { component: () => {} };
 
 Vue.component('v-row', {});
 
