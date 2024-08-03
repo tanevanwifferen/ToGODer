@@ -1,5 +1,5 @@
 import { ChatCompletionMessageParam } from 'openai/src/resources/index.js';
-import { AIProvider } from './AIProvider';
+import { AIProvider } from '../LLM/Model/AIProvider';
 
 export enum ChatRequestCommunicationStyle {
   Default = 0,
@@ -14,6 +14,7 @@ export interface ChatRequest {
   outsideBox: boolean | undefined;
   communicationStyle: ChatRequestCommunicationStyle | undefined;
   prompts: ChatCompletionMessageParam[];
+  assistant_name: string | undefined;
 }
 
 export interface ExperienceRequest {

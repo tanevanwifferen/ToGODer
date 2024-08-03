@@ -10,12 +10,16 @@ import {
   ChatRequest,
   ChatRequestCommunicationStyle,
   ExperienceRequest,
-} from '../LLM/Model/ChatRequest';
+} from '../Model/ChatRequest';
 import { ExperienceSeedPrompt } from '../LLM/prompts/experienceprompts';
 import jwt from 'jsonwebtoken';
 import { getDefaultModel } from '../LLM/Model/AIProvider';
 import { setAuthUser } from './Middleware/auth';
 import { ToGODerRequest } from './Model/ToGODerRequest';
+
+function getAssistantName(): string {
+  return process.env.ASSISTANT_NAME ?? 'ToGODer';
+}
 
 export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
   const chatRouter = Router();
@@ -37,12 +41,23 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
             outsideBox: false,
             communicationStyle: ChatRequestCommunicationStyle.Default,
             prompts: req.body,
+            assistant_name: getAssistantName(),
           };
         }
-        const response = await conversationApi.getResponse(
-          body,
-          (req as ToGODerRequest).togoder_auth?.user
-        );
+        if (body.assistant_name == null || body.assistant_name == '') {
+          body.assistant_name = getAssistantName();
+        }
+        let response =
+          'Please create a free account or login to have longer conversations.';
+        if (
+          body.prompts.length <= 10 ||
+          (req as ToGODerRequest).togoder_auth?.user !== null
+        ) {
+          response = await conversationApi.getResponse(
+            body,
+            (req as ToGODerRequest).togoder_auth?.user
+          );
+        }
         const signature = jwt.sign(
           body.prompts.map((x) => x.content).join(' '),
           process.env.JWT_SECRET!

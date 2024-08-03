@@ -103,8 +103,7 @@ export const PromptList: Record<string, PromptListItem> = {
   '/SocialConversation': {
     prompt: SocialConversationPrompt,
     description:
-      'Have a social conversation with ToGODer. It is a \
-    friend, and not a therapist here.',
+      'Have a social conversation. Talk to a friend, and not a therapist here.',
     display: true,
   },
   '/medium': {
@@ -114,7 +113,7 @@ export const PromptList: Record<string, PromptListItem> = {
   },
   '/experience': {
     prompt: ExperiencePrompt,
-    description: 'Let ToGODer lead the conversation.',
+    description: 'Let us lead the conversation.',
     display: false,
   },
 };
