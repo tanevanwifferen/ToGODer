@@ -47,10 +47,17 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
         if (body.assistant_name == null || body.assistant_name == '') {
           body.assistant_name = getAssistantName();
         }
-        const response = await conversationApi.getResponse(
-          body,
-          (req as ToGODerRequest).togoder_auth?.user
-        );
+        let response =
+          'Please create a free account or login to have longer conversations.';
+        if (
+          body.prompts.length <= 10 ||
+          (req as ToGODerRequest).togoder_auth?.user !== null
+        ) {
+          response = await conversationApi.getResponse(
+            body,
+            (req as ToGODerRequest).togoder_auth?.user
+          );
+        }
         const signature = jwt.sign(
           body.prompts.map((x) => x.content).join(' '),
           process.env.JWT_SECRET!
