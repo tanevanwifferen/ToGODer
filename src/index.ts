@@ -7,6 +7,7 @@ import { GetAuthRouter } from './Web/AuthController';
 import { GetModelName, ListModels } from './LLM/Model/AIProvider';
 import { GetBillingRouter } from './Web/BillingController';
 import { setupKoFi } from './Web/KoFiController';
+import { setupRunners } from './Auth/Runners';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -87,3 +88,5 @@ app.use((err: Error, req: Request, res: Response) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+setupRunners();
