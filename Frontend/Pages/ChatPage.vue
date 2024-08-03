@@ -45,13 +45,21 @@ export default {
     await this.chatStore.initChatStore();
   },
   methods: {
+    getHeaders() {
+      var toReturn = {
+        'Content-Type': 'application/json',
+      };
+      if (this.authStore.token) {
+        Object.defineProperty(toReturn, 'Authorization', {
+          value: `Bearer ${this.authStore.token}`,
+        });
+      }
+      return toReturn;
+    },
     async startExperience(evt) {
       let response = await fetch('/api/experience', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.authStore.token}`,
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify({
           model: this.chatStore.model,
           language: evt.language,
@@ -92,10 +100,7 @@ export default {
 
         let response = await fetch('/api/chat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.authStore.token}`,
-          },
+          headers: this.getHeaders(),
           body: JSON.stringify({
             model: this.chatStore.model,
             humanPrompt: this.chatStore.humanPrompt,
@@ -142,10 +147,7 @@ export default {
       try {
         let response = await fetch('/api/title', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.authStore.token}`,
-          },
+          headers: this.getHeaders(),
           body: JSON.stringify({
             model: this.chatStore.model,
             content: this.chatStore.messages.map((x) => ({

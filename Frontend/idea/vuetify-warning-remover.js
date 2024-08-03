@@ -10,11 +10,8 @@ Vue.component('v-card-actions', {});
 
 Vue.component('v-btn', {});
 Vue.component('v-select', {});
-
 Vue.component('v-text-field', {});
-
-Vue.component('v-spacer', {});
-
+Vue.component('v-menu', {});
 Vue.component('v-tooltip', {});
 
-Vue.component('v-menu', {});
+Vue.component('v-spacer', {});

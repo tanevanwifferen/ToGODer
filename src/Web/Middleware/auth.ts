@@ -27,6 +27,7 @@ export const setAuthUser = async (
     });
     next();
   } catch (e) {
+    console.log('authentication error', e);
     res.status(401).json('Invalid token');
   }
 };
