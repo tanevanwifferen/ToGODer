@@ -47,7 +47,7 @@ export default {
   },
   computed: {
     view() {
-      return this.authStore.token == '' ? 'login' : 'logout';
+      return this.authStore.token === '' ? 'login' : 'logout';
     },
   },
   methods: {
@@ -57,8 +57,8 @@ export default {
     },
   },
   watch: {
-    menu(newval) {
-      newval && this.authStore.refreshBilling();
+    menu(newVal) {
+      newVal && this.authStore.refreshBilling();
     },
   },
 };

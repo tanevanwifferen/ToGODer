@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { AIWrapper } from './AIWrapper';
 import ChatCompletion = OpenAI.ChatCompletion;
-import { AIProvider } from '../Models/AIProvider';
+import { AIProvider } from './Model/AIProvider';
 
 export class OpenAIWrapper implements AIWrapper {
   private apiKey: string;

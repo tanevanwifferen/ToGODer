@@ -4,7 +4,7 @@ import {
 } from 'openai/resources/index.mjs';
 import { AIWrapper } from '../LLM/AIWrapper';
 import { BillingApi } from '../Api/BillingApi';
-import { AIProvider, getTokenCost } from '../Models/AIProvider';
+import { AIProvider, getTokenCost } from '../LLM/Model/AIProvider';
 import { User } from '@prisma/client';
 
 export class BillingDecorator implements AIWrapper {

@@ -1,10 +1,10 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { GetChatRouter } from './Web/ChatController';
 import { ConversationApi } from './Api/ConversationApi';
 import { GetAuthRouter } from './Web/AuthController';
-import { GetModelName, ListModels } from './Models/AIProvider';
+import { GetModelName, ListModels } from './LLM/Model/AIProvider';
 import { GetBillingRouter } from './Web/BillingController';
 import { setupKoFi } from './Web/KoFiController';
 
@@ -50,10 +50,10 @@ app.use(chatRouter);
 app.use(authRouter);
 app.use(billingRouter);
 
-const donateoptions: { address: string }[] = JSON.parse(
+const donateOptions: { address: string }[] = JSON.parse(
   process.env.DONATE_OPTIONS || '[]'
 );
-if (donateoptions.filter((x) => x.address.includes('ko-fi.com')).length > 0) {
+if (donateOptions.filter((x) => x.address.includes('ko-fi.com')).length > 0) {
   setupKoFi(app);
 }
 
@@ -79,7 +79,7 @@ app.get('/', (req, res) => {
 });
 
 // Centralized error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, req: Request, res: Response) => {
   console.error('Unhandled error at ' + new Date() + ':', err);
   res.status(500).send('Internal Server Error');
 });

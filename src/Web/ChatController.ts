@@ -10,10 +10,10 @@ import {
   ChatRequest,
   ChatRequestCommunicationStyle,
   ExperienceRequest,
-} from '../Models/ChatRequest';
+} from '../LLM/Model/ChatRequest';
 import { ExperienceSeedPrompt } from '../LLM/prompts/experienceprompts';
 import jwt from 'jsonwebtoken';
-import { getDefaultModel } from '../Models/AIProvider';
+import { getDefaultModel } from '../LLM/Model/AIProvider';
 import { setAuthUser } from './Middleware/auth';
 import { ToGODerRequest } from './Model/ToGODerRequest';
 
@@ -35,7 +35,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
             humanPrompt: false,
             keepGoing: false,
             outsideBox: false,
-            communcationStyle: ChatRequestCommunicationStyle.Default,
+            communicationStyle: ChatRequestCommunicationStyle.Default,
             prompts: req.body,
           };
         }

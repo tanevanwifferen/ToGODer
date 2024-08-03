@@ -15,12 +15,12 @@ import { GetTitlePrompt } from '../LLM/prompts/systemprompts';
 import {
   ChatRequest,
   ChatRequestCommunicationStyle,
-} from '../Models/ChatRequest';
+} from '../LLM/Model/ChatRequest';
 import {
   AIProvider,
   getAIWrapper,
   getDefaultModel,
-} from '../Models/AIProvider';
+} from '../LLM/Model/AIProvider';
 import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
 import { User } from '@prisma/client';
 import { BillingDecorator } from '../Decorators/BillingDecorator';
@@ -89,41 +89,41 @@ export class ConversationApi {
 
     var firstPrompt = (<string>input.prompts[0].content)?.split(' ')[0];
 
-    var systemprompt = PromptList['/default'].prompt;
+    var systemPrompt = PromptList['/default'].prompt;
     if (firstPrompt in PromptList) {
-      systemprompt = PromptList[firstPrompt].prompt;
+      systemPrompt = PromptList[firstPrompt].prompt;
     } else if (
       Object.values(PromptList).some((x) => x.aliases?.includes(firstPrompt))
     ) {
-      systemprompt = Object.values(PromptList).find((x) =>
+      systemPrompt = Object.values(PromptList).find((x) =>
         x.aliases?.includes(firstPrompt)
       )?.prompt!;
     }
-    systemprompt += '\n\n' + FormattingPrompt;
+    systemPrompt += '\n\n' + FormattingPrompt;
     if (input.humanPrompt) {
-      systemprompt += '\n\n' + HumanResponsePrompt;
+      systemPrompt += '\n\n' + HumanResponsePrompt;
     }
 
-    switch (input.communcationStyle) {
+    switch (input.communicationStyle) {
       case ChatRequestCommunicationStyle.Default:
         break;
       case ChatRequestCommunicationStyle.LessBloat:
-        systemprompt += '\n\n' + lessBloatPrompt;
+        systemPrompt += '\n\n' + lessBloatPrompt;
         break;
       case ChatRequestCommunicationStyle.AdaptToConversant:
-        systemprompt += '\n\n' + AdaptToConversantsCommunicationStyle;
+        systemPrompt += '\n\n' + AdaptToConversantsCommunicationStyle;
         break;
     }
 
     if (input.outsideBox) {
-      systemprompt += '\n\n' + outsideBoxPrompt;
+      systemPrompt += '\n\n' + outsideBoxPrompt;
     }
 
     if (input.keepGoing) {
-      systemprompt += '\n\n' + keepConversationGoingPrompt;
+      systemPrompt += '\n\n' + keepConversationGoingPrompt;
     }
     return CompletionToContent(
-      await aiWrapper.getResponse(systemprompt, input.prompts)
+      await aiWrapper.getResponse(systemPrompt, input.prompts)
     );
   }
 

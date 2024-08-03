@@ -12,7 +12,7 @@ export interface ChatRequest {
   humanPrompt: boolean | undefined;
   keepGoing: boolean | undefined;
   outsideBox: boolean | undefined;
-  communcationStyle: ChatRequestCommunicationStyle | undefined;
+  communicationStyle: ChatRequestCommunicationStyle | undefined;
   prompts: ChatCompletionMessageParam[];
 }
 
