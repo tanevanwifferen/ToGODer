@@ -10,7 +10,7 @@
         @on-experience-start="startExperience"
       >
       </chat>
-      <donatewindow></donatewindow>
+      <donate-window></donate-window>
     </v-row>
   </div>
 </template>
@@ -25,8 +25,8 @@ export default {
     toolbar: Vue.defineAsyncComponent(() =>
       load('/Components/Chat/toolbar.vue')
     ),
-    donatewindow: Vue.defineAsyncComponent(() =>
-      load('/Components/Donate/donatewindow.vue')
+    donateWindow: Vue.defineAsyncComponent(() =>
+      load('/Components/Donate/donateWindow.vue')
     ),
   },
   async setup() {

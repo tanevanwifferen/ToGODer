@@ -1,15 +1,11 @@
-import { NextFunction, Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 import { getDbContext } from '../Entity/Database';
 import bcrypt from 'bcrypt';
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { Mailer } from '../Email/mailer';
 import { onlyOwner } from './Middleware/auth';
 
-const updateTokenHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const updateTokenHandler = async (req: Request, res: Response) => {
   try {
     const token = jwt.sign(
       { id: req.body.userId, date: new Date().getTime() },
@@ -22,11 +18,7 @@ const updateTokenHandler = async (
   }
 };
 
-const forgotPasswordHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const forgotPasswordHandler = async (req: Request, res: Response) => {
   try {
     const message = 'If email exists, a password reset email will be sent.';
     const { email } = req.params;
@@ -51,11 +43,7 @@ const forgotPasswordHandler = async (
   }
 };
 
-const resetPasswordHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const resetPasswordHandler = async (req: Request, res: Response) => {
   try {
     // TODO: add nonce for password so a signature can only be used once.
     // Think a nonce in the db indicating how many passwords have been set ever.
@@ -89,11 +77,7 @@ const resetPasswordHandler = async (
   }
 };
 
-const verifyHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const verifyHandler = async (req: Request, res: Response) => {
   try {
     const { id, code } = req.params;
     const db = getDbContext();
@@ -115,11 +99,7 @@ const verifyHandler = async (
   }
 };
 
-const signInHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const signInHandler = async (req: Request, res: Response) => {
   try {
     const db = getDbContext();
     const user = await db.user.findUnique({
@@ -148,11 +128,7 @@ const signInHandler = async (
   }
 };
 
-const signUpHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const signUpHandler = async (req: Request, res: Response) => {
   try {
     // verify email is valid email address
     if (!req.body.email || !Mailer.IsValidEmailAddress(req.body.email)) {

@@ -6,7 +6,7 @@ import { Decimal } from '@prisma/client/runtime/binary';
 
 export function setupKoFi(app: Express) {
   kofi(app, {
-    async onDonation(donation: DonationData, req) {
+    async onDonation(donation: DonationData) {
       const db = getDbContext();
       await db.payment.create({
         data: {

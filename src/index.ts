@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { GetChatRouter } from './Web/ChatController';
@@ -79,7 +79,7 @@ app.get('/', (req, res) => {
 });
 
 // Centralized error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, req: Request, res: Response) => {
   console.error('Unhandled error at ' + new Date() + ':', err);
   res.status(500).send('Internal Server Error');
 });
