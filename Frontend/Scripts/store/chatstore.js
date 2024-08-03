@@ -22,7 +22,8 @@ localStorage.getItem(communicationStyleKey) ??
   localStorage.setItem(communicationStyleKey, '0');
 localStorage.getItem(outsideBoxKey) ??
   localStorage.setItem(outsideBoxKey, 'true');
-localStorage.getItem(modelKey) ?? localStorage.setItem(modelKey, 'gpt-4o');
+localStorage.getItem(modelKey) ??
+  localStorage.setItem(modelKey, 'meta-llama/llama-3.1-70b-instruct');
 
 var existingDefaultPrompt = localStorage.getItem(defaultPromptKey);
 (!!existingDefaultPrompt && existingDefaultPrompt != 'undefined') ||
