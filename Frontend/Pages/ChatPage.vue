@@ -101,7 +101,7 @@ export default {
             humanPrompt: this.chatStore.humanPrompt,
             keepGoing: this.chatStore.keepGoing,
             outsideBox: this.chatStore.outsideBox,
-            communicationStyleKey: this.chatStore.communicationStyle,
+            communicationStyle: this.chatStore.communicationStyle,
             prompts: messages,
           }),
         });

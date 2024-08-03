@@ -1,7 +1,7 @@
 import { Decimal } from '@prisma/client/runtime/library';
-import { AIWrapper } from '../LLM/AIWrapper';
-import { OpenAIWrapper } from '../LLM/OpenAI';
-import { OpenRouterWrapper } from '../LLM/OpenRouter';
+import { AIWrapper } from '../AIWrapper';
+import { OpenAIWrapper } from '../OpenAI';
+import { OpenRouterWrapper } from '../OpenRouter';
 
 export interface AICost {
   input_cost_per_million: Decimal;
@@ -35,46 +35,46 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
 }
 
 export function getTokenCost(model: AIProvider): AICost {
-  var toreturn: AICost | null = null;
+  let torReturn: AICost | null = null;
   switch (model) {
     case AIProvider.Claude3SonnetBeta:
-      toreturn = {
+      torReturn = {
         input_cost_per_million: new Decimal('3'),
         output_cost_per_million: new Decimal('15'),
       };
       break;
     case AIProvider.LLama3:
-      toreturn = {
+      torReturn = {
         input_cost_per_million: new Decimal('1'),
         output_cost_per_million: new Decimal('1'),
       };
       break;
     case AIProvider.LLama31405b:
-      toreturn = {
+      torReturn = {
         input_cost_per_million: new Decimal('4.5'),
         output_cost_per_million: new Decimal('4.5'),
       };
       break;
     case AIProvider.LLama3170b:
-      toreturn = {
+      torReturn = {
         input_cost_per_million: new Decimal('1'),
         output_cost_per_million: new Decimal('1'),
       };
       break;
     case AIProvider.Gpt4o:
-      toreturn = {
+      torReturn = {
         input_cost_per_million: new Decimal('5'),
         output_cost_per_million: new Decimal('15'),
       };
       break;
     case AIProvider.Gpt4oMini:
-      toreturn = {
+      torReturn = {
         input_cost_per_million: new Decimal('0.15'),
         output_cost_per_million: new Decimal('0.6'),
       };
       break;
     case AIProvider.Gpt35turbo:
-      toreturn = {
+      torReturn = {
         input_cost_per_million: new Decimal('3'),
         output_cost_per_million: new Decimal('6'),
       };
@@ -83,14 +83,15 @@ export function getTokenCost(model: AIProvider): AICost {
       throw new Error('unknown price for model: ' + model);
   }
 
-  toreturn.input_cost_per_million = toreturn.input_cost_per_million.mul('1.1');
-  toreturn.output_cost_per_million =
-    toreturn.output_cost_per_million.mul('1.1');
-  return toreturn;
+  torReturn.input_cost_per_million =
+    torReturn.input_cost_per_million.mul('1.1');
+  torReturn.output_cost_per_million =
+    torReturn.output_cost_per_million.mul('1.1');
+  return torReturn;
 }
 
-export function GetModelName(privider: AIProvider): string {
-  switch (privider) {
+export function GetModelName(provider: AIProvider): string {
+  switch (provider) {
     case AIProvider.Gpt4oMini:
       return 'GPT-4o-mini';
     case AIProvider.Gpt4o:

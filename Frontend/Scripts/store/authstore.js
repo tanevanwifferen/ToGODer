@@ -88,12 +88,12 @@ const useAuthStore = Pinia.defineStore('auth', {
             password: this.password,
           }),
         });
-        var data = await response.json();
+        var data = await response.text();
         if (!response.ok) {
-          console.error('error creating user', data.error);
+          console.error('error creating user');
           return 'An error has occurred. Please try again later.';
         }
-        return 'A verification email has been sent to your email address. Please verify your email address to login.';
+        return data;
       } catch (e) {
         console.error('error creating user', e);
       }

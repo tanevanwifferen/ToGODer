@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card title="Login" v-if="view == 'login'">
+    <v-card title="Login" v-if="view === 'login'">
       <v-card-text>
         <v-text-field v-model="authStore.email" label="Email"></v-text-field>
         <v-text-field
@@ -14,12 +14,12 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-btn text="Create User" @click="view = 'createuser'"></v-btn>
+        <v-btn text="Create User" @click="view = 'createUser'"></v-btn>
         <v-spacer></v-spacer>
         <v-btn text="Login" @click="authStore.login()"></v-btn>
       </v-card-actions>
     </v-card>
-    <v-card title="Create User" v-if="view == 'createuser'">
+    <v-card title="Create User" v-if="view === 'createUser'">
       <v-card-text>
         <v-text-field v-model="authStore.email" label="Email"></v-text-field>
         <v-text-field
@@ -32,7 +32,7 @@
           type="password"
           label="Repeat Password"
         ></v-text-field>
-        <p v-if="verifyText != ''" style="color: red">
+        <p v-if="verifyText !== ''" style="color: red">
           {{ verifyText }}
         </p>
       </v-card-text>
@@ -40,19 +40,28 @@
         <v-btn text="back" @click="view = 'login'">back</v-btn>
         <v-spacer></v-spacer>
         <v-btn
-          :disabled="authStore.password != passwordCopy"
-          text="Login"
+          v-if="verifyText === ''"
+          :disabled="authStore.password !== passwordCopy"
+          text="Create User"
           @click="createUser()"
+        ></v-btn>
+        <v-btn
+          v-if="verifyText !== ''"
+          text="Next"
+          @click="view = 'login'"
         ></v-btn>
       </v-card-actions>
     </v-card>
-    <v-card title="Forgot password" v-if="view == 'forgot_password_send_email'">
+    <v-card
+      title="Forgot password"
+      v-if="view === 'forgot_password_send_email'"
+    >
       <v-card-text>
         <v-text-field v-model="authStore.email" label="Email"></v-text-field>
         <p class="fake-a-elt" @click="view = 'forgot_password_enter_code'">
           Got a code?
         </p>
-        <p v-if="verifyText != ''" style="color: red">
+        <p v-if="verifyText !== ''" style="color: red">
           {{ verifyText }}
         </p>
       </v-card-text>
@@ -60,18 +69,21 @@
         <v-btn text="back" @click="view = 'login'">back</v-btn>
         <v-spacer></v-spacer>
         <v-btn
-          v-if="verifyText == ''"
+          v-if="verifyText === ''"
           text="Submit"
           @click="sendForgotPasswordEmail()"
         ></v-btn>
         <v-btn
-          v-if="verifyText != ''"
+          v-if="verifyText !== ''"
           text="Next"
           @click="view = 'forgot_password_enter_code'"
         ></v-btn>
       </v-card-actions>
     </v-card>
-    <v-card title="Forgot password" v-if="view == 'forgot_password_enter_code'">
+    <v-card
+      title="Forgot password"
+      v-if="view === 'forgot_password_enter_code'"
+    >
       <v-card-text>
         <v-text-field v-model="authStore.email" label="Email"></v-text-field>
         <v-text-field v-model="code" label="Code"></v-text-field>
@@ -85,7 +97,7 @@
           v-model="passwordCopy"
           label="Verify Password"
         ></v-text-field>
-        <p v-if="verifyText != ''" style="color: red">
+        <p v-if="verifyText !== ''" style="color: red">
           {{ verifyText }}
         </p>
       </v-card-text>
@@ -93,13 +105,13 @@
         <v-btn text="back" @click="view = 'login'">back</v-btn>
         <v-spacer></v-spacer>
         <v-btn
-          v-if="verifyText == ''"
-          :disabled="authStore.password != passwordCopy"
+          v-if="verifyText === ''"
+          :disabled="authStore.password !== passwordCopy"
           text="Submit"
           @click="setNewPassword()"
         ></v-btn>
         <v-btn
-          v-if="verifyText != ''"
+          v-if="verifyText !== ''"
           text="Next"
           @click="view = 'forgot_password_enter_code'"
         ></v-btn>
