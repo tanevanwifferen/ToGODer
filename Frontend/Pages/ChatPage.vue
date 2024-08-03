@@ -52,6 +52,7 @@ export default {
       if (this.authStore.token) {
         Object.defineProperty(toReturn, 'Authorization', {
           value: `Bearer ${this.authStore.token}`,
+          enumerable: true,
         });
       }
       return toReturn;
