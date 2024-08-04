@@ -21,6 +21,45 @@ function getAssistantName(): string {
   return process.env.ASSISTANT_NAME ?? 'ToGODer';
 }
 
+const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    let body: ChatRequest = req.body;
+    if (!('humanPrompt' in req.body)) {
+      body = {
+        model: getDefaultModel(),
+        humanPrompt: false,
+        keepGoing: false,
+        outsideBox: false,
+        communicationStyle: ChatRequestCommunicationStyle.Default,
+        prompts: req.body,
+        assistant_name: getAssistantName(),
+      };
+    }
+    if (body.assistant_name == null || body.assistant_name == '') {
+      body.assistant_name = getAssistantName();
+    }
+    let response =
+      'Please create a free account or login to have longer conversations.';
+    if (
+      body.prompts.length <= 20 ||
+      (req as ToGODerRequest).togoder_auth?.user !== null
+    ) {
+      const conversationApi = new ConversationApi(body.assistant_name);
+      response = await conversationApi.getResponse(
+        body,
+        (req as ToGODerRequest).togoder_auth?.user
+      );
+    }
+    const signature = jwt.sign(
+      body.prompts.map((x) => x.content).join(' '),
+      process.env.JWT_SECRET!
+    );
+    res.json({ content: response, signature: signature });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
   const chatRouter = Router();
   // Route handlers
@@ -29,44 +68,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     messageLimiter,
     validateChatCompletionMessageArray,
     setAuthUser,
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const conversationApi = new ConversationApi();
-        let body: ChatRequest = req.body;
-        if (!('humanPrompt' in req.body)) {
-          body = {
-            model: getDefaultModel(),
-            humanPrompt: false,
-            keepGoing: false,
-            outsideBox: false,
-            communicationStyle: ChatRequestCommunicationStyle.Default,
-            prompts: req.body,
-            assistant_name: getAssistantName(),
-          };
-        }
-        if (body.assistant_name == null || body.assistant_name == '') {
-          body.assistant_name = getAssistantName();
-        }
-        let response =
-          'Please create a free account or login to have longer conversations.';
-        if (
-          body.prompts.length <= 20 ||
-          (req as ToGODerRequest).togoder_auth?.user !== null
-        ) {
-          response = await conversationApi.getResponse(
-            body,
-            (req as ToGODerRequest).togoder_auth?.user
-          );
-        }
-        const signature = jwt.sign(
-          body.prompts.map((x) => x.content).join(' '),
-          process.env.JWT_SECRET!
-        );
-        res.json({ content: response, signature: signature });
-      } catch (error) {
-        next(error);
-      }
-    }
+    chatHandler
   );
 
   chatRouter.post(
@@ -75,8 +77,12 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     setAuthUser,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const conversationApi = new ConversationApi();
         let body: ExperienceRequest = req.body;
+        if (body.assistant_name == null || body.assistant_name == '') {
+          body.assistant_name = getAssistantName();
+        }
+
+        const conversationApi = new ConversationApi(body.assistant_name);
         let startText = await conversationApi.TranslateText(
           ExperienceSeedPrompt,
           body.language,
@@ -98,7 +104,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     setAuthUser,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const conversationApi = new ConversationApi();
+        const conversationApi = new ConversationApi('');
         const response = await conversationApi.getTitle(
           req.body.content,
           req.body.model ?? getDefaultModel(),
@@ -116,7 +122,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
   });
 
   chatRouter.get('/api/quote', (req, res) => {
-    res.json({ quote: new ConversationApi().getQuote() });
+    res.json({ quote: new ConversationApi('').getQuote() });
   });
 
   return chatRouter;
