@@ -20,4 +20,5 @@ export interface ChatRequest {
 export interface ExperienceRequest {
   model: AIProvider;
   language: string;
+  assistant_name: string | undefined;
 }

@@ -32,6 +32,12 @@ function CompletionToContent(completion: ChatCompletion): string {
 }
 
 export class ConversationApi {
+  public get assistant_name(): string {
+    return this._assistant_name;
+  }
+
+  constructor(private _assistant_name: string) {}
+
   public getQuote() {
     return quote;
   }
@@ -124,7 +130,7 @@ export class ConversationApi {
     }
     systemPrompt = systemPrompt.replace(
       /\{\{ name \}\}/g,
-      () => input.assistant_name!
+      () => this.assistant_name!
     );
     return CompletionToContent(
       await aiWrapper.getResponse(systemPrompt, input.prompts)
@@ -138,6 +144,7 @@ export class ConversationApi {
     user: User | null | undefined
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model, user);
+    text = text.replace(/\{\{ name \}\}/g, this.assistant_name);
     var result = await aiWrapper.getResponse(TranslationPrompt + language, [
       { content: text, role: 'user' },
     ]);
@@ -146,7 +153,7 @@ export class ConversationApi {
 }
 
 async function updateQuote() {
-  var q = await new ConversationApi().getResponseRaw(
+  var q = await new ConversationApi('').getResponseRaw(
     [{ content: 'the assistant is a spiritual guide', role: 'user' }],
     'Share a short fitting message for people who seek. make it quotable.',
     getDefaultModel(),
