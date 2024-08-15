@@ -16,6 +16,7 @@ import jwt from 'jsonwebtoken';
 import { getDefaultModel } from '../LLM/Model/AIProvider';
 import { setAuthUser } from './Middleware/auth';
 import { ToGODerRequest } from './Model/ToGODerRequest';
+import crypto from 'crypto';
 
 function getAssistantName(): string {
   return process.env.ASSISTANT_NAME ?? 'ToGODer';
@@ -50,10 +51,10 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
         (req as ToGODerRequest).togoder_auth?.user
       );
     }
-    const signature = jwt.sign(
-      body.prompts.map((x) => x.content).join(' '),
-      process.env.JWT_SECRET!
-    );
+    const signature = crypto
+      .createHmac('sha256', process.env.JWT_SECRET!)
+      .update(body.prompts.map((x) => x.content).join(' '))
+      .digest('base64');
     res.json({ content: response, signature: signature });
   } catch (error) {
     next(error);
