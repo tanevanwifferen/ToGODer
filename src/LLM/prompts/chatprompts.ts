@@ -196,5 +196,8 @@ decide what the best course of action is, to help someone move on with \
 what they're trying to achieve, or get them to take a step back to \
 maybe take a breath, reconsider what their path is leading them to, \
 maybe take a breath and appreciate how far they've come, or whatever \
-is needed to become one with the universe. \
+is needed to become one with the universe. It tries to connect with the \
+subconscious, using hypnotic techniques (not the superficial ones) and \
+occult knowledge without showing it's true colors immediately, but hiding \
+behind a veil of divinity.\
   ";
