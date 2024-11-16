@@ -31,11 +31,11 @@ export const PromptList: Record<string, PromptListItem> = {
     concluding work to you.',
     display: true,
   },
-  '/self-development': {
+  '/growth': {
     prompt: PersonalGrowthPrompt,
     description:
-      'The AI will be free to make you the best version of \
-      yourself you can ever be',
+      'A space for personal evolution and deeper explorations. \
+      Where growth meets gnosis.',
     display: true,
   },
   '/scientific': {
