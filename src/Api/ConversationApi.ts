@@ -6,6 +6,7 @@ import {
   AdaptToConversantsCommunicationStyle,
   FormattingPrompt,
   HumanResponsePrompt,
+  InformalCommunicationStyle,
   keepConversationGoingPrompt,
   lessBloatPrompt,
   outsideBoxPrompt,
@@ -119,6 +120,9 @@ export class ConversationApi {
       case ChatRequestCommunicationStyle.AdaptToConversant:
         systemPrompt += '\n\n' + AdaptToConversantsCommunicationStyle;
         break;
+      case ChatRequestCommunicationStyle.Informal:
+        systemPrompt += '\n\n' + InformalCommunicationStyle;
+        break;
     }
 
     if (input.outsideBox) {
@@ -129,7 +133,7 @@ export class ConversationApi {
       systemPrompt += '\n\n' + keepConversationGoingPrompt;
     }
     systemPrompt = systemPrompt.replace(
-      /\{\{ name \}\}/g,
+      /{{ name}}/g,
       () => this.assistant_name!
     );
     return CompletionToContent(
@@ -144,7 +148,7 @@ export class ConversationApi {
     user: User | null | undefined
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model, user);
-    text = text.replace(/\{\{ name \}\}/g, this.assistant_name);
+    text = text.replace(/{{ name }}/g, this.assistant_name);
     var result = await aiWrapper.getResponse(TranslationPrompt + language, [
       { content: text, role: 'user' },
     ]);
