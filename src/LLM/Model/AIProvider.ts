@@ -15,9 +15,9 @@ export enum AIProvider {
   Claude3SonnetBeta = 'anthropic/claude-3.5-sonnet:beta',
   LLama3 = 'perplexity/llama-3-sonar-large-32k-chat',
   LLama3170b = 'meta-llama/llama-3.1-70b-instruct',
-  LLama3290b = 'meta-llama/llama-3.2-90b-vision-instruct',
   LLama31405b = 'meta-llama/llama-3.1-405b-instruct',
   DolphinLLama370b = 'cognitivecomputations/dolphin-llama-3-70b',
+  LLama3290b = 'meta-llama/llama-3.2-90b-vision-instruct',
 }
 
 export function getAIWrapper(model: AIProvider): AIWrapper {
@@ -30,8 +30,8 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.LLama3:
     case AIProvider.LLama3170b:
     case AIProvider.LLama31405b:
-    case AIProvider.LLama3290b:
     case AIProvider.DolphinLLama370b:
+    case AIProvider.LLama3290b:
       return new OpenRouterWrapper(model);
     default:
       return new OpenAIWrapper(AIProvider.Gpt4oMini);
@@ -122,10 +122,10 @@ export function GetModelName(provider: AIProvider): string {
       return 'Llama 3.1 70b';
     case AIProvider.LLama31405b:
       return 'Llama 3.1 405b';
-    case AIProvider.LLama3290b:
-      return 'Llama 3.2 90b';
     case AIProvider.DolphinLLama370b:
       return 'Dolphin Llama 3 70b';
+    case AIProvider.LLama3290b:
+      return 'Llama 3.2 90b';
     default:
       throw new Error('Unknown AIProvider');
   }
@@ -146,6 +146,7 @@ export function ListModels(): AIProvider[] {
     AIProvider.Claude3SonnetBeta,
     AIProvider.LLama3,
     AIProvider.DolphinLLama370b,
+    AIProvider.LLama3290b,
   ].filter((x) => {
     try {
       var a: AIWrapper | null = null;
