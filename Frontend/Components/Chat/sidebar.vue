@@ -151,3 +151,9 @@ export default {
   },
 };
 </script>
+
+<style>
+.v-expansion-panel-text__wrapper {
+  padding: 0;
+}
+</style>
