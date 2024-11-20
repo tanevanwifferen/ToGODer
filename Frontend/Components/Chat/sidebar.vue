@@ -79,6 +79,7 @@
                 { key: 'Default', value: 0 },
                 { key: 'Less Bloat', value: 1 },
                 { key: 'Adapt Style', value: 2 },
+                { key: 'Informal', value: 3 },
               ]"
             >
             </v-select>
@@ -100,7 +101,7 @@
       link
       @click="chatStore.chatId = chat.chatId"
       v-for="chat in chatStore.chatsOrderedByDateDescending.filter(
-        (x) => x.title != null && x.title != ''
+        (x) => x.title != null && x.title !== ''
       )"
     >
       <template v-slot="content">
@@ -131,7 +132,7 @@ export default {
     const globalStore = useGlobalStore();
     const chatStore = useChatStore();
 
-    chatStore.$subscribe((mutation, state) => {
+    chatStore.$subscribe(() => {
       localStorage.setItem('humanPrompt', chatStore.humanPrompt);
       localStorage.setItem('keepGoing', chatStore.keepGoing);
       localStorage.setItem('communicationStyle', chatStore.communicationStyle);
