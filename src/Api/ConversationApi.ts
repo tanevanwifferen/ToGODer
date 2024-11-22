@@ -133,7 +133,7 @@ export class ConversationApi {
       systemPrompt += '\n\n' + keepConversationGoingPrompt;
     }
     systemPrompt = systemPrompt.replace(
-      /{{ name}}/g,
+      /{{ name }}/g,
       () => this.assistant_name!
     );
     return CompletionToContent(
