@@ -35,13 +35,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async refreshBilling() {
       try {
-        var response = await fetch('/api/billing', {
-          method: 'GET',
-          headers: {
-            Authorization: 'Bearer ' + this.token,
-          },
-        });
-        var data = await response.json();
+        const data = await AuthApiClient.refreshBilling(this.token);
         if (data.error) {
           console.error('error refreshing billing', data.error);
           return;
@@ -54,17 +48,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async refreshToken() {
       try {
-        var response = await fetch('/api/auth/updateToken', {
-          method: 'POST',
-          headers: {
-            Authorization: 'Bearer ' + this.token,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: this.userId,
-          }),
-        });
-        var data = await response.json();
+        const data = await AuthApiClient.refreshToken(this.token, this.userId);
         if (data.error) {
           console.error('error refreshing token', data.error);
           return;
@@ -78,18 +62,8 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async createUser() {
       try {
-        var response = await fetch('/api/auth/signUp', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: this.email,
-            password: this.password,
-          }),
-        });
-        var data = await response.text();
-        if (!response.ok) {
+        const data = await AuthApiClient.createUser(this.email, this.password);
+        if (!data) {
           console.error('error creating user');
           return 'An error has occurred. Please try again later.';
         }
@@ -100,17 +74,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async login() {
       try {
-        const response = await fetch('/api/auth/signIn', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: this.email,
-            password: this.password,
-          }),
-        });
-        const data = await response.json();
+        const data = await AuthApiClient.login(this.email, this.password);
         if (data.error) {
           console.error('error logging in', data.error);
           return;
@@ -136,15 +100,9 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async sendForgotPasswordEmail() {
       try {
-        const response = await fetch('/api/auth/forgotPassword/' + this.email, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          console.error('error sending request', data.error);
+        const data = await AuthApiClient.sendForgotPasswordEmail(this.email);
+        if (!data) {
+          console.error('error sending request');
           return 'An error has occurred. Please try again later.';
         }
         return 'If this account exists, a password reset email will be sent. Copy the code into the next view.';
@@ -154,22 +112,16 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async setNewPassword(code) {
       try {
-        const response = await fetch('/api/auth/resetPassword/' + code, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: this.email,
-            password: this.password,
-          }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          console.error('error sending request', data.error);
+        const data = await AuthApiClient.setNewPassword(
+          code,
+          this.email,
+          this.password
+        );
+        if (!data) {
+          console.error('error sending request');
           return 'An error has occurred. Please try again later.';
         }
-        return await response.text();
+        return data;
       } catch (e) {
         console.error('error creating user', e);
       }
