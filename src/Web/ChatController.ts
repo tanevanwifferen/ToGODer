@@ -22,53 +22,6 @@ function getAssistantName(): string {
   return process.env.ASSISTANT_NAME ?? 'ToGODer';
 }
 
-/**
- * @swagger
- * /api/chat:
- *   post:
- *     summary: Handles chat requests
- *     tags: [Chat]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               model:
- *                 type: string
- *               humanPrompt:
- *                 type: boolean
- *               keepGoing:
- *                 type: boolean
- *               outsideBox:
- *                 type: boolean
- *               communicationStyle:
- *                 type: string
- *               prompts:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     content:
- *                       type: string
- *               assistant_name:
- *                 type: string
- *     responses:
- *       200:
- *         description: Chat response
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 content:
- *                   type: string
- *                 signature:
- *                   type: string
- *       500:
- *         description: Something went wrong
- */
 const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let body: ChatRequest = req.body;
@@ -108,153 +61,9 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-/**
- * @swagger
- * /api/experience:
- *   post:
- *     summary: Handles experience requests
- *     tags: [Experience]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               assistant_name:
- *                 type: string
- *               language:
- *                 type: string
- *     responses:
- *       200:
- *         description: Experience response
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 content:
- *                   type: string
- *       500:
- *         description: Something went wrong
- */
-const experienceHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    let body: ExperienceRequest = req.body;
-    if (body.assistant_name == null || body.assistant_name == '') {
-      body.assistant_name = getAssistantName();
-    }
-
-    const conversationApi = new ConversationApi(body.assistant_name);
-    let startText = await conversationApi.TranslateText(
-      ExperienceSeedPrompt,
-      body.language,
-      getDefaultModel(),
-      (req as ToGODerRequest).togoder_auth?.user
-    );
-    startText = '/experience ' + startText;
-    res.json({ content: startText });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * @swagger
- * /api/title:
- *   post:
- *     summary: Handles title requests
- *     tags: [Title]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               content:
- *                 type: string
- *               model:
- *                 type: string
- *     responses:
- *       200:
- *         description: Title response
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 content:
- *                   type: string
- *       500:
- *         description: Something went wrong
- */
-const titleHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const conversationApi = new ConversationApi('');
-    const response = await conversationApi.getTitle(
-      req.body.content,
-      req.body.model ?? getDefaultModel(),
-      (req as ToGODerRequest).togoder_auth?.user
-    );
-    res.json({ content: response });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * @swagger
- * /api/prompts:
- *   get:
- *     summary: Get list of prompts
- *     tags: [Prompts]
- *     responses:
- *       200:
- *         description: List of prompts
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: string
- */
-const getPromptsHandler = (req: Request, res: Response) => {
-  res.send(PromptList);
-};
-
-/**
- * @swagger
- * /api/quote:
- *   get:
- *     summary: Get a random quote
- *     tags: [Quote]
- *     responses:
- *       200:
- *         description: Random quote
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 quote:
- *                   type: string
- */
-const getQuoteHandler = (req: Request, res: Response) => {
-  res.json({ quote: new ConversationApi('').getQuote() });
-};
-
 export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
   const chatRouter = Router();
-
+  // Route handlers
   chatRouter.post(
     '/api/chat',
     messageLimiter,
@@ -267,7 +76,26 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     '/api/experience',
     messageLimiter,
     setAuthUser,
-    experienceHandler
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        let body: ExperienceRequest = req.body;
+        if (body.assistant_name == null || body.assistant_name == '') {
+          body.assistant_name = getAssistantName();
+        }
+
+        const conversationApi = new ConversationApi(body.assistant_name);
+        let startText = await conversationApi.TranslateText(
+          ExperienceSeedPrompt,
+          body.language,
+          getDefaultModel(),
+          (req as ToGODerRequest).togoder_auth?.user
+        );
+        startText = '/experience ' + startText;
+        res.json({ content: startText });
+      } catch (error) {
+        next(error);
+      }
+    }
   );
 
   chatRouter.post(
@@ -275,12 +103,28 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     messageLimiter,
     validateTitleMessage,
     setAuthUser,
-    titleHandler
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const conversationApi = new ConversationApi('');
+        const response = await conversationApi.getTitle(
+          req.body.content,
+          req.body.model ?? getDefaultModel(),
+          (req as ToGODerRequest).togoder_auth?.user
+        );
+        res.json({ content: response });
+      } catch (error) {
+        next(error);
+      }
+    }
   );
 
-  chatRouter.get('/api/prompts', getPromptsHandler);
+  chatRouter.get('/api/prompts', (req, res) => {
+    res.send(PromptList);
+  });
 
-  chatRouter.get('/api/quote', getQuoteHandler);
+  chatRouter.get('/api/quote', (req, res) => {
+    res.json({ quote: new ConversationApi('').getQuote() });
+  });
 
   return chatRouter;
 }

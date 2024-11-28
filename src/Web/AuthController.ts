@@ -5,36 +5,6 @@ import jwt from 'jsonwebtoken';
 import { Mailer } from '../Email/mailer';
 import { onlyOwner } from './Middleware/auth';
 
-/**
- * @swagger
- * /api/auth/updateToken:
- *   post:
- *     summary: Updates the JWT token
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
- *     responses:
- *       200:
- *         description: Token updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *       500:
- *         description: Something went wrong
- */
 const updateTokenHandler = async (req: Request, res: Response) => {
   try {
     const token = jwt.sign(
@@ -48,25 +18,6 @@ const updateTokenHandler = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * @swagger
- * /api/auth/forgotPassword/{email}:
- *   post:
- *     summary: Sends a password reset email if the email exists
- *     tags: [Auth]
- *     parameters:
- *       - in: path
- *         name: email
- *         schema:
- *           type: string
- *         required: true
- *         description: The user's email
- *     responses:
- *       200:
- *         description: If email exists, a password reset email will be sent
- *       500:
- *         description: Something went wrong
- */
 const forgotPasswordHandler = async (req: Request, res: Response) => {
   try {
     const message = 'If email exists, a password reset email will be sent.';
@@ -92,40 +43,6 @@ const forgotPasswordHandler = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * @swagger
- * /api/auth/resetPassword/{signature}:
- *   post:
- *     summary: Resets the user's password
- *     tags: [Auth]
- *     parameters:
- *       - in: path
- *         name: signature
- *         schema:
- *           type: string
- *         required: true
- *         description: The JWT signature for password reset
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               password:
- *                 type: string
- *               email:
- *                 type: string
- *     responses:
- *       200:
- *         description: Password updated successfully
- *       400:
- *         description: Expired link or invalid request
- *       404:
- *         description: User not found
- *       500:
- *         description: Something went wrong
- */
 const resetPasswordHandler = async (req: Request, res: Response) => {
   try {
     // TODO: add nonce for password so a signature can only be used once.
@@ -160,35 +77,6 @@ const resetPasswordHandler = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * @swagger
- * /api/auth/verify/{id}/{code}:
- *   get:
- *     summary: Verifies the user's email
- *     tags: [Auth]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: The user's ID
- *       - in: path
- *         name: code
- *         schema:
- *           type: string
- *         required: true
- *         description: The verification code
- *     responses:
- *       200:
- *         description: Verification successful
- *       400:
- *         description: Invalid verification code or user already verified
- *       404:
- *         description: User not found
- *       500:
- *         description: Something went wrong
- */
 const verifyHandler = async (req: Request, res: Response) => {
   try {
     const { id, code } = req.params;
@@ -211,42 +99,6 @@ const verifyHandler = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * @swagger
- * /api/auth/signIn:
- *   post:
- *     summary: Signs in the user
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Sign in successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                 userId:
- *                   type: string
- *                 date:
- *                   type: number
- *       401:
- *         description: Invalid email or password
- *       500:
- *         description: Something went wrong
- */
 const signInHandler = async (req: Request, res: Response) => {
   try {
     const db = getDbContext();
@@ -276,31 +128,6 @@ const signInHandler = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * @swagger
- * /api/auth/signUp:
- *   post:
- *     summary: Signs up a new user
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Sign up successful
- *       400:
- *         description: Email is required, password is required, or user already exists
- *       500:
- *         description: Something went wrong
- */
 const signUpHandler = async (req: Request, res: Response) => {
   try {
     // verify email is valid email address
