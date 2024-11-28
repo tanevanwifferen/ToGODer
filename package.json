@@ -34,7 +34,9 @@
     "lint-staged": "^15.2.5",
     "prettier": "^3.2.5",
     "prisma": "^5.15.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.7"
   },
   "dependencies": {
     "@ko-fi/express": "^1.0.5",
@@ -49,6 +51,8 @@
     "openai": "^4.45.0",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "vue-icon": "^2.3.0"
   },
   "lint-staged": {

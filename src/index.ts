@@ -8,9 +8,26 @@ import { GetModelName, ListModels } from './LLM/Model/AIProvider';
 import { GetBillingRouter } from './Web/BillingController';
 import { setupKoFi } from './Web/KoFiController';
 import { setupRunners } from './Auth/Runners';
+import swaggerJsDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Your API',
+      version: '1.0.0',
+    },
+  },
+  apis: [__dirname + '/Web/*Controller.js'], // Path to your route files
+};
+console.log(swaggerOptions);
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Trust the first proxy to allow the app to get the client's IP address
 app.set('trust proxy', 1);
