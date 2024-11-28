@@ -51,7 +51,7 @@ export default {
   methods: {
     async startExperience(evt) {
       try {
-        const content = await apiStartExperience(
+        const content = await startExperience(
           this.chatStore.model,
           evt.language
         );

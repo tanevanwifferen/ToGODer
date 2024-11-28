@@ -35,7 +35,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async refreshBilling() {
       try {
-        const data = await AuthApiClient.refreshBilling(this.token);
+        const data = await refreshBilling(this.token);
         if (data.error) {
           console.error('error refreshing billing', data.error);
           return;
@@ -48,7 +48,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async refreshToken() {
       try {
-        const data = await AuthApiClient.refreshToken(this.token, this.userId);
+        const data = await refreshToken(this.token, this.userId);
         if (data.error) {
           console.error('error refreshing token', data.error);
           return;
@@ -62,7 +62,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async createUser() {
       try {
-        const data = await AuthApiClient.createUser(this.email, this.password);
+        const data = await createUser(this.email, this.password);
         if (!data) {
           console.error('error creating user');
           return 'An error has occurred. Please try again later.';
@@ -74,7 +74,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async login() {
       try {
-        const data = await AuthApiClient.login(this.email, this.password);
+        const data = await login(this.email, this.password);
         if (data.error) {
           console.error('error logging in', data.error);
           return;
@@ -100,7 +100,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async sendForgotPasswordEmail() {
       try {
-        const data = await AuthApiClient.sendForgotPasswordEmail(this.email);
+        const data = await sendForgotPasswordEmail(this.email);
         if (!data) {
           console.error('error sending request');
           return 'An error has occurred. Please try again later.';
@@ -112,11 +112,7 @@ const useAuthStore = Pinia.defineStore('auth', {
     },
     async setNewPassword(code) {
       try {
-        const data = await AuthApiClient.setNewPassword(
-          code,
-          this.email,
-          this.password
-        );
+        const data = await setNewPassword(code, this.email, this.password);
         if (!data) {
           console.error('error sending request');
           return 'An error has occurred. Please try again later.';
