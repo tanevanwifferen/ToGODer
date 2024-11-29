@@ -23,7 +23,7 @@ localStorage.getItem(communicationStyleKey) ??
 localStorage.getItem(outsideBoxKey) ??
   localStorage.setItem(outsideBoxKey, 'true');
 localStorage.getItem(modelKey) ??
-  localStorage.setItem(modelKey, 'meta-llama/llama-3.1-70b-instruct');
+  localStorage.setItem(modelKey, 'meta-llama/llama-3.2-90b-vision-instruct');
 
 var existingDefaultPrompt = localStorage.getItem(defaultPromptKey);
 (!!existingDefaultPrompt && existingDefaultPrompt != 'undefined') ||
