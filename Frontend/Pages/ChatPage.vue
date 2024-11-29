@@ -32,10 +32,9 @@ export default {
   async setup() {
     const chatStore = useChatStore();
     const globalStore = useGlobalStore();
-    await globalStore.initGlobalStore();
     const authStore = useAuthStore();
-
-    initializeApi(authStore);
+    ApiClient.initialize(authStore);
+    await globalStore.initGlobalStore();
 
     return { chatStore, globalStore, authStore };
   },
@@ -51,7 +50,7 @@ export default {
   methods: {
     async startExperience(evt) {
       try {
-        const content = await startExperience(
+        const content = await ChatApiClient.startExperience(
           this.chatStore.model,
           evt.language
         );
@@ -88,7 +87,7 @@ export default {
           date: new Date().getTime(),
         });
 
-        const response = await sendMessage(
+        const response = await ChatApiClient.sendMessage(
           this.chatStore.model,
           this.chatStore.humanPrompt,
           this.chatStore.keepGoing,
@@ -125,7 +124,10 @@ export default {
         return null;
       }
       try {
-        return await apiGetTitle(this.chatStore.model, this.chatStore.messages);
+        return await ChatApiClient.getTitle(
+          this.chatStore.model,
+          this.chatStore.messages
+        );
       } catch (error) {
         if (error.type === 'RateLimit') {
           await this.handleRateLimit(error);

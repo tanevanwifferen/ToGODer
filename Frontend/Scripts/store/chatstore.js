@@ -68,8 +68,8 @@ const useChatStore = Pinia.defineStore('chats', {
   },
   actions: {
     async initChatStore() {
-      var prompts = await fetch('/api/prompts');
-      this.prompts = await prompts.json();
+      const prompts = await GlobalApiClient.getPrompts();
+      this.prompts = prompts;
     },
     saveChats() {
       var toSave = {};
