@@ -3,4 +3,5 @@ bin/
 node_modules/
 prisma/dev.*
 .DS_Store
+
 .idea
