@@ -16,7 +16,6 @@ export enum AIProvider {
   LLama3 = 'perplexity/llama-3-sonar-large-32k-chat',
   LLama3170b = 'meta-llama/llama-3.1-70b-instruct',
   LLama31405b = 'meta-llama/llama-3.1-405b-instruct',
-  DolphinLLama370b = 'cognitivecomputations/dolphin-llama-3-70b',
   LLama3290b = 'meta-llama/llama-3.2-90b-vision-instruct',
 }
 
@@ -30,7 +29,6 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.LLama3:
     case AIProvider.LLama3170b:
     case AIProvider.LLama31405b:
-    case AIProvider.DolphinLLama370b:
     case AIProvider.LLama3290b:
       return new OpenRouterWrapper(model);
     default:
@@ -69,12 +67,6 @@ export function getTokenCost(model: AIProvider): AICost {
       torReturn = {
         input_cost_per_million: new Decimal('1.08'),
         output_cost_per_million: new Decimal('1.08'),
-      };
-      break;
-    case AIProvider.DolphinLLama370b:
-      torReturn = {
-        input_cost_per_million: new Decimal('0.59'),
-        output_cost_per_million: new Decimal('0.79'),
       };
       break;
     case AIProvider.Gpt4o:
@@ -122,8 +114,6 @@ export function GetModelName(provider: AIProvider): string {
       return 'Llama 3.1 70b';
     case AIProvider.LLama31405b:
       return 'Llama 3.1 405b';
-    case AIProvider.DolphinLLama370b:
-      return 'Dolphin Llama 3 70b';
     case AIProvider.LLama3290b:
       return 'Llama 3.2 90b';
     default:
@@ -145,7 +135,6 @@ export function ListModels(): AIProvider[] {
     AIProvider.Gpt35turbo,
     AIProvider.Claude3SonnetBeta,
     AIProvider.LLama3,
-    AIProvider.DolphinLLama370b,
     AIProvider.LLama3290b,
   ].filter((x) => {
     try {
@@ -161,7 +150,6 @@ export function ListModels(): AIProvider[] {
         case AIProvider.LLama3170b:
         case AIProvider.LLama31405b:
         case AIProvider.LLama3290b:
-        case AIProvider.DolphinLLama370b:
           a = new OpenRouterWrapper(x);
           break;
       }
