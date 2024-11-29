@@ -11,6 +11,7 @@ import {
   DeescalationPrompt,
   SocialConversationPrompt,
   PhilosophicalGuidancePrompt,
+  PersonalGrowthPrompt,
 } from './chatprompts';
 import { ExperiencePrompt } from './experienceprompts';
 
@@ -28,6 +29,13 @@ export const PromptList: Record<string, PromptListItem> = {
       'Leave the ai to decide for itself. There is no steering in what \
     to interpret and find conclusions out of. Leaves most of the \
     concluding work to you.',
+    display: true,
+  },
+  '/growth': {
+    prompt: PersonalGrowthPrompt,
+    description:
+      'A space for personal evolution and deeper explorations. \
+      Where growth meets gnosis.',
     display: true,
   },
   '/scientific': {

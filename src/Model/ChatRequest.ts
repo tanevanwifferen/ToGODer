@@ -5,6 +5,7 @@ export enum ChatRequestCommunicationStyle {
   Default = 0,
   LessBloat = 1,
   AdaptToConversant = 2,
+  Informal = 3,
 }
 
 export interface ChatRequest {
