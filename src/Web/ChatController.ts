@@ -25,7 +25,7 @@ function getAssistantName(): string {
 const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let body: ChatRequest = req.body;
-    if (!('humanPrompt' in req.body)) {
+    if (!('prompts' in req.body)) {
       body = {
         model: getDefaultModel(),
         humanPrompt: false,
