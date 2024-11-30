@@ -84,12 +84,6 @@ export const validateTitleMessage = (
         "Invalid request body: Expected an object with 'role' and 'content' as strings, with 'role' being 'user', 'assistant', or 'system'."
       );
   }
-  const model: string = req.body.model;
-  try {
-    validateModel(model);
-  } catch (err: any) {
-    return res.status(400).send(err.message);
-  }
 
   next();
 };
