@@ -59,9 +59,6 @@ export class ConversationApi {
     model: AIProvider,
     user: User | null | undefined
   ): Promise<string> {
-    if (body.length > 1) {
-      throw new Error('Only one prompt is allowed for this endpoint');
-    }
     var aiWrapper = this.getAIWrapper(model, user);
 
     var prompt = GetTitlePrompt + body[0].content;

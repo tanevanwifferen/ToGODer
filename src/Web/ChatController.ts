@@ -108,7 +108,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
         const conversationApi = new ConversationApi('');
         const response = await conversationApi.getTitle(
           req.body.content,
-          req.body.model ?? getDefaultModel(),
+          getDefaultModel(),
           (req as ToGODerRequest).togoder_auth?.user
         );
         res.json({ content: response });
