@@ -22,4 +22,7 @@ export const UpdatePersonalDataPrompt =
   Return valid JSON, ONLY send the JSON object, no markdown things, and let me parse the object in the client side.\
   \
   ONLY return data you want to modify, ignore the rest.\
+  \
+  Only update a property when new information is provided.\
+  Don\'t update a property when the user asks a question, return an empty object then {}\
 ';
