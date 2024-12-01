@@ -19,5 +19,7 @@ export const UpdatePersonalDataPrompt =
   "update{FieldName}":[{id: 1, goal: understand togoder, priority: low, state: in_progress, actions_done: [installed app, had a conversation]}]. \
   If you want to remove a field, e.g. if it is completed, or if someone isn\'t a friend anymore, you should return removeGoal: [{id: 1}]\
   \
-  Return valid JSON, and let me parse the object in the client side.\
+  Return valid JSON, ONLY send the JSON object, no markdown things, and let me parse the object in the client side.\
+  \
+  ONLY return data you want to modify, ignore the rest.\
 ';
