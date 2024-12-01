@@ -58,16 +58,17 @@ export class ConversationApi {
    * Get personal data updates based on the conversation
    */
   public async getPersonalDataUpdates(
-    prompt: string,
+    prompts: ChatCompletionMessageParam[],
     data: any,
     model: AIProvider,
     user: User | null | undefined
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model, user);
+    var inputMessages = prompts.length > 2 ? prompts.slice(-2) : prompts;
     const messages = [
       {
         role: 'system' as const,
-        content: `Current data: ${JSON.stringify(data)}\n\nUser message: ${prompt}`,
+        content: `Current data: ${JSON.stringify(data)}\n\nUser message: ${JSON.stringify(inputMessages)}`,
       },
     ];
     const response = await aiWrapper.getJSONResponse(

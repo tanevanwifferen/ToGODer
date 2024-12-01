@@ -64,18 +64,14 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
 
       // Get personal data updates if data was provided
       if (body.data && body.prompts.length > 0) {
-        const lastMessage = body.prompts[body.prompts.length - 1].content;
-        if (typeof lastMessage === 'string') {
-          // TODO: move to conversationApi
-          updateData = JSON.parse(
-            await conversationApi.getPersonalDataUpdates(
-              lastMessage,
-              body.data,
-              body.model,
-              (req as ToGODerRequest).togoder_auth?.user
-            )
-          );
-        }
+        updateData = JSON.parse(
+          await conversationApi.getPersonalDataUpdates(
+            body.prompts,
+            body.data,
+            body.model,
+            (req as ToGODerRequest).togoder_auth?.user
+          )
+        );
       }
     }
     const signature = crypto
