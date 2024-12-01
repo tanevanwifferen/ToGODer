@@ -109,11 +109,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
 
         const conversationApi = new ConversationApi(body.assistant_name);
         let startText = await conversationApi.TranslateText(
-          body.data
-            ? ExperienceSeedPrompt +
-                '\n\nSystem Data: ' +
-                JSON.stringify(body.data)
-            : ExperienceSeedPrompt,
+          ExperienceSeedPrompt,
           body.language,
           getDefaultModel(),
           (req as ToGODerRequest).togoder_auth?.user
