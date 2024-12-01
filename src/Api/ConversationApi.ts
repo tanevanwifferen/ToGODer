@@ -71,7 +71,9 @@ export class ConversationApi {
         content: `Current data: ${JSON.stringify(data)}\n\nUser message: ${prompt}`,
       },
     ];
-    return CompletionToContent(await aiWrapper.getResponse('', messages));
+    const response = await aiWrapper.getResponse('', messages);
+    console.log(messages, response);
+    return CompletionToContent(response);
   }
 
   /**
