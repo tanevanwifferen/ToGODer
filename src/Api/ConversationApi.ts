@@ -12,7 +12,10 @@ import {
   outsideBoxPrompt,
 } from '../LLM/prompts/chatprompts';
 import { PromptList } from '../LLM/prompts/promptlist';
-import { GetTitlePrompt } from '../LLM/prompts/systemprompts';
+import {
+  GetTitlePrompt,
+  UpdatePersonalDataPrompt,
+} from '../LLM/prompts/systemprompts';
 import {
   ChatRequest,
   ChatRequestCommunicationStyle,
@@ -49,6 +52,26 @@ export class ConversationApi {
       aiWrapper = new BillingDecorator(aiWrapper, user);
     }
     return aiWrapper;
+  }
+
+  /**
+   * Get personal data updates based on the conversation
+   */
+  public async getPersonalDataUpdates(
+    prompt: string,
+    data: any,
+    model: AIProvider,
+    user: User | null | undefined
+  ): Promise<string> {
+    var aiWrapper = this.getAIWrapper(model, user);
+    const messages = [
+      { role: 'system' as const, content: UpdatePersonalDataPrompt },
+      {
+        role: 'user' as const,
+        content: `Current data: ${JSON.stringify(data)}\n\nUser message: ${prompt}`,
+      },
+    ];
+    return CompletionToContent(await aiWrapper.getResponse('', messages));
   }
 
   /**

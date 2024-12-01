@@ -16,10 +16,12 @@ export interface ChatRequest {
   communicationStyle: ChatRequestCommunicationStyle | undefined;
   prompts: ChatCompletionMessageParam[];
   assistant_name: string | undefined;
+  data?: any;
 }
 
 export interface ExperienceRequest {
   model: AIProvider;
   language: string;
   assistant_name: string | undefined;
+  data?: any;
 }

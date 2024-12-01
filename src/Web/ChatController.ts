@@ -39,8 +39,19 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
     if (body.assistant_name == null || body.assistant_name == '') {
       body.assistant_name = getAssistantName();
     }
+
+    // Add data as system message if provided
+    if (body.data) {
+      body.prompts.unshift({
+        role: 'system',
+        content: 'This is data about the user: ' + JSON.stringify(body.data),
+      });
+    }
+
     let response =
       'Please create a free account or login to have longer conversations.';
+    let updateData = null;
+
     if (
       body.prompts.length <= 20 ||
       (req as ToGODerRequest).togoder_auth?.user !== null
@@ -50,12 +61,25 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
         body,
         (req as ToGODerRequest).togoder_auth?.user
       );
+
+      // Get personal data updates if data was provided
+      if (body.data && body.prompts.length > 0) {
+        const lastMessage = body.prompts[body.prompts.length - 1].content;
+        if (typeof lastMessage === 'string') {
+          updateData = await conversationApi.getPersonalDataUpdates(
+            lastMessage,
+            body.data,
+            body.model,
+            (req as ToGODerRequest).togoder_auth?.user
+          );
+        }
+      }
     }
     const signature = crypto
       .createHmac('sha256', process.env.JWT_SECRET!)
       .update(body.prompts.map((x) => x.content).join(' '))
       .digest('base64');
-    res.json({ content: response, signature: signature });
+    res.json({ content: response, signature: signature, updateData });
   } catch (error) {
     next(error);
   }
@@ -85,12 +109,17 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
 
         const conversationApi = new ConversationApi(body.assistant_name);
         let startText = await conversationApi.TranslateText(
-          ExperienceSeedPrompt,
+          body.data
+            ? ExperienceSeedPrompt +
+                '\n\nSystem Data: ' +
+                JSON.stringify(body.data)
+            : ExperienceSeedPrompt,
           body.language,
           getDefaultModel(),
           (req as ToGODerRequest).togoder_auth?.user
         );
         startText = '/experience ' + startText;
+
         res.json({ content: startText });
       } catch (error) {
         next(error);
