@@ -65,13 +65,15 @@ export class ConversationApi {
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model, user);
     const messages = [
-      { role: 'system' as const, content: UpdatePersonalDataPrompt },
       {
-        role: 'user' as const,
+        role: 'system' as const,
         content: `Current data: ${JSON.stringify(data)}\n\nUser message: ${prompt}`,
       },
     ];
-    const response = await aiWrapper.getResponse('', messages);
+    const response = await aiWrapper.getJSONResponse(
+      UpdatePersonalDataPrompt,
+      messages
+    );
     const content = CompletionToContent(response);
     console.log(messages, content);
     return content;
