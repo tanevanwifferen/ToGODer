@@ -72,8 +72,9 @@ export class ConversationApi {
       },
     ];
     const response = await aiWrapper.getResponse('', messages);
-    console.log(messages, response);
-    return CompletionToContent(response);
+    const content = CompletionToContent(response);
+    console.log(messages, content);
+    return content;
   }
 
   /**

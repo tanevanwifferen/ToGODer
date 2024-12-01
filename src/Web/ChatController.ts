@@ -66,11 +66,14 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       if (body.data && body.prompts.length > 0) {
         const lastMessage = body.prompts[body.prompts.length - 1].content;
         if (typeof lastMessage === 'string') {
-          updateData = await conversationApi.getPersonalDataUpdates(
-            lastMessage,
-            body.data,
-            body.model,
-            (req as ToGODerRequest).togoder_auth?.user
+          // TODO: move to conversationApi
+          updateData = JSON.parse(
+            await conversationApi.getPersonalDataUpdates(
+              lastMessage,
+              body.data,
+              body.model,
+              (req as ToGODerRequest).togoder_auth?.user
+            )
           );
         }
       }
