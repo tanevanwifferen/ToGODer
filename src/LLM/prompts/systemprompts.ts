@@ -25,4 +25,9 @@ export const UpdatePersonalDataPrompt =
   \
   Only update a property when new information is provided.\
   Don\'t update a property when the user asks a question, return an empty object then {}\
+  \
+  \
+  If the input object contains anything weird, unreadable, feel free to replace it with something more readable.\
+  You are the boss here, so you should be able to parse it. If there\'s some weird arrays or items in there, \
+  feel free to delete the items. But parsing and restructuring would be much better.\
 ';
