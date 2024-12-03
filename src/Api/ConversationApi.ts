@@ -162,9 +162,31 @@ export class ConversationApi {
       /{{ name }}/g,
       () => this.assistant_name!
     );
+
+    systemPrompt += '\n\n' + this.formatPersonalData(input);
+
     return CompletionToContent(
       await aiWrapper.getResponse(systemPrompt, input.prompts)
     );
+  }
+
+  private formatPersonalData(body: ChatRequest): string {
+    // Add data as system message if provided
+    let personalData = [];
+    if (body.configurableData) {
+      personalData.push(
+        'This is personal data about the user: ' +
+          JSON.stringify(body.configurableData)
+      );
+    }
+    if (body.staticData) {
+      personalData.push(
+        'This is static data about the user: ' + JSON.stringify(body.staticData)
+      );
+    }
+    personalData.push('The date today = ' + new Date().toISOString());
+
+    return personalData.join('\n\n');
   }
 
   public async TranslateText(

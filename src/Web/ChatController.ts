@@ -48,28 +48,6 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       body.prompts.length <= 20 ||
       (req as ToGODerRequest).togoder_auth?.user !== null
     ) {
-      // Add data as system message if provided
-      let personalData = '';
-      if (body.configurableData) {
-        personalData +=
-          'This is personal data about the user: ' +
-          JSON.stringify(body.configurableData);
-      }
-      if (body.staticData) {
-        personalData +=
-          'This is static data about the user: ' +
-          JSON.stringify(body.staticData);
-      }
-      if (personalData !== '') {
-        body.prompts.push({
-          role: 'system',
-          content: personalData,
-        });
-      }
-      body.prompts.push({
-        role: 'system',
-        content: 'The date today is ' + new Date().toISOString(),
-      });
       const conversationApi = new ConversationApi(body.assistant_name);
       response = await conversationApi.getResponse(
         body,
