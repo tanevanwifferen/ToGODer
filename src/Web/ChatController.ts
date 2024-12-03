@@ -40,14 +40,6 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       body.assistant_name = getAssistantName();
     }
 
-    // Add data as system message if provided
-    if (body.data) {
-      body.prompts.unshift({
-        role: 'system',
-        content: 'This is data about the user: ' + JSON.stringify(body.data),
-      });
-    }
-
     let response =
       'Please create a free account or login to have longer conversations.';
     let updateData = null;
@@ -57,22 +49,25 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       (req as ToGODerRequest).togoder_auth?.user !== null
     ) {
       const conversationApi = new ConversationApi(body.assistant_name);
-      response = await conversationApi.getResponse(
-        body,
-        (req as ToGODerRequest).togoder_auth?.user
-      );
 
       // Get personal data updates if data was provided
-      if (body.data && body.prompts.length > 0) {
+      if (body.configurableData && body.prompts.length > 0) {
         updateData = JSON.parse(
           await conversationApi.getPersonalDataUpdates(
             body.prompts,
-            body.data,
+            body.configurableData,
             body.model,
             (req as ToGODerRequest).togoder_auth?.user
           )
         );
       }
+
+      body.configurableData = updateData;
+
+      response = await conversationApi.getResponse(
+        body,
+        (req as ToGODerRequest).togoder_auth?.user
+      );
     }
     const signature = crypto
       .createHmac('sha256', process.env.JWT_SECRET!)
