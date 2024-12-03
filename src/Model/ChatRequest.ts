@@ -16,7 +16,8 @@ export interface ChatRequest {
   communicationStyle: ChatRequestCommunicationStyle | undefined;
   prompts: ChatCompletionMessageParam[];
   assistant_name: string | undefined;
-  data?: any;
+  configurableData?: any;
+  staticData?: any;
 }
 
 export interface ExperienceRequest {

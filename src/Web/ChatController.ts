@@ -41,10 +41,21 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Add data as system message if provided
-    if (body.data) {
-      body.prompts.unshift({
+    let personalData = '';
+    if (body.configurableData) {
+      personalData +=
+        'This is personal data about the user: ' +
+        JSON.stringify(body.configurableData);
+    }
+    if (body.staticData) {
+      personalData +=
+        'This is static data about the user: ' +
+        JSON.stringify(body.staticData);
+    }
+    if (personalData !== '') {
+      body.prompts.push({
         role: 'system',
-        content: 'This is data about the user: ' + JSON.stringify(body.data),
+        content: personalData,
       });
     }
 
@@ -63,11 +74,11 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       );
 
       // Get personal data updates if data was provided
-      if (body.data && body.prompts.length > 0) {
+      if (body.configurableData && body.prompts.length > 0) {
         updateData = JSON.parse(
           await conversationApi.getPersonalDataUpdates(
             body.prompts,
-            body.data,
+            body.configurableData,
             body.model,
             (req as ToGODerRequest).togoder_auth?.user
           )
