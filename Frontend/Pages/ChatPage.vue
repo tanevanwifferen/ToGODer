@@ -32,53 +32,45 @@ export default {
   async setup() {
     const chatStore = useChatStore();
     const globalStore = useGlobalStore();
-    await globalStore.initGlobalStore();
     const authStore = useAuthStore();
+    ApiClient.initialize(authStore);
+    await globalStore.initGlobalStore();
+
     return { chatStore, globalStore, authStore };
   },
   data() {
     return {
       rateLimitExceeded: false,
+      inputDisabled: false,
     };
   },
   async beforeCreate() {
     await this.chatStore.initChatStore();
   },
   methods: {
-    getHeaders() {
-      var toReturn = {
-        'Content-Type': 'application/json',
-      };
-      if (this.authStore.token) {
-        Object.defineProperty(toReturn, 'Authorization', {
-          value: `Bearer ${this.authStore.token}`,
-          enumerable: true,
-        });
-      }
-      return toReturn;
-    },
     async startExperience(evt) {
-      let response = await fetch('/api/experience', {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify({
-          model: this.chatStore.model,
-          language: evt.language,
-        }),
-      });
-      if (response.status === 429) {
-        await this.handleRateLimit(response);
-        return;
-      }
-      this.chatStore.addMessage({
-        body: (await response.json()).content,
-        author: 'assistant',
-        date: new Date().getTime(),
-      });
+      try {
+        const content = await ChatApiClient.startExperience(
+          this.chatStore.model,
+          evt.language
+        );
 
-      let title = await this.getTitle();
-      if (title != null) {
-        this.chatStore.setTitle(title);
+        this.chatStore.addMessage({
+          body: content,
+          author: 'assistant',
+          date: new Date().getTime(),
+        });
+
+        const title = await this.getTitle();
+        if (title != null) {
+          this.chatStore.setTitle(title);
+        }
+      } catch (error) {
+        if (error.type === 'RateLimit') {
+          await this.handleRateLimit(error);
+        } else {
+          console.error('Error in startExperience:', error);
+        }
       }
     },
     async sendMessage(message) {
@@ -94,51 +86,37 @@ export default {
           ...message,
           date: new Date().getTime(),
         });
-        let messages = this.chatStore.messages.map((x) => ({
-          content: x.body,
-          role: x.author === 'you' ? 'user' : 'assistant',
-        }));
 
-        let response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: this.getHeaders(),
-          body: JSON.stringify({
-            model: this.chatStore.model,
-            humanPrompt: this.chatStore.humanPrompt,
-            keepGoing: this.chatStore.keepGoing,
-            outsideBox: this.chatStore.outsideBox,
-            communicationStyle: this.chatStore.communicationStyle,
-            prompts: messages,
-          }),
-        });
-        if (response.status === 429) {
-          await this.handleRateLimit(response);
-          return;
-        }
-        if (!response.ok) {
-          throw new Error('Error sending message');
-        }
+        const response = await ChatApiClient.sendMessage(
+          this.chatStore.model,
+          this.chatStore.humanPrompt,
+          this.chatStore.keepGoing,
+          this.chatStore.outsideBox,
+          this.chatStore.communicationStyle,
+          this.chatStore.messages
+        );
 
-        let title = await this.getTitle();
+        const title = await this.getTitle();
         if (title != null) {
           this.chatStore.setTitle(title);
         }
 
-        let response_body = await response.json();
-
-        // Handle successful response
         this.chatStore.addMessage({
-          body: response_body.content,
-          signature: response_body.signature,
+          body: response.content,
+          signature: response.signature,
           author: 'assistant',
           date: new Date().getTime(),
         });
 
         this.rateLimitExceeded = false;
       } catch (error) {
-        console.error('Error in sendMessage: ', error);
-        this.chatStore.chat.messages.pop();
-        this.chatStore.saveChats();
+        if (error.type === 'RateLimit') {
+          await this.handleRateLimit(error);
+        } else {
+          console.error('Error in sendMessage:', error);
+          this.chatStore.chat.messages.pop();
+          this.chatStore.saveChats();
+        }
       }
     },
     async getTitle() {
@@ -146,40 +124,23 @@ export default {
         return null;
       }
       try {
-        let response = await fetch('/api/title', {
-          method: 'POST',
-          headers: this.getHeaders(),
-          body: JSON.stringify({
-            model: this.chatStore.model,
-            content: this.chatStore.messages.map((x) => ({
-              content: x.body,
-              role: x.author === 'you' ? 'user' : 'assistant',
-            })),
-          }),
-        });
-        if (response.status === 429) {
-          await this.handleRateLimit(response);
-          return null;
-        }
-        if (!response.ok) {
-          throw new Error('Error getting title');
-        }
-        return (await response.json()).content;
+        return await ChatApiClient.getTitle(
+          this.chatStore.model,
+          this.chatStore.messages
+        );
       } catch (error) {
-        console.error('Error in getTitle: ', error);
+        if (error.type === 'RateLimit') {
+          await this.handleRateLimit(error);
+        } else {
+          console.error('Error in getTitle:', error);
+        }
         return null;
       }
     },
-    async handleRateLimit(response) {
+    async handleRateLimit(error) {
       console.warn('Rate limit exceeded');
 
-      const retryAfter = response.headers.get('Retry-After');
-      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 60000; // default to 1 minute
-
-      const minutes = Math.floor(waitTime / 60000);
-      const seconds = Math.floor((waitTime % 60000) / 1000);
-
-      const retryMessage = `Rate limit exceeded. Please try again in ${minutes} minutes and ${seconds} seconds.`;
+      const retryMessage = `Rate limit exceeded. Please try again in ${error.minutes} minutes and ${error.seconds} seconds.`;
 
       const rateLimitMessage = {
         body: retryMessage,
@@ -194,7 +155,7 @@ export default {
           (msg) => msg.id !== 'rate-limit-exceeded'
         );
         this.inputDisabled = false;
-      }, waitTime);
+      }, error.waitTime);
 
       this.rateLimitExceeded = true;
     },

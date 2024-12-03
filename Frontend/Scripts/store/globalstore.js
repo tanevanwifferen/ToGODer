@@ -27,8 +27,7 @@ const useGlobalStore = Pinia.defineStore('global', {
       }
       this.initialized = true;
       try {
-        var response = await fetch('/api/global_config');
-        var data = await response.json();
+        const data = await GlobalApiClient.getGlobalConfig();
         this.links = data.links;
         this.donateOptions = data.donateOptions;
         this.quote = data.quote;
