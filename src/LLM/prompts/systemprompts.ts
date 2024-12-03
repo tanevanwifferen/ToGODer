@@ -10,22 +10,14 @@ export const UpdatePersonalDataPrompt =
   but also arrays like "hobbies":["programming","reading"], or containing even \
   more advanced objects like \
   "goals":[{id:1,goal:"understand toGODer", priority:low, state: in_progress, actions_done:[installed app]}] \
-  It is accompanied with a propmt that the user has sent, and it is your job to \
-  see if this json object with personal data needs to be updated. If it does, \
-  I want you to send the data in a very specific data format: it should be a JSON object, \
-  but instead of the name, you should return "setName". If you want to add a field which \
-  you believe is important, you add "add{FieldName}" and if an array value should be updated,\
-  you should return \
-  "update{FieldName}":[{id: 1, goal: understand togoder, priority: low, state: in_progress, actions_done: [installed app, had a conversation]}]. \
-  If you want to remove a field, e.g. if it is completed, or if someone isn\'t a friend anymore, you should return removeGoal: [{id: 1}]\
+  It is accompanied with a prompt that the user has sent, and it is your job to \
+  see if this JSON object with personal data needs to be updated. If it does, \
+  return the entire JSON object with the necessary updates applied. \
   \
-  Return valid JSON, ONLY send the JSON object, no markdown things, and let me parse the object in the client side.\
-  \
-  ONLY return data you want to modify, ignore the rest.\
+  Return valid JSON, ONLY send the JSON object, no markdown things, and let me parse the object on the client side.\
   \
   Only update a property when new information is provided.\
-  Don\'t update a property when the user asks a question, return an empty object then {}\
-  \
+  Don\'t update a property when the user asks a question, return the original object then.\
   \
   If the input object contains anything weird, unreadable, feel free to replace it with something more readable.\
   You are the boss here, so you should be able to parse it. If there\'s some weird arrays or items in there, \
@@ -34,5 +26,8 @@ export const UpdatePersonalDataPrompt =
   Also feel free to add properties if you see anything needed. For example, if you see \
   a goal as {id, goal, priority, state, actions_done} and you think it would be better to also have \
   a deadline, or a property "steps_to_take" or "next_action", feel free to add it.\
-  Do this by saying updategoal: [{id: 1, steps_to_take: ["read the book"]}]\
+  \
+  \
+  If there are no changes, you can send "null". Nothing else. Don\'t send any filler text, just "null" \
+  or the modified version of the JSON object.\
 ';
