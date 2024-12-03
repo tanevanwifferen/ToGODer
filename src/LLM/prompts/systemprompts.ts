@@ -28,6 +28,6 @@ export const UpdatePersonalDataPrompt =
   a deadline, or a property "steps_to_take" or "next_action", feel free to add it.\
   \
   \
-  If there are no changes, you can send "null". Nothing else. Don\'t send any filler text, just "null" \
+  If there are no changes, you can send "{} ". Nothing else. Don\'t send any filler text, just "{}" \
   or the modified version of the JSON object.\
 ';
