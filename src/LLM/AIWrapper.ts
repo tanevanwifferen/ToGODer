@@ -10,4 +10,9 @@ export interface AIWrapper {
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[]
   ): Promise<ChatCompletion>;
+
+  getJSONResponse(
+    systemPrompt: string,
+    userAndAgentPrompts: ChatCompletionMessageParam[]
+  ): Promise<ChatCompletion>;
 }

@@ -48,4 +48,23 @@ export class OpenRouterWrapper implements AIWrapper {
       throw new Error('Failed to get response from OpenRouter API');
     }
   }
+
+  async getJSONResponse(
+    systemPrompt: string,
+    userAndAgentPrompts: ChatCompletionMessageParam[]
+  ): Promise<ChatCompletion> {
+    try {
+      return await this.openAI.chat.completions.create({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...userAndAgentPrompts,
+        ],
+        model: this.model,
+        response_format: { type: 'json_object' },
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      throw new Error('Failed to get JSON response from OpenRouter API');
+    }
+  }
 }

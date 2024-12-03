@@ -77,21 +77,12 @@ export const validateTitleMessage = (
         'Invalid request body: Expected an object with "content" as an array of ChatCompletionMessageParam objects.'
       );
   }
-  if (body.length != 1) {
-    return res.status(400).send('Only one prompt is allowed for this endpoint');
-  }
   if (!isValidChatCompletionMessageParam(body[0])) {
     return res
       .status(400)
       .send(
         "Invalid request body: Expected an object with 'role' and 'content' as strings, with 'role' being 'user', 'assistant', or 'system'."
       );
-  }
-  const model: string = req.body.model;
-  try {
-    validateModel(model);
-  } catch (err: any) {
-    return res.status(400).send(err.message);
   }
 
   next();

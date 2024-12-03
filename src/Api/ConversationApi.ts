@@ -12,7 +12,10 @@ import {
   outsideBoxPrompt,
 } from '../LLM/prompts/chatprompts';
 import { PromptList } from '../LLM/prompts/promptlist';
-import { GetTitlePrompt } from '../LLM/prompts/systemprompts';
+import {
+  GetTitlePrompt,
+  UpdatePersonalDataPrompt,
+} from '../LLM/prompts/systemprompts';
 import {
   ChatRequest,
   ChatRequestCommunicationStyle,
@@ -52,6 +55,32 @@ export class ConversationApi {
   }
 
   /**
+   * Get personal data updates based on the conversation
+   */
+  public async getPersonalDataUpdates(
+    prompts: ChatCompletionMessageParam[],
+    data: any,
+    model: AIProvider,
+    user: User | null | undefined
+  ): Promise<string> {
+    var aiWrapper = this.getAIWrapper(model, user);
+    var inputMessages = prompts.length > 2 ? prompts.slice(-2) : prompts;
+    const messages = [
+      {
+        role: 'system' as const,
+        content: `Current data: ${JSON.stringify(data)}\n\nUser message: ${JSON.stringify(inputMessages)}`,
+      },
+    ];
+    const response = await aiWrapper.getJSONResponse(
+      UpdatePersonalDataPrompt,
+      messages
+    );
+    const content = CompletionToContent(response);
+    console.log(messages, content);
+    return content;
+  }
+
+  /**
    * Get a short title for a conversation based on the first prompt.
    */
   public async getTitle(
@@ -59,9 +88,6 @@ export class ConversationApi {
     model: AIProvider,
     user: User | null | undefined
   ): Promise<string> {
-    if (body.length > 1) {
-      throw new Error('Only one prompt is allowed for this endpoint');
-    }
     var aiWrapper = this.getAIWrapper(model, user);
 
     var prompt = GetTitlePrompt + body[0].content;

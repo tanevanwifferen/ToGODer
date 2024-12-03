@@ -86,4 +86,27 @@ export class OpenAIWrapper implements AIWrapper {
       throw new Error('Failed to get response from OpenAI API');
     }
   }
+
+  async getJSONResponse(
+    systemPrompt: string,
+    userAndAgentPrompts: ChatCompletionMessageParam[]
+  ): Promise<ChatCompletion> {
+    try {
+      var isFlagged = await this.getModeration(userAndAgentPrompts);
+      if (isFlagged) {
+        return this.ErrorCompletion;
+      }
+      return await this.openAI.chat.completions.create({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...userAndAgentPrompts,
+        ],
+        model: this.model,
+        response_format: { type: 'json_object' },
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      throw new Error('Failed to get JSON response from OpenAI API');
+    }
+  }
 }

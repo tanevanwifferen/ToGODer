@@ -82,6 +82,7 @@ app.get('/', (req, res) => {
 // Centralized error handling middleware
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Unhandled error at ' + new Date() + ':', err);
+  console.log(_req.body);
   res.status(500).send('Internal Server Error');
 });
 
