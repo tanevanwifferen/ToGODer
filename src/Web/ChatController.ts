@@ -49,10 +49,6 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       (req as ToGODerRequest).togoder_auth?.user !== null
     ) {
       const conversationApi = new ConversationApi(body.assistant_name);
-      response = await conversationApi.getResponse(
-        body,
-        (req as ToGODerRequest).togoder_auth?.user
-      );
 
       // Get personal data updates if data was provided
       if (body.configurableData && body.prompts.length > 0) {
@@ -65,6 +61,13 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
           )
         );
       }
+
+      body.configurableData = updateData;
+
+      response = await conversationApi.getResponse(
+        body,
+        (req as ToGODerRequest).togoder_auth?.user
+      );
     }
     const signature = crypto
       .createHmac('sha256', process.env.JWT_SECRET!)
