@@ -30,4 +30,9 @@ export const UpdatePersonalDataPrompt =
   If the input object contains anything weird, unreadable, feel free to replace it with something more readable.\
   You are the boss here, so you should be able to parse it. If there\'s some weird arrays or items in there, \
   feel free to delete the items. But parsing and restructuring would be much better.\
+  \
+  Also feel free to add properties if you see anything needed. For example, if you see \
+  a goal as {id, goal, priority, state, actions_done} and you think it would be better to also have \
+  a deadline, or a property "steps_to_take" or "next_action", feel free to add it.\
+  Do this by saying updategoal: [{id: 1, steps_to_take: ["read the book"]}]\
 ';
