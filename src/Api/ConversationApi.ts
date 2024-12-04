@@ -81,7 +81,7 @@ export class ConversationApi {
       messages
     );
     const content = CompletionToContent(response);
-    console.log(messages, content);
+    //console.log(messages, content);
     return content;
   }
 
