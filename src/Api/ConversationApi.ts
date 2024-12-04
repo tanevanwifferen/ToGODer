@@ -69,6 +69,10 @@ export class ConversationApi {
     const messages = [
       {
         role: 'system' as const,
+        content: `current date: ${new Date().toISOString()}`,
+      },
+      {
+        role: 'system' as const,
         content: `Current data: ${JSON.stringify(data)}\n\nUser message: ${JSON.stringify(inputMessages)}`,
       },
     ];
