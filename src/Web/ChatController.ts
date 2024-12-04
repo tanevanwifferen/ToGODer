@@ -52,14 +52,16 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
 
       // Get personal data updates if data was provided
       if (body.configurableData && body.prompts.length > 0) {
-        updateData = JSON.parse(
-          await conversationApi.getPersonalDataUpdates(
-            body.prompts,
-            body.configurableData,
-            body.model,
-            (req as ToGODerRequest).togoder_auth?.user
-          )
+        updateData = await conversationApi.getPersonalDataUpdates(
+          body.prompts,
+          body.configurableData,
+          body.model,
+          (req as ToGODerRequest).togoder_auth?.user
         );
+
+        if (updateData === '' || updateData == '""' || updateData == "''") {
+          updateData = null;
+        }
       }
 
       body.configurableData = updateData;

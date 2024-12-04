@@ -12,6 +12,8 @@ import {
   SocialConversationPrompt,
   PhilosophicalGuidancePrompt,
   PersonalGrowthPrompt,
+  fiveMinuteCheckin,
+  fifteenMinuteCheckin,
 } from './chatprompts';
 import { ExperiencePrompt } from './experienceprompts';
 
@@ -31,6 +33,21 @@ export const PromptList: Record<string, PromptListItem> = {
     concluding work to you.',
     display: true,
   },
+  '/fiveMinuteCheckin': {
+    prompt: fiveMinuteCheckin,
+    description: 'A quick check-in to see how you are doing.',
+    display: true,
+  },
+  '/fifteenMinuteCheckin': {
+    prompt: fifteenMinuteCheckin,
+    description: 'A longer check-in to see how you are doing.',
+    display: true,
+  },
+  '/thirtyMinuteCheckin': {
+    prompt: fifteenMinuteCheckin,
+    description: "A deep dive into how you're doing.",
+    display: true,
+  },
   '/growth': {
     prompt: PersonalGrowthPrompt,
     description:
@@ -43,14 +60,14 @@ export const PromptList: Record<string, PromptListItem> = {
     description:
       'Look at a problem from a scientific perspective. Gives better results \
       but does not look at the spiritual side of things.',
-    display: true,
+    display: false,
   },
   '/spiritual': {
     prompt: SpiritualPrompt,
     description:
       'Look at a problem from a spiritual perspective. Helps find \
     peace in a distorted world.',
-    display: true,
+    display: false,
   },
   '/yinyang': {
     prompt: YinYangPrompt,
@@ -59,7 +76,7 @@ export const PromptList: Record<string, PromptListItem> = {
       than AllSides, but not as easy as spiritual or scientific. For \
       more advanced users who have taught themselves to see two sides \
       of a coin.',
-    display: true,
+    display: false,
     aliases: ['/scientificspiritual'],
   },
   '/allsides': {
@@ -67,7 +84,7 @@ export const PromptList: Record<string, PromptListItem> = {
     description:
       'Look at all sides of an issue. Most difficult to interpret and find \
       conclusions out of. Leaves most of the concluding work to you.',
-    display: true,
+    display: false,
   },
   '/individuation': {
     prompt: IndividuationPrompt,
@@ -116,7 +133,7 @@ export const PromptList: Record<string, PromptListItem> = {
   },
   '/medium': {
     prompt: PhilosophicalGuidancePrompt,
-    description: 'Classical medium conversation',
+    description: 'The AI takes on a medium persona.',
     display: true,
   },
   '/experience': {
