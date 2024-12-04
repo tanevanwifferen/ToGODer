@@ -50,4 +50,6 @@ export const UpdatePersonalDataPrompt =
   \
   If there are no changes, you can send empty string "". Nothing else. Don\'t send any \
   filler text, just "" or the modified version of the TOML object.\
+  \
+  DON\'T DSEND A PARTIAL OBJECT, ONLY SEND THE FULL OBJECT WITH THE CHANGES.\
 ';
