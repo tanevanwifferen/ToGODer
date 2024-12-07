@@ -50,21 +50,23 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
     ) {
       const conversationApi = new ConversationApi(body.assistant_name);
 
-      // Get personal data updates if data was provided
-      if (body.configurableData && body.prompts.length > 0) {
-        updateData = await conversationApi.getPersonalDataUpdates(
-          body.prompts,
-          body.configurableData,
-          body.model,
-          (req as ToGODerRequest).togoder_auth?.user
-        );
+      updateData = new Promise(async (res, rej) => {
+        // Get personal data updates if data was provided
+        let result = null;
+        if (body.configurableData && body.prompts.length > 0) {
+          result = await conversationApi.getPersonalDataUpdates(
+            body.prompts,
+            body.configurableData,
+            body.model,
+            (req as ToGODerRequest).togoder_auth?.user
+          );
 
-        if (updateData === '' || updateData == '""' || updateData == "''") {
-          updateData = null;
+          if (result === '' || result == '""' || result == "''") {
+            result = null;
+          }
         }
-      }
-
-      body.configurableData = updateData;
+        res(result);
+      });
 
       response = await conversationApi.getResponse(
         body,
@@ -75,7 +77,11 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       .createHmac('sha256', process.env.JWT_SECRET!)
       .update(body.prompts.map((x) => x.content).join(' '))
       .digest('base64');
-    res.json({ content: response, signature: signature, updateData });
+    res.json({
+      content: response,
+      signature: signature,
+      updateData: await updateData,
+    });
   } catch (error) {
     next(error);
   }
