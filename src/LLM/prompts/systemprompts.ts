@@ -32,6 +32,7 @@ Rules:
 - Keep content short and concise
 - Use keywords or short sentences
 - Include dates for important events
+- Don't store verbatim chat logs. only what might be interesting in follow up conversations
 
 Example structure:
 goal =
