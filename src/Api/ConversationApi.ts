@@ -60,6 +60,7 @@ export class ConversationApi {
   public async getPersonalDataUpdates(
     prompts: ChatCompletionMessageParam[],
     data: any,
+    date: string,
     model: AIProvider,
     user: User | null | undefined
   ): Promise<string> {
@@ -69,7 +70,7 @@ export class ConversationApi {
     const messages = [
       {
         role: 'system' as const,
-        content: `current date: ${new Date().toISOString()}`,
+        content: `current date: ${date || new Date().toISOString()}`,
       },
       {
         role: 'system' as const,
@@ -189,7 +190,9 @@ export class ConversationApi {
         'This is static data about the user: ' + JSON.stringify(body.staticData)
       );
     }
-    personalData.push('The date today = ' + new Date().toISOString());
+    personalData.push(
+      'The date today = ' + body.staticData?.date || new Date().toISOString()
+    );
 
     return personalData.join('\n\n');
   }
