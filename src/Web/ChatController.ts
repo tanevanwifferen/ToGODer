@@ -57,6 +57,7 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
           result = await conversationApi.getPersonalDataUpdates(
             body.prompts,
             body.configurableData,
+            body.staticData?.date ?? new Date().toISOString(),
             getDefaultModel(),
             (req as ToGODerRequest).togoder_auth?.user
           );
