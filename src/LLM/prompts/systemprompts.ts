@@ -60,3 +60,17 @@ daily_activities:
     - commute, got hotel booking
 CRITICAL: You must return the COMPLETE object. Partial objects are not acceptable.
 `;
+
+export const requestForMemoryPrompt = `
+You will receive a user prompt and a memory object. 
+The memory object contains a list of strings, and each string is a key 
+to a memory containing context. The memory object may be empty. 
+
+Instructions:
+1. Analyze the user prompt and memory object.
+2. Determine if the memory object contains relevant context.
+3. If we need to include extra memories from the client,
+    return the keys for the context that we might need.
+4. If we have all the context we need, return an empty array.
+5. Return valid JSON.
+`;

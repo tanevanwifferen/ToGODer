@@ -14,6 +14,7 @@ import {
 import { PromptList } from '../LLM/prompts/promptlist';
 import {
   GetTitlePrompt,
+  requestForMemoryPrompt,
   UpdatePersonalDataPrompt,
 } from '../LLM/prompts/systemprompts';
 import {
@@ -46,7 +47,7 @@ export class ConversationApi {
     return quote;
   }
 
-  private getAIWrapper(provider: AIProvider, user: User | null | undefined) {
+  public getAIWrapper(provider: AIProvider, user: User | null | undefined) {
     var aiWrapper = getAIWrapper(provider);
     if (user != null) {
       aiWrapper = new BillingDecorator(aiWrapper, user);
@@ -99,6 +100,19 @@ export class ConversationApi {
     var prompt = GetTitlePrompt + body[0].content;
 
     return CompletionToContent(await aiWrapper.getResponse(prompt, body));
+  }
+
+  public async requestMemories(
+    body: ChatRequest,
+    user: User
+  ): Promise<string[]> {
+    const memoryPrompt = requestForMemoryPrompt;
+    const wrapper = this.getAIWrapper(AIProvider.Gpt4oMini, user);
+    return JSON.parse(
+      CompletionToContent(
+        await wrapper.getJSONResponse(memoryPrompt, body.prompts)
+      )
+    ) as string[];
   }
 
   public async getResponseRaw(
