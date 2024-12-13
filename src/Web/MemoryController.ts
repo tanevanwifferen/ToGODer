@@ -47,6 +47,13 @@ const fetchMemoryKeysHandler = async (
       messages
     );
 
+    console.log(
+      'fetch memory keys',
+      shortTermMemory,
+      existingKeys,
+      response.choices[0].message.content
+    );
+
     res.json({ keys: JSON.parse(response.choices[0].message.content!) });
   } catch (error) {
     next(error);
@@ -87,6 +94,13 @@ const compressMemoryHandler = async (
     const response = await aiWrapper.getJSONResponse(
       MemoryCompressionPrompt,
       messages
+    );
+
+    console.log(
+      'compress memory',
+      longTermMemory,
+      shortTermMemory,
+      response.choices[0].message.content
     );
 
     res.json(JSON.parse(response.choices[0].message.content!));
