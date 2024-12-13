@@ -106,7 +106,9 @@ export class ConversationApi {
     body: ChatRequest,
     user: User
   ): Promise<string[]> {
-    const memoryPrompt = requestForMemoryPrompt;
+    let memoryPrompt = requestForMemoryPrompt;
+    memoryPrompt += this.formatPersonalData(body);
+
     const wrapper = this.getAIWrapper(AIProvider.Gpt4oMini, user);
     return JSON.parse(
       CompletionToContent(
@@ -209,9 +211,10 @@ export class ConversationApi {
         personalData.push(`memory ${key}: ` + body.memories[key]);
       });
     }
-    personalData.push(
-      'The date today = ' + body.staticData?.date || new Date().toISOString()
-    );
+
+    var date = () =>
+      new Date().toDateString() + ' ' + new Date().toTimeString();
+    personalData.push('The date today = ' + body.staticData?.date || date());
 
     return personalData.join('\n\n');
   }
