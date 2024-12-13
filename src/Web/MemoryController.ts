@@ -42,19 +42,19 @@ const fetchMemoryKeysHandler = async (
       },
     ];
 
-    const response = await aiWrapper.getJSONResponse(
-      FetchMemoryKeysPromptForCompression,
-      messages
-    );
+    var result: any = {};
+    while (!('keys' in result)) {
+      const response = await aiWrapper.getJSONResponse(
+        FetchMemoryKeysPromptForCompression,
+        messages
+      );
 
-    console.log(
-      'fetch memory keys',
-      shortTermMemory,
-      existingKeys,
-      response.choices[0].message.content
-    );
+      result = JSON.parse(response.choices[0].message.content!);
+    }
 
-    res.json({ keys: JSON.parse(response.choices[0].message.content!) });
+    console.log('fetch memory keys', shortTermMemory, existingKeys, result);
+
+    res.json(result);
   } catch (error) {
     next(error);
   }
