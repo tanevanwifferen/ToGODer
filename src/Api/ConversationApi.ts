@@ -204,6 +204,11 @@ export class ConversationApi {
         'This is static data about the user: ' + JSON.stringify(body.staticData)
       );
     }
+    if (body.memories && Object.keys(body.memories).length > 0) {
+      Object.keys(body.memories).forEach((key) => {
+        personalData.push(`memory ${key}: ` + body.memories[key]);
+      });
+    }
     personalData.push(
       'The date today = ' + body.staticData?.date || new Date().toISOString()
     );
