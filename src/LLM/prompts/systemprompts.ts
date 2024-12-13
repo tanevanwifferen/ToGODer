@@ -92,10 +92,7 @@ and a short term memory, and you should return a list of keys that the short
 term memory should be written to. 
 
 Example:
-Short-term-memory: "The user is learning to play the guitar, he has just started out,
-and he is learning to strum the chords. He is also learning to play the C major chord."
-
-Long-term-memory:
+Long-term-memory-keys:
  - goals/learning_guitar
  - goals/learning_spanish
  - friends
@@ -103,7 +100,13 @@ Long-term-memory:
  - colleagues
  - struggles
 
+Short-term-memory: "The user is learning to play the guitar, he has just started out,
+and he is learning to strum the chords. He is also learning to play the C major chord."
+
  Result: ["goals/learning_guitar"]
+
+ This way a later prompt can read and update the content of this mempory key, and 
+ it's context isn't bloated with irrelevant information.
 
  Return a JSON array of strings. Only return the array, nothing else.
 
