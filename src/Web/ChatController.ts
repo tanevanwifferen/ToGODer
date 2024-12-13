@@ -46,7 +46,7 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
     const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
 
     var requestForMemory: string[] = [];
-    if (!!body.memoryIndex && body.memoryIndex.length > 0) {
+    if (!!body.memoryIndex && body.memoryIndex.length > 0 && user != null) {
       requestForMemory = await memoryService.requestMemories(body, user);
     }
 
