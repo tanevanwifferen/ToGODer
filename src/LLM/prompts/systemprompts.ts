@@ -73,4 +73,77 @@ Instructions:
     return the keys for the context that we might need.
 4. If we have all the context we need, return an empty array.
 5. Return valid JSON.
+
+Don't ask for too much context, try to keep it at a minimum.
+For example, when a five minute chat is requested, and there is already
+some information in the context which the main agent can use to start off
+the conversation, don't ask for extra information. Or maybe ask for goals_index,
+if that is relevant to the conversation. Only ask for /goals/learning_guitar if
+the conversation starts going towards learning guitar.
+
+Also, if there's multiple keys in learning guitar, like learning_guitar/steps_taken, 
+learning_guitar/struggles, ask for each key separately, including the full property 
+name of the key.
+`;
+
+export const FetchMemoryKeysPromptForCompression = `
+You are an agent tasked to find the corresponding memory keys that belong to
+a plaintext document. The document is called "short-term-memory", and the keys
+that it belongs to is called "long-term-memory". You are given a set of keys,
+and a short term memory, and you should return a list of keys that the short
+term memory should be written to. 
+
+Example:
+Short-term-memory: "The user is learning to play the guitar, he has just started out,
+and he is learning to strum the chords. He is also learning to play the C major chord."
+
+Long-term-memory:
+ - goals/learning_guitar
+ - goals/learning_spanish
+ - friends
+ - family
+ - colleagues
+ - struggles
+
+ Result: ["goals/learning_guitar"]
+
+ Return a JSON object.
+
+ If no topic exists for a specific item, generate a new item, which follows
+ the tree structure. So goals/learning_guitar or friends/alice or friends/bob.
+`;
+
+export const MemoryCompressionPrompt = `
+You are an agen who has the task of compressing short term memory into a 
+key-value store for long term memory. You are given a set of keys, the
+existing values for those keys in long-term memory, and the short-term memory
+that should be written away. 
+
+You will receive an object in the form of: 
+{
+  longTermMemory: {
+    key1: value1,
+    key2: value2,
+    key3: value3,
+  },
+  shortTermMemory: oldShortTermMemory
+}
+
+and you should return a JSON object with the same structure. The old short term
+memory should be written away into the long term memory, updating the existing
+data, and the new short term memory should be pruned of the information,
+so it doesn't contain this information anymore.
+
+You should return a JSON object with the keys
+{ 
+  longTermMemory: {
+    key1: value1, 
+    key2: value2, 
+    key3: value3
+  }, 
+  shortTermMemory: newShortTermMemory
+}
+
+Only return the values of the changed keys and the new value for short term
+memory, but return the entire memory for these keys, including the old values.
 `;

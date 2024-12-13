@@ -8,6 +8,7 @@ import { GetModelName, ListModels } from './LLM/Model/AIProvider';
 import { GetBillingRouter } from './Web/BillingController';
 import { setupKoFi } from './Web/KoFiController';
 import { setupRunners } from './Auth/Runners';
+import { GetMemoryRouter } from './Web/MemoryController';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -46,10 +47,12 @@ app.use(express.static(path.join(__dirname, '../Frontend')));
 const chatRouter = GetChatRouter(messageLimiter);
 const authRouter = GetAuthRouter();
 const billingRouter = GetBillingRouter(messageLimiter);
+const memoryRouter = GetMemoryRouter(messageLimiter);
 
 app.use(chatRouter);
 app.use(authRouter);
 app.use(billingRouter);
+app.use(memoryRouter);
 
 const donateOptions: { address: string }[] = JSON.parse(
   process.env.DONATE_OPTIONS || '[]'
