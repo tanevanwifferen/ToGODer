@@ -93,19 +93,19 @@ term memory should be written to.
 
 Example:
 Long-term-memory-keys:
- - goals/learning_guitar
- - goals/learning_spanish
- - friends
- - family
- - colleagues
- - struggles
+ - /goals/learning_guitar
+ - /goals/learning_spanish
+ - /friends
+ - /family
+ - /colleagues
+ - /struggles
 
 Short-term-memory: "The user is learning to play the guitar, he has just started out,
 and he is learning to strum the chords. He is also learning to play the C major chord."
 
 this ends up in a response like this:
 
-{ keys: ["goals/learning_guitar"] }
+{ keys: ["/goals/learning_guitar"] }
 
  This way a later prompt can read and update the content of this mempory key, and 
  it's context isn't bloated with irrelevant information.
@@ -127,9 +127,9 @@ that should be written away.
 You will receive an object in the form of: 
 {
   longTermMemory: {
-    key1: value1,
-    key2: value2,
-    key3: value3,
+    /key1: value1,
+    /key2: value2,
+    /key3: value3,
   },
   shortTermMemory: oldShortTermMemory
 }
