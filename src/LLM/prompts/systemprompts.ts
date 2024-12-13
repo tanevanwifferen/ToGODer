@@ -35,20 +35,18 @@ Rules:
 - Don't store verbatim chat logs. only what might be interesting in follow up conversations
 
 Example structure:
-goal =
-  id = 1
-  goal = "quit smoking"
+goal - quit smoking:
   priority = "high"
   state = "in_progress"
   actions_done = ["step1", "step2"]
 
-hobbies = 
-  - "reading"
-    - genres: ["mystery", "thriller"]
-  - "swimming"
-    - distance: "2km"
-    - pr: "4km"
-  - "gardening"
+hobbies - reading: 
+  - genres: ["mystery", "thriller"]
+hobbies - swimming:
+  - distance: "2km"
+  - pr: "4km"
+hobbies - gardening:
+  - time: 2 hours a day
 
 daily_activities:
   - 08-12-24:
@@ -107,7 +105,7 @@ Long-term-memory:
 
  Result: ["goals/learning_guitar"]
 
- Return a JSON object.
+ Return a JSON array of strings. Only return the array, nothing else.
 
  If no topic exists for a specific item, generate a new item, which follows
  the tree structure. So goals/learning_guitar or friends/alice or friends/bob.
