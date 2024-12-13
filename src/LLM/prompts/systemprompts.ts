@@ -111,6 +111,8 @@ Long-term-memory:
 
  If no topic exists for a specific item, generate a new item, which follows
  the tree structure. So goals/learning_guitar or friends/alice or friends/bob.
+ Don't go deeper than one level. So learning guitar should be a goal, and 
+ alice should be a friend. But no sub-notes for each step in learning guitar.
 `;
 
 export const MemoryCompressionPrompt = `
