@@ -110,11 +110,11 @@ export class ConversationApi {
     memoryPrompt += this.formatPersonalData(body);
 
     const wrapper = this.getAIWrapper(AIProvider.Gpt4oMini, user);
-    return JSON.parse(
-      CompletionToContent(
-        await wrapper.getJSONResponse(memoryPrompt, body.prompts)
-      )
-    ) as string[];
+    const content = CompletionToContent(
+      await wrapper.getJSONResponse(memoryPrompt, body.prompts)
+    );
+    console.log('request memory:', content);
+    return JSON.parse(content) as string[];
   }
 
   public async getResponseRaw(
