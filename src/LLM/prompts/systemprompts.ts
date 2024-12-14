@@ -142,9 +142,12 @@ so it doesn't contain this information anymore.
 You should return a JSON object with the keys
 { 
   longTermMemory: {
-    key1: value1, 
-    key2: value2, 
-    key3: value3
+    key1: "A whole text document containing all the information written for this
+           subject, with multiple lines and paragraphs if needed, so we can later
+           fetch all this information and read it into memory, keeping it centralized
+           in one location",
+    key2: "Another markdown document", 
+    key3: "Another markdown document"
   }, 
   shortTermMemory: newShortTermMemory
 }
