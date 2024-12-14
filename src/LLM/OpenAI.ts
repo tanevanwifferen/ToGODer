@@ -32,6 +32,7 @@ export class OpenAIWrapper implements AIWrapper {
         input: itemsToSend,
         model: 'text-moderation-stable',
       });
+      console.log('moderationResult', moderationResult);
       // Check if any of the messages are flagged
       return moderationResult.results
         .map((x) => x.flagged)

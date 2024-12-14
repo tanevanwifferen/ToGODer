@@ -122,7 +122,7 @@ export class ConversationApi {
       body.prompts
     );
     const content = CompletionToContent(json_response);
-    console.log('request memory:', content);
+    console.log('request memory:', json_response);
     if ((await json_response).usage?.total_tokens == 0) {
       return [];
     }
