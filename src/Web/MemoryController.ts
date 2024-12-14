@@ -38,7 +38,7 @@ const fetchMemoryKeysHandler = async (
     const messages = [
       {
         role: 'system' as const,
-        content: `Short-term-memory: ${shortTermMemory}\n\nLong-term-memory:\n${existingKeys.join('\n')}`,
+        content: `Short-term-memory: ${shortTermMemory}\n\nExisting Keys:\n${existingKeys.join('\n')}`,
       },
     ];
 

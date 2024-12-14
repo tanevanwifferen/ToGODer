@@ -107,15 +107,17 @@ this ends up in a response like this:
 
 { keys: ["/goals/learning_guitar"] }
 
- This way a later prompt can read and update the content of this mempory key, and 
- it's context isn't bloated with irrelevant information.
+Make an object containing the keys property as an array of strings.
 
- Return a JSON array of strings. Only return the array, nothing else.
+This way a later prompt can read and update the content of this mempory key, and 
+it's context isn't bloated with irrelevant information.
 
- If no topic exists for a specific item, generate a new item, which follows
- the tree structure. So goals/learning_guitar or friends/alice or friends/bob.
- Don't go deeper than one level. So learning guitar should be a goal, and 
- alice should be a friend. But no sub-notes for each step in learning guitar.
+Return a JSON array of strings. Only return the array, nothing else.
+
+If no topic exists for a specific item, generate a new item, which follows
+the tree structure. So goals/learning_guitar or friends/alice or friends/bob.
+Don't go deeper than one level. So learning guitar should be a goal, and 
+alice should be a friend. But no sub-notes for each step in learning guitar.
 `;
 
 export const MemoryCompressionPrompt = `
