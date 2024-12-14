@@ -137,7 +137,9 @@ You will receive an object in the form of:
 and you should return a JSON object with the same structure. The old short term
 memory should be written away into the long term memory, updating the existing
 data, and the new short term memory should be pruned of the information,
-so it doesn't contain this information anymore.
+so it doesn't contain this information anymore. The goal is to make the short-
+term memory smaller, and put information into long-term memory, grouped by topic.
+Don't put them in thousands of topics, just the topics given.
 
 You should return a JSON object with the keys
 { 
