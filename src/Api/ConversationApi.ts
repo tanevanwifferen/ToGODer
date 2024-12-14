@@ -109,6 +109,12 @@ export class ConversationApi {
     let memoryPrompt = requestForMemoryPrompt;
     memoryPrompt += this.formatPersonalData(body);
 
+    if (body.memoryIndex && body.memoryIndex.length > 0) {
+      memoryPrompt +=
+        '\n\nThis is the list of all possible memories you can request: ' +
+        JSON.stringify(body.memoryIndex);
+    }
+
     const wrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
     const content = CompletionToContent(
       await wrapper.getJSONResponse(memoryPrompt, body.prompts)
