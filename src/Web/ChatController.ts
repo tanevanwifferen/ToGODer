@@ -45,12 +45,12 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
 
     const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
 
-    var requestForMemory: string[] = [];
+    var requestForMemory: { keys: string[] } = { keys: [] };
     if (!!body.memoryIndex && body.memoryIndex.length > 0 && user != null) {
       requestForMemory = await memoryService.requestMemories(body, user);
     }
 
-    if (requestForMemory.length > 0) {
+    if (requestForMemory.keys.length > 0) {
       res.json({
         requestForMemory,
         updateData: null,

@@ -73,12 +73,23 @@ Instructions:
 4. If we have all the context we need, return an empty array.
 5. Return valid JSON.
 
+Example: 
+User prompt: "Can you tell me about my goals?"
+Memory object: ["/goals/learning_guitar", "/goals/learning_spanish", "/goals/sleep_earlier"]
+
+You will return:
+{keys: ["/goals/learning_guitar", "/goals/learning_spanish", "/goals/sleep_earlier"]}
+
 Don't ask for too much context, try to keep it at a minimum.
 For example, when a five minute chat is requested, and there is already
 some information in the context which the main agent can use to start off
 the conversation, don't ask for extra information. Or maybe ask for goals_index,
 if that is relevant to the conversation. Only ask for /goals/learning_guitar if
 the conversation starts going towards learning guitar.
+
+If you don't want to ask for any context, return this:
+
+{keys: []}
 
 Also, if there's multiple keys in learning guitar, like learning_guitar/steps_taken, 
 learning_guitar/struggles, ask for each key separately, including the full property 

@@ -37,7 +37,21 @@ export class MemoryService {
     return result;
   }
 
-  async requestMemories(body: ChatRequest, user: User): Promise<string[]> {
-    return await this.conversationApi.requestMemories(body, user);
+  async requestMemories(
+    body: ChatRequest,
+    user: User
+  ): Promise<{ keys: string[] }> {
+    var result: any = null;
+    let tries = 0;
+    while (
+      result == null ||
+      !('keys' in result) ||
+      !Array.isArray(result.keys) ||
+      result?.keys?.some((k: any) => typeof k !== 'string')
+    ) {
+      result = await this.conversationApi.requestMemories(body, user);
+      console.log('fetching memories', tries++);
+    }
+    return result;
   }
 }
