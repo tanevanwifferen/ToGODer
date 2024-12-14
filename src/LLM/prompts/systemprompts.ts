@@ -127,7 +127,7 @@ that should be written away.
 You will receive an object in the form of: 
 {
   longTermMemory: {
-    /key1: value1,
+    /key1: exising data for memory 1,
     /key2: value2,
     /key3: value3,
   },
@@ -149,8 +149,12 @@ You should return a JSON object with the keys
     key2: "Another markdown document", 
     key3: "Another markdown document"
   }, 
-  shortTermMemory: newShortTermMemory
+  shortTermMemory: newShortTermMemory, as string, not as object
 }
+
+It's no issue if you put duplicate data into different keys, make sure that we can
+understand the long term memory by not having to search for related data in seemingly
+unrelated keys.
 
 Only return the values of the changed keys and the new value for short term
 memory, but return the entire memory for these keys, including the old values.
