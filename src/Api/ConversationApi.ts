@@ -29,6 +29,7 @@ import {
 import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
 import { User } from '@prisma/client';
 import { BillingDecorator } from '../Decorators/BillingDecorator';
+import { wrap } from 'module';
 
 let quote = '';
 
@@ -115,10 +116,16 @@ export class ConversationApi {
         JSON.stringify(body.memoryIndex);
     }
 
-    const wrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
-    const content = CompletionToContent(
-      await wrapper.getJSONResponse(memoryPrompt, body.prompts)
+    const wrapper = this.getAIWrapper(AIProvider.Gpt4oMini, user);
+    const json_response = await wrapper.getJSONResponse(
+      memoryPrompt,
+      body.prompts
     );
+    if ((await json_response).usage?.total_tokens == 0) {
+      return [];
+    }
+
+    const content = CompletionToContent(json_response);
     console.log('request memory:', content);
     return JSON.parse(content) as string[];
   }
