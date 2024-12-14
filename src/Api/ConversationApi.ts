@@ -121,12 +121,12 @@ export class ConversationApi {
       memoryPrompt,
       body.prompts
     );
+    const content = CompletionToContent(json_response);
+    console.log('request memory:', content);
     if ((await json_response).usage?.total_tokens == 0) {
       return [];
     }
 
-    const content = CompletionToContent(json_response);
-    console.log('request memory:', content);
     return JSON.parse(content) as string[];
   }
 
