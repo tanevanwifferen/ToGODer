@@ -109,7 +109,7 @@ export class ConversationApi {
     let memoryPrompt = requestForMemoryPrompt;
     memoryPrompt += this.formatPersonalData(body);
 
-    const wrapper = this.getAIWrapper(AIProvider.Gpt4oMini, user);
+    const wrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
     const content = CompletionToContent(
       await wrapper.getJSONResponse(memoryPrompt, body.prompts)
     );
