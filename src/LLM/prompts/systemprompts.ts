@@ -97,46 +97,39 @@ name of the key.
 `;
 
 export const FetchMemoryKeysPromptForCompression = `
-You are an agent tasked to find the corresponding memory keys that belong to
-a plaintext document. The document is called "short-term-memory", and the keys
-that it belongs to is called "long-term-memory". You are given a set of keys,
-and a short term memory, and you should return a list of keys that the short
-term memory should be written to. 
+You are tasked with analyzing short-term memory content and identifying relevant long-term memory keys where this information should be stored. Your goal is to categorize information into broad, logical topics without over-fragmenting the data.
 
-Example:
-Long-term-memory-keys:
- - /goals/learning_guitar
- - /goals/learning_spanish
- - /friends
- - /family
- - /colleagues
- - /struggles
+Instructions:
+1. Analyze the provided short-term memory content
+2. Match content to existing memory keys where appropriate
+3. Suggest new keys only for major, distinct topics
+4. Group related information under common parent categories
+5. Return a valid JSON object with selected keys
 
-Short-term-memory: "The user is learning to play the guitar, he has just started out,
-and he is learning to strum the chords. He is also learning to play the C major chord.
+Key Creation Guidelines:
+- Use broad categories (e.g., /goals, /relationships, /work)
+- Limit hierarchy to one level (e.g., /goals/career)
+- Keep total number of keys minimal by grouping related topics
+- Only create new keys for significant, distinct topics
 
-The user started learning Spanish, and he is using Duolingo to learn the language.
+Example Input:
+Short-term memory: "User discussed career goals in tech, wanting to learn Python 
+and AWS. Also mentioned meeting friend Alice for coffee and having dinner with 
+Bob. Currently reading 'Clean Code' and practicing meditation."
 
-The user is also working on getting to bed earlier"
+Example Output:
+{
+  "keys": [
+    "/goals/career",
+    "/relationships/friends",
+    "/relationships/friends/alice",
+    "/relationships/friends/bob",
+    "/interests/learning_python"
+  ]
+}
 
-this ends up in a response like this:
-
-{ keys: ["/goals/learning_guitar", "/goals/learning_spanish", "/goals/sleep_earlier"] }
-
-Make an object containing the keys property as an array of strings.
-
-Note /goals/sleep_earlier is a new key that should be created, as it doesn't exist yet,
-this is fine if you create new keys, the follow-up prompt can fill in the details.
-
-This way a later prompt can read and update the content of this mempory key, and 
-it's context isn't bloated with irrelevant information.
-
-Return a JSON array of strings. Only return the array, nothing else.
-
-If no topic exists for a specific item, generate a new item, which follows
-the tree structure. So goals/learning_guitar or friends/alice or friends/bob.
-Don't go deeper than one level. So learning guitar should be a goal, and 
-alice should be a friend. But no sub-notes for each step in learning guitar.
+Note: Return ONLY a valid JSON object containing a single 'keys' array. Do not 
+include any explanation or additional text in your response.
 `;
 
 export const MemoryCompressionPrompt = `

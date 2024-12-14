@@ -33,7 +33,7 @@ const fetchMemoryKeysHandler = async (
     }
 
     const conversationApi = new ConversationApi(getAssistantName());
-    const aiWrapper = conversationApi.getAIWrapper(AIProvider.LLama3370b, user);
+    let aiWrapper = conversationApi.getAIWrapper(AIProvider.Gpt4o, user);
 
     const messages = [
       {
@@ -52,6 +52,10 @@ const fetchMemoryKeysHandler = async (
         FetchMemoryKeysPromptForCompression,
         messages
       );
+      if (response.usage?.total_tokens == 0) {
+        // break openai moderation unfortunately
+        aiWrapper = conversationApi.getAIWrapper(AIProvider.LLama3370b, user);
+      }
 
       result = JSON.parse(response.choices[0].message.content!);
     }
