@@ -33,7 +33,7 @@ const fetchMemoryKeysHandler = async (
     }
 
     const conversationApi = new ConversationApi(getAssistantName());
-    const aiWrapper = conversationApi.getAIWrapper(AIProvider.Gpt4oMini, user);
+    const aiWrapper = conversationApi.getAIWrapper(AIProvider.LLama3370b, user);
 
     const messages = [
       {

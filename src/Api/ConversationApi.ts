@@ -222,7 +222,7 @@ export class ConversationApi {
   public async TranslateText(
     text: string,
     language: string = 'English',
-    model: AIProvider = AIProvider.Gpt4oMini,
+    model: AIProvider = AIProvider.LLama3370b,
     user: User | null | undefined
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model, user);
