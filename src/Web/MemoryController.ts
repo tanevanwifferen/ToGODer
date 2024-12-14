@@ -43,7 +43,11 @@ const fetchMemoryKeysHandler = async (
     ];
 
     var result: any = {};
-    while (!('keys' in result)) {
+    while (
+      !('keys' in result) ||
+      !Array.isArray(result.keys) ||
+      result.keys.some((k: any) => typeof k !== 'string')
+    ) {
       const response = await aiWrapper.getJSONResponse(
         FetchMemoryKeysPromptForCompression,
         messages

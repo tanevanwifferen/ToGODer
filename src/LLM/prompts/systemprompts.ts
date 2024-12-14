@@ -101,13 +101,20 @@ Long-term-memory-keys:
  - /struggles
 
 Short-term-memory: "The user is learning to play the guitar, he has just started out,
-and he is learning to strum the chords. He is also learning to play the C major chord."
+and he is learning to strum the chords. He is also learning to play the C major chord.
+
+The user started learning Spanish, and he is using Duolingo to learn the language.
+
+The user is also working on getting to bed earlier"
 
 this ends up in a response like this:
 
-{ keys: ["/goals/learning_guitar"] }
+{ keys: ["/goals/learning_guitar", "/goals/learning_spanish", "/goals/sleep_earlier"] }
 
 Make an object containing the keys property as an array of strings.
+
+Note /goals/sleep_earlier is a new key that should be created, as it doesn't exist yet,
+this is fine if you create new keys, the follow-up prompt can fill in the details.
 
 This way a later prompt can read and update the content of this mempory key, and 
 it's context isn't bloated with irrelevant information.
