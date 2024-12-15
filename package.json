@@ -50,6 +50,7 @@
     "openai": "^4.45.0",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7",
+    "together-ai": "^0.10.0",
     "vue-icon": "^2.3.0"
   },
   "lint-staged": {

@@ -24,6 +24,7 @@ import {
 import {
   AIProvider,
   getAIWrapper,
+  getDefaultJSONModel,
   getDefaultModel,
 } from '../LLM/Model/AIProvider';
 import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
@@ -116,7 +117,7 @@ export class ConversationApi {
         JSON.stringify(body.memoryIndex);
     }
 
-    const wrapper = this.getAIWrapper(AIProvider.FireLLava13b, user);
+    const wrapper = this.getAIWrapper(getDefaultJSONModel(), user);
     const json_response = await wrapper.getJSONResponse(
       memoryPrompt,
       body.prompts
