@@ -101,6 +101,7 @@ export class ConversationApi {
       messages
     );
     const content = CompletionToContent(response);
+    console.log('new short term memory:', content);
     //console.log(messages, content);
     return content;
   }
