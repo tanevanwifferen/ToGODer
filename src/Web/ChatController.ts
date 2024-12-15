@@ -73,11 +73,15 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
 
     const signature = chatService.generateSignature(body.prompts);
 
-    res.json({
+    var result = {
       content: response,
       signature: signature,
       updateData: updateData,
-    });
+    };
+
+    console.log('chatHandler', result);
+
+    res.json(result);
   } catch (error) {
     next(error);
   }
