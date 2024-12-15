@@ -116,7 +116,7 @@ export class ConversationApi {
         JSON.stringify(body.memoryIndex);
     }
 
-    const wrapper = this.getAIWrapper(AIProvider.FireLLava13b, user);
+    const wrapper = this.getAIWrapper(AIProvider.Gpt4oMini, user);
     const json_response = await wrapper.getJSONResponse(
       memoryPrompt,
       body.prompts
