@@ -118,11 +118,8 @@ export class ConversationApi {
     }
 
     const wrapper = this.getAIWrapper(getDefaultJSONModel(), user);
-    var prompts = body.prompts.map((x) => ({ ...x, role: 'system' }));
-    const json_response = await wrapper.getJSONResponse(
-      memoryPrompt,
-      body.prompts
-    );
+    var prompts: any = body.prompts.map((x) => ({ ...x, role: 'system' }));
+    const json_response = await wrapper.getJSONResponse(memoryPrompt, prompts);
     const content = CompletionToContent(json_response);
     console.log('request memory:', json_response);
     if ((await json_response).usage?.total_tokens == 0) {
