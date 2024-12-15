@@ -120,7 +120,7 @@ export class ConversationApi {
   public async requestMemories(
     body: ChatRequest,
     user: User
-  ): Promise<string[]> {
+  ): Promise<{ keys: string[] }> {
     let memoryPrompt = requestForMemoryPrompt;
     memoryPrompt += this.formatPersonalData(body);
 
@@ -139,10 +139,15 @@ export class ConversationApi {
     const content = JsonToContent(json_response);
     console.log('request memory:', content);
     if ((await json_response).usage?.total_tokens == 0) {
-      return [];
+      return { keys: [] };
     }
 
-    return JSON.parse(content) as string[];
+    var keys = JSON.parse(content) as { keys: string[] };
+    var existing_keys = Object.keys(body.memories);
+    if (!keys.keys.some((x) => existing_keys.includes(x))) {
+      return { keys: [] };
+    }
+    return keys;
   }
 
   public async getResponseRaw(
