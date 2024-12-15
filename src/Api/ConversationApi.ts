@@ -130,7 +130,7 @@ export class ConversationApi {
         JSON.stringify(body.memoryIndex);
     }
 
-    const wrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
+    const wrapper = this.getAIWrapper(AIProvider.CohereCommandR7B, user);
     const json_response = await wrapper.getJSONResponse(
       memoryPrompt,
       body.prompts,
