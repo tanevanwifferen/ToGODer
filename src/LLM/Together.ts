@@ -13,7 +13,7 @@ export class TogetherWrapper implements AIWrapper {
     let apiKey = process.env.TOGETHER_API_KEY;
     if (apiKey == null)
       throw new Error(
-        'Open Router API key (process.env.TOGETHER_API_KEY) is required'
+        'Open Router API key (process.env.OPENROUTER_API_KEY) is required'
       );
     this.apiKey = apiKey;
 
