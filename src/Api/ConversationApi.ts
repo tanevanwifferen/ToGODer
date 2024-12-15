@@ -150,6 +150,7 @@ export class ConversationApi {
     input: ChatRequest,
     user: User | null | undefined
   ): Promise<string> {
+    console.log('ConversationApi getResponse', input);
     if (input.prompts.length == 0) {
       return '';
     }
