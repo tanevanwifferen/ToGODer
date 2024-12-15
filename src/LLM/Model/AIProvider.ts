@@ -2,8 +2,6 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { AIWrapper } from '../AIWrapper';
 import { OpenAIWrapper } from '../OpenAI';
 import { OpenRouterWrapper } from '../OpenRouter';
-import Together from 'together-ai';
-import { TogetherWrapper } from '../Together';
 
 export interface AICost {
   input_cost_per_million: Decimal;
@@ -20,7 +18,7 @@ export enum AIProvider {
   LLama31405b = 'meta-llama/llama-3.1-405b-instruct',
   LLama3290b = 'meta-llama/llama-3.2-90b-vision-instruct',
   LLama3370b = 'meta-llama/llama-3.3-70b-instruct',
-  TogetherJSONLLama3 = 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
+  FireLLava13b = 'fireworks/firellava-13b',
 }
 
 export function getAIWrapper(model: AIProvider): AIWrapper {
@@ -35,9 +33,8 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.LLama31405b:
     case AIProvider.LLama3290b:
     case AIProvider.LLama3370b:
+    case AIProvider.FireLLava13b:
       return new OpenRouterWrapper(model);
-    case AIProvider.TogetherJSONLLama3:
-      return new TogetherWrapper(model);
     default:
       return new OpenRouterWrapper(AIProvider.LLama3370b);
   }
@@ -89,6 +86,7 @@ export function getTokenCost(model: AIProvider): AICost {
       };
       break;
     case AIProvider.Gpt4oMini:
+    case AIProvider.FireLLava13b:
       torReturn = {
         input_cost_per_million: new Decimal('0.15'),
         output_cost_per_million: new Decimal('0.6'),
@@ -98,12 +96,6 @@ export function getTokenCost(model: AIProvider): AICost {
       torReturn = {
         input_cost_per_million: new Decimal('3'),
         output_cost_per_million: new Decimal('6'),
-      };
-      break;
-    case AIProvider.TogetherJSONLLama3:
-      torReturn = {
-        input_cost_per_million: new Decimal('0.2'),
-        output_cost_per_million: new Decimal('0.2'),
       };
       break;
     default:
@@ -137,6 +129,8 @@ export function GetModelName(provider: AIProvider): string {
       return 'Llama 3.2 90b';
     case AIProvider.LLama3370b:
       return 'Llama 3.3 70b';
+    case AIProvider.FireLLava13b:
+      return 'FireLLava 13b';
     default:
       throw new Error('Unknown AIProvider');
   }
@@ -158,6 +152,7 @@ export function ListModels(): AIProvider[] {
     AIProvider.LLama3,
     AIProvider.LLama3290b,
     AIProvider.LLama3370b,
+    AIProvider.FireLLava13b,
   ].filter((x) => {
     try {
       var a: AIWrapper | null = null;
@@ -173,6 +168,7 @@ export function ListModels(): AIProvider[] {
         case AIProvider.LLama31405b:
         case AIProvider.LLama3290b:
         case AIProvider.LLama3370b:
+        case AIProvider.FireLLava13b:
           a = new OpenRouterWrapper(x);
           break;
       }
@@ -192,15 +188,4 @@ export function getDefaultModel(): AIProvider {
     );
   }
   return items[0];
-}
-
-export function getDefaultJSONModel(): AIProvider {
-  if (process.env.TOGETHER_API_KEY) {
-    return AIProvider.TogetherJSONLLama3;
-  }
-  if (process.env.OPENAI_API_KEY) {
-    return AIProvider.Gpt4oMini;
-  }
-
-  return getDefaultModel();
 }
