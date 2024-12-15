@@ -94,6 +94,8 @@ If you don't want to ask for any context, return this:
 Also, if there's multiple keys in learning guitar, like learning_guitar/steps_taken, 
 learning_guitar/struggles, ask for each key separately, including the full property 
 name of the key.
+
+ONLY RETURN A RESPONSE IN THE FORM OF {keys: string[]}, NO FILLER TEXT, NO OTHER STUFF, PURE JSON
 `;
 
 export const FetchMemoryKeysPromptForCompression = `

@@ -43,11 +43,13 @@ export class MemoryService {
   ): Promise<{ keys: string[] }> {
     var result: any = null;
     let tries = 0;
+    const memory_index = body.memoryIndex;
     while (
       result == null ||
       !('keys' in result) ||
       !Array.isArray(result.keys) ||
-      result?.keys?.some((k: any) => typeof k !== 'string')
+      result?.keys?.some((k: any) => typeof k !== 'string') ||
+      result.keys.some((x: string) => !memory_index.includes(x))
     ) {
       result = await this.conversationApi.requestMemories(body, user);
       console.log('fetching memories', tries++);
