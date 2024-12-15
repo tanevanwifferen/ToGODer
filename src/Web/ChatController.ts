@@ -60,7 +60,7 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
 
     const [response, updateData] = await Promise.all([
       chatService.getChatResponse(body, user),
-      body.configurableData && body.prompts.length > 0
+      body.prompts.length > 0
         ? memoryService.getPersonalDataUpdates(
             body.prompts,
             body.configurableData,

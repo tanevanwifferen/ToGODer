@@ -80,6 +80,7 @@ export class ConversationApi {
     model: AIProvider,
     user: User | null | undefined
   ): Promise<string> {
+    console.log('getPersonalDataUpdates');
     var aiWrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
     var inputMessages = prompts.length > 2 ? prompts.slice(-2) : prompts;
     const data_str =
@@ -93,7 +94,7 @@ export class ConversationApi {
       },
       {
         role: 'system' as const,
-        content: `Current memory log: ${JSON.stringify(shortTermMemory)}\n\nUser messages: ${JSON.stringify(inputMessages)}`,
+        content: `Current memory log: ${shortTermMemory || 'emtpy'}\n\nUser messages: ${JSON.stringify(inputMessages)}`,
       },
     ];
     const response = await aiWrapper.getResponse(
