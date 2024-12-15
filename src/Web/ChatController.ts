@@ -79,8 +79,6 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       updateData: updateData,
     };
 
-    console.log('chatHandler', result);
-
     res.json(result);
   } catch (error) {
     next(error);

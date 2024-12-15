@@ -165,7 +165,6 @@ export class ConversationApi {
     input: ChatRequest,
     user: User | null | undefined
   ): Promise<string> {
-    console.log('ConversationApi getResponse', input);
     if (input.prompts.length == 0) {
       return '';
     }
@@ -214,13 +213,11 @@ export class ConversationApi {
       () => this.assistant_name!
     );
 
-    console.log('ConverstaionApi getResponse', input);
     systemPrompt += '\n\n' + this.formatPersonalData(input);
 
     var output = CompletionToContent(
       await aiWrapper.getResponse(systemPrompt, input.prompts)
     );
-    console.log(output);
     return output;
   }
 
