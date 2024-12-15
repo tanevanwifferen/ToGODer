@@ -198,11 +198,14 @@ export class ConversationApi {
       () => this.assistant_name!
     );
 
+    console.log('ConverstaionApi getResponse', input);
     systemPrompt += '\n\n' + this.formatPersonalData(input);
 
-    return CompletionToContent(
+    var output = CompletionToContent(
       await aiWrapper.getResponse(systemPrompt, input.prompts)
     );
+    console.log(output);
+    return output;
   }
 
   private formatPersonalData(body: ChatRequest): string {
