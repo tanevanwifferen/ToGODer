@@ -1,8 +1,9 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { AIWrapper } from './AIWrapper';
-import ChatCompletion = OpenAI.ChatCompletion;
 import { AIProvider } from './Model/AIProvider';
+import { ErrorJsonCompletion, ErrorCompletion } from './Errors';
+import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
 
 export class OpenAIWrapper implements AIWrapper {
   private apiKey: string;
@@ -42,38 +43,14 @@ export class OpenAIWrapper implements AIWrapper {
     }
   }
 
-  private ErrorCompletion: ChatCompletion = {
-    id: 'empty',
-    created: new Date().getTime(),
-    object: 'chat.completion',
-    model: this.model,
-    choices: [
-      {
-        index: 0,
-        message: {
-          role: 'assistant',
-          content:
-            'OpenAI has flagged this conversation as potentially harmful. If available, it is recommended to change the model and try again.',
-        },
-        finish_reason: 'stop',
-        logprobs: null,
-      },
-    ],
-    usage: {
-      completion_tokens: 0,
-      prompt_tokens: 0,
-      total_tokens: 0,
-    },
-  };
-
   async getResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[]
-  ): Promise<ChatCompletion> {
+  ): Promise<OpenAI.ChatCompletion> {
     try {
       var isFlagged = await this.getModeration(userAndAgentPrompts);
       if (isFlagged) {
-        return this.ErrorCompletion;
+        return ErrorCompletion(this.model);
       }
       return await this.openAI.chat.completions.create({
         messages: [
@@ -90,21 +67,26 @@ export class OpenAIWrapper implements AIWrapper {
 
   async getJSONResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
-  ): Promise<ChatCompletion> {
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    structure?: any
+  ): Promise<ParsedChatCompletion<any>> {
     try {
       var isFlagged = await this.getModeration(userAndAgentPrompts);
       if (isFlagged) {
-        return this.ErrorCompletion;
+        return ErrorJsonCompletion(this.model);
       }
-      return await this.openAI.chat.completions.create({
+      var request: any = {
         messages: [
           { role: 'system', content: systemPrompt },
           ...userAndAgentPrompts,
         ],
         model: this.model,
         response_format: { type: 'json_object' },
-      });
+      };
+      if (structure) {
+        request.response_format.structure = structure;
+      }
+      return await this.openAI.beta.chat.completions.parse(request);
     } catch (error) {
       console.error('Error:', error);
       throw new Error('Failed to get JSON response from OpenAI API');

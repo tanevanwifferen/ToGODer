@@ -1,8 +1,9 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { AIWrapper } from './AIWrapper';
-import ChatCompletion = OpenAI.ChatCompletion;
 import { AIProvider } from './Model/AIProvider';
+import { zodResponseFormat } from 'openai/helpers/zod';
+import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
 
 export class OpenRouterWrapper implements AIWrapper {
   private apiKey: string;
@@ -34,7 +35,7 @@ export class OpenRouterWrapper implements AIWrapper {
   async getResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[]
-  ): Promise<ChatCompletion> {
+  ): Promise<OpenAI.ChatCompletion> {
     try {
       return await this.openAI.chat.completions.create({
         messages: [
@@ -51,17 +52,22 @@ export class OpenRouterWrapper implements AIWrapper {
 
   async getJSONResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
-  ): Promise<ChatCompletion> {
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    structure?: any
+  ): Promise<ParsedChatCompletion<any>> {
     try {
-      return await this.openAI.chat.completions.create({
+      var request: any = {
         messages: [
           { role: 'system', content: systemPrompt },
           ...userAndAgentPrompts,
         ],
         model: this.model,
         response_format: { type: 'json_object' },
-      });
+      };
+      if (structure) {
+        request.response_format = zodResponseFormat(structure, 'json_object');
+      }
+      return await this.openAI.beta.chat.completions.parse(request);
     } catch (error) {
       console.error('Error:', error);
       throw new Error('Failed to get JSON response from OpenRouter API');

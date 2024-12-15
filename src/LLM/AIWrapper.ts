@@ -1,7 +1,7 @@
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import OpenAI from 'openai';
-import ChatCompletion = OpenAI.ChatCompletion;
 import { AIProvider } from './Model/AIProvider';
+import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
 
 export interface AIWrapper {
   get Model(): AIProvider;
@@ -9,10 +9,11 @@ export interface AIWrapper {
   getResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[]
-  ): Promise<ChatCompletion>;
+  ): Promise<OpenAI.ChatCompletion>;
 
   getJSONResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
-  ): Promise<ChatCompletion>;
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    structure?: any
+  ): Promise<ParsedChatCompletion<any>>;
 }

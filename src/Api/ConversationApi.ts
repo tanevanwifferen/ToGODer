@@ -30,10 +30,24 @@ import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
 import { User } from '@prisma/client';
 import { BillingDecorator } from '../Decorators/BillingDecorator';
 import { wrap } from 'module';
+import { keysSchema } from '../zod/requestformemory';
+import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
 
 let quote = '';
 
 function CompletionToContent(completion: ChatCompletion): string {
+  return completion.choices[0].message.content!;
+}
+
+function JsonToContent(completion: ParsedChatCompletion<any>): string {
+  const response = completion.choices[0].message;
+  console.log(response);
+  if (response.parsed) {
+    console.log(response.parsed);
+  } else if (response.refusal) {
+    // handle refusal
+    console.log(response.refusal);
+  }
   return completion.choices[0].message.content!;
 }
 
@@ -119,9 +133,10 @@ export class ConversationApi {
     const wrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
     const json_response = await wrapper.getJSONResponse(
       memoryPrompt,
-      body.prompts
+      body.prompts,
+      keysSchema
     );
-    const content = CompletionToContent(json_response);
+    const content = JsonToContent(json_response);
     console.log('request memory:', json_response);
     if ((await json_response).usage?.total_tokens == 0) {
       return [];

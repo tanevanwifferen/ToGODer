@@ -18,6 +18,7 @@ export enum AIProvider {
   LLama31405b = 'meta-llama/llama-3.1-405b-instruct',
   LLama3290b = 'meta-llama/llama-3.2-90b-vision-instruct',
   LLama3370b = 'meta-llama/llama-3.3-70b-instruct',
+  CohereCommandR7B = 'cohere/command-r7b-12-2024',
 }
 
 export function getAIWrapper(model: AIProvider): AIWrapper {
@@ -32,6 +33,7 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.LLama31405b:
     case AIProvider.LLama3290b:
     case AIProvider.LLama3370b:
+    case AIProvider.CohereCommandR7B:
       return new OpenRouterWrapper(model);
     default:
       return new OpenRouterWrapper(AIProvider.LLama3370b);
@@ -93,6 +95,12 @@ export function getTokenCost(model: AIProvider): AICost {
       torReturn = {
         input_cost_per_million: new Decimal('3'),
         output_cost_per_million: new Decimal('6'),
+      };
+      break;
+    case AIProvider.CohereCommandR7B:
+      torReturn = {
+        input_cost_per_million: new Decimal('0.0375'),
+        output_cost_per_million: new Decimal('0.15'),
       };
       break;
     default:
