@@ -137,7 +137,7 @@ export class ConversationApi {
       keysSchema
     );
     const content = JsonToContent(json_response);
-    console.log('request memory:', json_response);
+    console.log('request memory:', content);
     if ((await json_response).usage?.total_tokens == 0) {
       return [];
     }
@@ -240,6 +240,7 @@ export class ConversationApi {
         personalData.push(`memory ${key}: ` + body.memories[key]);
       });
     }
+    console.log('memories', body.memories);
 
     var date = () =>
       new Date().toDateString() + ' ' + new Date().toTimeString();
