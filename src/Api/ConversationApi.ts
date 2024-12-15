@@ -75,14 +75,17 @@ export class ConversationApi {
    */
   public async getPersonalDataUpdates(
     prompts: ChatCompletionMessageParam[],
-    data: any,
+    shortTermMemory: any,
     date: string,
     model: AIProvider,
     user: User | null | undefined
   ): Promise<string> {
-    var aiWrapper = this.getAIWrapper(model, user);
+    var aiWrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
     var inputMessages = prompts.length > 2 ? prompts.slice(-2) : prompts;
-    const data_str = typeof data == 'string' ? data : JSON.stringify(data);
+    const data_str =
+      typeof shortTermMemory == 'string'
+        ? shortTermMemory
+        : JSON.stringify(shortTermMemory);
     const messages = [
       {
         role: 'system' as const,
@@ -90,7 +93,7 @@ export class ConversationApi {
       },
       {
         role: 'system' as const,
-        content: `Current data: ${JSON.stringify(data)}\n\nUser message: ${JSON.stringify(inputMessages)}`,
+        content: `Current memory log: ${JSON.stringify(shortTermMemory)}\n\nUser messages: ${JSON.stringify(inputMessages)}`,
       },
     ];
     const response = await aiWrapper.getResponse(

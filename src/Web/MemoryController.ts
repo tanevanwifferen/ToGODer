@@ -33,7 +33,7 @@ const fetchMemoryKeysHandler = async (
     }
 
     const conversationApi = new ConversationApi(getAssistantName());
-    let aiWrapper = conversationApi.getAIWrapper(AIProvider.Gpt4o, user);
+    let aiWrapper = conversationApi.getAIWrapper(AIProvider.Gpt4oMini, user);
 
     const messages = [
       {
@@ -54,7 +54,10 @@ const fetchMemoryKeysHandler = async (
       );
       if (response.usage?.total_tokens == 0) {
         // break openai moderation unfortunately
-        aiWrapper = conversationApi.getAIWrapper(AIProvider.LLama3370b, user);
+        aiWrapper = conversationApi.getAIWrapper(
+          AIProvider.CohereCommandR7B,
+          user
+        );
       }
 
       result = JSON.parse(response.choices[0].message.content!);
