@@ -4,60 +4,49 @@ export const GetTitlePrompt =
   what the user is asking for. ';
 
 export const UpdatePersonalDataPrompt = `\
-You must ALWAYS return the COMPLETE object with ALL properties, both modified and unmodified.
-Never return a partial object with only the changed fields.
+You must ALWAYS return the COMPLETE object with ALL properties. Never return partial objects.
 
-Instructions:
-1. Analyze the input object and user prompt
-2. Make necessary updates to the object
-3. Return the ENTIRE object in plain text format
-4. If no changes needed, return empty string ""
-
-Input format: You will receive:
-- A personal data object with various fields and arrays
-- A user prompt
+Input Details:
+- Personal data object with fields and arrays
+- User prompt for updates
 - Current date as system message
 
-Response format:
-- Return information in clear, natural language paragraphs
-- Must contain ALL original fields plus any updates
-- Empty string "" if no changes needed
+Response Requirements:
+- Return ALL information in clear, natural language paragraphs
+- Include both modified and unmodified fields
+- Return empty string "" if no changes needed
 
-Rules:
-- Only update information when new details are provided
-- Feel free to add new topics if relevant
-- Keep only information useful for future conversations
-- Include relevant dates and timeframes
-- Remove outdated or irrelevant details
-- Write in clear, concise paragraphs
+Guidelines:
+- Update information only when new details are provided
+- Add new topics when relevant to user's life
+- Maintain chronological order for time-sensitive information
+- Include specific dates and timeframes
+- Remove outdated or irrelevant information
 - Group related information by topic
-- Include important dates and milestones
-- Focus on key points rather than full conversation logs
+- Focus on key details rather than conversation logs
 
-Example structure:
+Example Structure:
 
 Personal Goals
-John is working on quitting smoking as his highest priority goal. 
-Started on December 1st, 2024. Has completed nicotine patch program 
-and attended two support group meetings. Next step is to avoid 
-smoking triggers.
+John is working on quitting smoking (highest priority). Started December 1st, 2024. 
+Completed nicotine patch program and attended two support group meetings. 
+Next step: avoiding smoking triggers.
 
 Career Development
-Currently focusing on learning Python programming. Completed basic 
-course in November 2024. Working on data analysis project at work 
-using pandas library. Plans to start machine learning course in January.
+Learning Python programming - completed basic course (November 2024). 
+Current: Data analysis project using pandas library.
+Planned: Machine learning course in January.
 
 Hobbies & Interests
-Enjoys reading mystery and thriller novels, particularly works by 
-Stephen King. Goes swimming three times weekly, typically covering 
-2km per session with a personal record of 4km. Maintains a small 
-vegetable garden, spending about 2 hours daily on gardening activities.
+Reading: Mystery/thriller novels (Stephen King)
+Exercise: Swimming 3x weekly, 2km sessions, PR: 4km
+Gardening: Daily maintenance (2 hours)
 
 Recent Activities
-December 8, 2024: Prepared paella for family dinner, watched "Inception", decorated house for holidays
-December 9, 2024: Regular work commute, booked summer vacation accommodations
+Dec 8, 2024: Family dinner, "Inception" movie, holiday decorating
+Dec 9, 2024: Work commute, vacation planning
 
-CRITICAL: You must return the COMPLETE object with all information organized in natural language paragraphs.
+CRITICAL: Return the COMPLETE object with all information organized in clear paragraphs.
 `;
 
 export const requestForMemoryPrompt = `
