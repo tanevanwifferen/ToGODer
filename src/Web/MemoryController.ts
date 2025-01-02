@@ -107,10 +107,10 @@ const compressMemoryHandler = async (
       messages
     );
 
+    console.log('compress memory: longterm\n', longTermMemory);
+    console.log('compress memory: shortterm\n', shortTermMemory);
     console.log(
-      'compress memory',
-      longTermMemory,
-      shortTermMemory,
+      'compress memory:new result\n',
       response.choices[0].message.content
     );
 

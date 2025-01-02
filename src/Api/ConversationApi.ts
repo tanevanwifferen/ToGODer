@@ -41,12 +41,11 @@ function CompletionToContent(completion: ChatCompletion): string {
 
 function JsonToContent(completion: ParsedChatCompletion<any>): string {
   const response = completion.choices[0].message;
-  console.log(response);
   if (response.parsed) {
-    console.log(response.parsed);
+    console.log('response allowed', response.parsed);
   } else if (response.refusal) {
     // handle refusal
-    console.log(response.refusal);
+    console.log('request refused', response.refusal);
   }
   return completion.choices[0].message.content!;
 }
