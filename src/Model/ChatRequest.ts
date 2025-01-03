@@ -18,6 +18,8 @@ export interface ChatRequest {
   assistant_name: string | undefined;
   configurableData?: any;
   staticData?: any;
+  memoryIndex: string[];
+  memories: Record<string, string>;
 }
 
 export interface ExperienceRequest {

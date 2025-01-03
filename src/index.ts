@@ -8,6 +8,7 @@ import { GetModelName, ListModels } from './LLM/Model/AIProvider';
 import { GetBillingRouter } from './Web/BillingController';
 import { setupKoFi } from './Web/KoFiController';
 import { setupRunners } from './Auth/Runners';
+import { GetMemoryRouter } from './Web/MemoryController';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -18,7 +19,7 @@ app.set('trust proxy', 1);
 // Rate limiter to prevent abuse
 const messageLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 6, // The first one is the initial request so we (4 + 1)
+  max: 12, // The first one is the initial request so we (4 + 1)
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -46,10 +47,12 @@ app.use(express.static(path.join(__dirname, '../Frontend')));
 const chatRouter = GetChatRouter(messageLimiter);
 const authRouter = GetAuthRouter();
 const billingRouter = GetBillingRouter(messageLimiter);
+const memoryRouter = GetMemoryRouter(messageLimiter);
 
 app.use(chatRouter);
 app.use(authRouter);
 app.use(billingRouter);
+app.use(memoryRouter);
 
 const donateOptions: { address: string }[] = JSON.parse(
   process.env.DONATE_OPTIONS || '[]'
@@ -82,7 +85,7 @@ app.get('/', (req, res) => {
 // Centralized error handling middleware
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Unhandled error at ' + new Date() + ':', err);
-  console.log(_req.body);
+  console.error(_req.body);
   res.status(500).send('Internal Server Error');
 });
 

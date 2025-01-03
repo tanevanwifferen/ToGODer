@@ -6,6 +6,7 @@ import { AIWrapper } from '../LLM/AIWrapper';
 import { BillingApi } from '../Api/BillingApi';
 import { AIProvider, getTokenCost } from '../LLM/Model/AIProvider';
 import { User } from '@prisma/client';
+import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
 
 export class BillingDecorator implements AIWrapper {
   public constructor(
@@ -43,11 +44,13 @@ export class BillingDecorator implements AIWrapper {
 
   async getJSONResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
-  ): Promise<ChatCompletion> {
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    structure?: any
+  ): Promise<ParsedChatCompletion<any>> {
     const result = await this.aiWrapper.getJSONResponse(
       systemPrompt,
-      userAndAgentPrompts
+      userAndAgentPrompts,
+      structure
     );
 
     const price = getTokenCost(this.aiWrapper.Model);

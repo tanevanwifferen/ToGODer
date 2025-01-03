@@ -4,19 +4,17 @@ import {
   validateTitleMessage,
 } from './Validators';
 import { RateLimitRequestHandler } from 'express-rate-limit';
-import { ConversationApi } from '../Api/ConversationApi';
 import { PromptList } from '../LLM/prompts/promptlist';
 import {
   ChatRequest,
   ChatRequestCommunicationStyle,
   ExperienceRequest,
 } from '../Model/ChatRequest';
-import { ExperienceSeedPrompt } from '../LLM/prompts/experienceprompts';
-import jwt from 'jsonwebtoken';
 import { getDefaultModel } from '../LLM/Model/AIProvider';
 import { setAuthUser } from './Middleware/auth';
 import { ToGODerRequest } from './Model/ToGODerRequest';
-import crypto from 'crypto';
+import { ChatService } from '../Services/ChatService';
+import { MemoryService } from '../Services/MemoryService';
 
 function getAssistantName(): string {
   return process.env.ASSISTANT_NAME ?? 'ToGODer';
@@ -33,6 +31,8 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
         outsideBox: false,
         communicationStyle: ChatRequestCommunicationStyle.Default,
         prompts: req.body,
+        memories: {},
+        memoryIndex: [],
         assistant_name: getAssistantName(),
       };
     }
@@ -40,48 +40,31 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       body.assistant_name = getAssistantName();
     }
 
-    let response =
-      'Please create a free account or login to have longer conversations.';
-    let updateData = null;
+    const memoryService = new MemoryService(body.assistant_name);
+    const chatService = new ChatService(body.assistant_name);
 
-    if (
-      body.prompts.length <= 20 ||
-      (req as ToGODerRequest).togoder_auth?.user !== null
-    ) {
-      const conversationApi = new ConversationApi(body.assistant_name);
+    const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
 
-      updateData = new Promise(async (res, rej) => {
-        // Get personal data updates if data was provided
-        let result = null;
-        if (body.configurableData && body.prompts.length > 0) {
-          result = await conversationApi.getPersonalDataUpdates(
-            body.prompts,
-            body.configurableData,
-            body.staticData?.date ?? new Date().toISOString(),
-            getDefaultModel(),
-            (req as ToGODerRequest).togoder_auth?.user
-          );
-
-          if (result === '' || result == '""' || result == "''") {
-            result = null;
-          }
-        }
-        res(result);
-      });
-
-      response = await conversationApi.getResponse(
-        body,
-        (req as ToGODerRequest).togoder_auth?.user
-      );
+    var requestForMemory: { keys: string[] } = { keys: [] };
+    if (!!body.memoryIndex && body.memoryIndex.length > 0 && user != null) {
+      requestForMemory = await memoryService.requestMemories(body, user);
     }
-    const signature = crypto
-      .createHmac('sha256', process.env.JWT_SECRET!)
-      .update(body.prompts.map((x) => x.content).join(' '))
-      .digest('base64');
+
+    if (requestForMemory.keys.length > 0) {
+      res.json({
+        requestForMemory,
+        updateData: null,
+      });
+      return;
+    }
+
+    const response = await chatService.getChatResponse(body, user);
+    const signature = chatService.generateSignature(body.prompts);
+
     res.json({
       content: response,
       signature: signature,
-      updateData: await updateData,
+      updateData: null,
     });
   } catch (error) {
     next(error);
@@ -110,14 +93,9 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
           body.assistant_name = getAssistantName();
         }
 
-        const conversationApi = new ConversationApi(body.assistant_name);
-        let startText = await conversationApi.TranslateText(
-          ExperienceSeedPrompt,
-          body.language,
-          getDefaultModel(),
-          (req as ToGODerRequest).togoder_auth?.user
-        );
-        startText = '/experience ' + startText;
+        const chatService = new ChatService(body.assistant_name);
+        const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
+        const startText = await chatService.getExperienceText(body, user);
 
         res.json({ content: startText });
       } catch (error) {
@@ -133,11 +111,12 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     setAuthUser,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const conversationApi = new ConversationApi('');
-        const response = await conversationApi.getTitle(
+        const chatService = new ChatService('');
+        const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
+        const response = await chatService.getTitle(
           req.body.content,
           getDefaultModel(),
-          (req as ToGODerRequest).togoder_auth?.user
+          user
         );
         res.json({ content: response });
       } catch (error) {
@@ -151,8 +130,43 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
   });
 
   chatRouter.get('/api/quote', (req, res) => {
-    res.json({ quote: new ConversationApi('').getQuote() });
+    const chatService = new ChatService('');
+    res.json({ quote: chatService.getQuote() });
   });
+
+  // Endpoint for asynchronous memory updates
+  chatRouter.post(
+    '/api/chat/memory-update',
+    messageLimiter,
+    setAuthUser,
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        let body: ChatRequest = req.body;
+        if (body.assistant_name == null || body.assistant_name == '') {
+          body.assistant_name = getAssistantName();
+        }
+
+        const memoryService = new MemoryService(body.assistant_name);
+        const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
+
+        if (body.prompts.length > 0) {
+          const updateData = await memoryService.getPersonalDataUpdates(
+            body.prompts,
+            body.configurableData,
+            body.staticData?.date ?? new Date().toISOString(),
+            body.model,
+            user
+          );
+
+          res.json({ updateData });
+        } else {
+          res.json({ updateData: null });
+        }
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
 
   return chatRouter;
 }

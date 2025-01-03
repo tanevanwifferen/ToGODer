@@ -17,6 +17,8 @@ export enum AIProvider {
   LLama3170b = 'meta-llama/llama-3.1-70b-instruct',
   LLama31405b = 'meta-llama/llama-3.1-405b-instruct',
   LLama3290b = 'meta-llama/llama-3.2-90b-vision-instruct',
+  LLama3370b = 'meta-llama/llama-3.3-70b-instruct',
+  CohereCommandR7B = 'cohere/command-r7b-12-2024',
 }
 
 export function getAIWrapper(model: AIProvider): AIWrapper {
@@ -30,9 +32,11 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.LLama3170b:
     case AIProvider.LLama31405b:
     case AIProvider.LLama3290b:
+    case AIProvider.LLama3370b:
+    case AIProvider.CohereCommandR7B:
       return new OpenRouterWrapper(model);
     default:
-      return new OpenAIWrapper(AIProvider.Gpt4oMini);
+      return new OpenRouterWrapper(AIProvider.LLama3370b);
   }
 }
 
@@ -69,6 +73,12 @@ export function getTokenCost(model: AIProvider): AICost {
         output_cost_per_million: new Decimal('1.08'),
       };
       break;
+    case AIProvider.LLama3370b:
+      torReturn = {
+        input_cost_per_million: new Decimal('0.90'),
+        output_cost_per_million: new Decimal('0.90'),
+      };
+      break;
     case AIProvider.Gpt4o:
       torReturn = {
         input_cost_per_million: new Decimal('5'),
@@ -85,6 +95,12 @@ export function getTokenCost(model: AIProvider): AICost {
       torReturn = {
         input_cost_per_million: new Decimal('3'),
         output_cost_per_million: new Decimal('6'),
+      };
+      break;
+    case AIProvider.CohereCommandR7B:
+      torReturn = {
+        input_cost_per_million: new Decimal('0.0375'),
+        output_cost_per_million: new Decimal('0.15'),
       };
       break;
     default:
@@ -116,6 +132,8 @@ export function GetModelName(provider: AIProvider): string {
       return 'Llama 3.1 405b';
     case AIProvider.LLama3290b:
       return 'Llama 3.2 90b';
+    case AIProvider.LLama3370b:
+      return 'Llama 3.3 70b';
     default:
       throw new Error('Unknown AIProvider');
   }
@@ -136,6 +154,7 @@ export function ListModels(): AIProvider[] {
     AIProvider.Claude3SonnetBeta,
     AIProvider.LLama3,
     AIProvider.LLama3290b,
+    AIProvider.LLama3370b,
   ].filter((x) => {
     try {
       var a: AIWrapper | null = null;
@@ -150,6 +169,7 @@ export function ListModels(): AIProvider[] {
         case AIProvider.LLama3170b:
         case AIProvider.LLama31405b:
         case AIProvider.LLama3290b:
+        case AIProvider.LLama3370b:
           a = new OpenRouterWrapper(x);
           break;
       }

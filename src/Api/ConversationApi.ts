@@ -14,6 +14,7 @@ import {
 import { PromptList } from '../LLM/prompts/promptlist';
 import {
   GetTitlePrompt,
+  requestForMemoryPrompt,
   UpdatePersonalDataPrompt,
 } from '../LLM/prompts/systemprompts';
 import {
@@ -28,10 +29,18 @@ import {
 import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
 import { User } from '@prisma/client';
 import { BillingDecorator } from '../Decorators/BillingDecorator';
+import { wrap } from 'module';
+import { keysSchema } from '../zod/requestformemory';
+import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
 
 let quote = '';
 
 function CompletionToContent(completion: ChatCompletion): string {
+  return completion.choices[0].message.content!;
+}
+
+function JsonToContent(completion: ParsedChatCompletion<any>): string {
+  const response = completion.choices[0].message;
   return completion.choices[0].message.content!;
 }
 
@@ -46,7 +55,7 @@ export class ConversationApi {
     return quote;
   }
 
-  private getAIWrapper(provider: AIProvider, user: User | null | undefined) {
+  public getAIWrapper(provider: AIProvider, user: User | null | undefined) {
     var aiWrapper = getAIWrapper(provider);
     if (user != null) {
       aiWrapper = new BillingDecorator(aiWrapper, user);
@@ -59,14 +68,17 @@ export class ConversationApi {
    */
   public async getPersonalDataUpdates(
     prompts: ChatCompletionMessageParam[],
-    data: any,
+    shortTermMemory: any,
     date: string,
     model: AIProvider,
     user: User | null | undefined
   ): Promise<string> {
-    var aiWrapper = this.getAIWrapper(model, user);
+    var aiWrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
     var inputMessages = prompts.length > 2 ? prompts.slice(-2) : prompts;
-    const data_str = typeof data == 'string' ? data : JSON.stringify(data);
+    const data_str =
+      typeof shortTermMemory == 'string'
+        ? shortTermMemory
+        : JSON.stringify(shortTermMemory);
     const messages = [
       {
         role: 'system' as const,
@@ -74,7 +86,7 @@ export class ConversationApi {
       },
       {
         role: 'system' as const,
-        content: `Current data: ${JSON.stringify(data)}\n\nUser message: ${JSON.stringify(inputMessages)}`,
+        content: `Current memory log: ${shortTermMemory || 'emtpy'}\n\nUser messages: ${JSON.stringify(inputMessages)}`,
       },
     ];
     const response = await aiWrapper.getResponse(
@@ -82,7 +94,6 @@ export class ConversationApi {
       messages
     );
     const content = CompletionToContent(response);
-    //console.log(messages, content);
     return content;
   }
 
@@ -99,6 +110,36 @@ export class ConversationApi {
     var prompt = GetTitlePrompt + body[0].content;
 
     return CompletionToContent(await aiWrapper.getResponse(prompt, body));
+  }
+
+  public async requestMemories(
+    body: ChatRequest,
+    user: User
+  ): Promise<{ keys: string[] }> {
+    if (!body.memoryIndex || body.memoryIndex.length == 0) {
+      return { keys: [] };
+    }
+    let memoryPrompt = requestForMemoryPrompt;
+    memoryPrompt += this.formatPersonalData(body);
+    memoryPrompt +=
+      '\n\nThis is the list of all possible memories you can choose from: ' +
+      JSON.stringify(body.memoryIndex);
+
+    const wrapper = this.getAIWrapper(AIProvider.CohereCommandR7B, user);
+    const json_response = await wrapper.getJSONResponse(
+      memoryPrompt,
+      body.prompts,
+      keysSchema
+    );
+    const content = JsonToContent(json_response);
+    if ((await json_response).usage?.total_tokens == 0) {
+      return { keys: [] };
+    }
+
+    var keys = JSON.parse(content) as { keys: string[] };
+    var existing_keys = Object.keys(body.memories);
+    keys.keys = keys.keys.filter((x) => !existing_keys.includes(x));
+    return keys;
   }
 
   public async getResponseRaw(
@@ -171,9 +212,10 @@ export class ConversationApi {
 
     systemPrompt += '\n\n' + this.formatPersonalData(input);
 
-    return CompletionToContent(
+    var output = CompletionToContent(
       await aiWrapper.getResponse(systemPrompt, input.prompts)
     );
+    return output;
   }
 
   private formatPersonalData(body: ChatRequest): string {
@@ -190,9 +232,15 @@ export class ConversationApi {
         'This is static data about the user: ' + JSON.stringify(body.staticData)
       );
     }
-    personalData.push(
-      'The date today = ' + body.staticData?.date || new Date().toISOString()
-    );
+    if (body.memories && Object.keys(body.memories).length > 0) {
+      Object.keys(body.memories).forEach((key) => {
+        personalData.push(`memory ${key}: ` + body.memories[key]);
+      });
+    }
+
+    var date = () =>
+      new Date().toDateString() + ' ' + new Date().toTimeString();
+    personalData.push('The date today = ' + body.staticData?.date || date());
 
     return personalData.join('\n\n');
   }
@@ -200,7 +248,7 @@ export class ConversationApi {
   public async TranslateText(
     text: string,
     language: string = 'English',
-    model: AIProvider = AIProvider.Gpt4oMini,
+    model: AIProvider = AIProvider.LLama3370b,
     user: User | null | undefined
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model, user);
