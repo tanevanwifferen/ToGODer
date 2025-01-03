@@ -18,7 +18,7 @@ export class MemoryService {
     model: AIProvider,
     user: User | null
   ): Promise<string | null> {
-    if (prompts.length === 0 || user == null) {
+    if (prompts.length === 0) {
       return null;
     }
 
