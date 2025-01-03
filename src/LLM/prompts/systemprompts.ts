@@ -46,7 +46,12 @@ Recent Activities
 Dec 8, 2024: Family dinner, "Inception" movie, holiday decorating
 Dec 9, 2024: Work commute, vacation planning
 
-CRITICAL: Return the COMPLETE object with all information organized in clear paragraphs.
+CRITICAL: Return the COMPLETE object with all information organized 
+in clear paragraphs. Don't explain what you're doing, just return an
+"" if no changes are needed, without explanation, or the memory object,
+again without explanation of what you're doing. It should be a complete
+index, without filler text of what went through your mind while creating
+the index.
 `;
 
 export const requestForMemoryPrompt = `
