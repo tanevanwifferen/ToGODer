@@ -41,12 +41,6 @@ function CompletionToContent(completion: ChatCompletion): string {
 
 function JsonToContent(completion: ParsedChatCompletion<any>): string {
   const response = completion.choices[0].message;
-  if (response.parsed) {
-    console.log('response allowed', response.parsed);
-  } else if (response.refusal) {
-    // handle refusal
-    console.log('request refused', response.refusal);
-  }
   return completion.choices[0].message.content!;
 }
 
@@ -79,7 +73,6 @@ export class ConversationApi {
     model: AIProvider,
     user: User | null | undefined
   ): Promise<string> {
-    console.log('getPersonalDataUpdates');
     var aiWrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
     var inputMessages = prompts.length > 2 ? prompts.slice(-2) : prompts;
     const data_str =
@@ -101,8 +94,6 @@ export class ConversationApi {
       messages
     );
     const content = CompletionToContent(response);
-    console.log('new short term memory:', content);
-    //console.log(messages, content);
     return content;
   }
 
@@ -141,7 +132,6 @@ export class ConversationApi {
       keysSchema
     );
     const content = JsonToContent(json_response);
-    console.log('request memory:', content);
     if ((await json_response).usage?.total_tokens == 0) {
       return { keys: [] };
     }
@@ -247,7 +237,6 @@ export class ConversationApi {
         personalData.push(`memory ${key}: ` + body.memories[key]);
       });
     }
-    console.log('memories', body.memories);
 
     var date = () =>
       new Date().toDateString() + ' ' + new Date().toTimeString();
