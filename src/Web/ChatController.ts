@@ -58,28 +58,14 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
-    const [response, updateData] = await Promise.all([
-      chatService.getChatResponse(body, user),
-      body.prompts.length > 0
-        ? memoryService.getPersonalDataUpdates(
-            body.prompts,
-            body.configurableData,
-            body.staticData?.date ?? new Date().toISOString(),
-            body.model,
-            user
-          )
-        : Promise.resolve(null),
-    ]);
-
+    const response = await chatService.getChatResponse(body, user);
     const signature = chatService.generateSignature(body.prompts);
 
-    var result = {
+    res.json({
       content: response,
       signature: signature,
-      updateData: updateData,
-    };
-
-    res.json(result);
+      updateData: null,
+    });
   } catch (error) {
     next(error);
   }
@@ -147,6 +133,40 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     const chatService = new ChatService('');
     res.json({ quote: chatService.getQuote() });
   });
+
+  // Endpoint for asynchronous memory updates
+  chatRouter.post(
+    '/api/chat/memory-update',
+    messageLimiter,
+    setAuthUser,
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        let body: ChatRequest = req.body;
+        if (body.assistant_name == null || body.assistant_name == '') {
+          body.assistant_name = getAssistantName();
+        }
+
+        const memoryService = new MemoryService(body.assistant_name);
+        const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
+
+        if (body.prompts.length > 0) {
+          const updateData = await memoryService.getPersonalDataUpdates(
+            body.prompts,
+            body.configurableData,
+            body.staticData?.date ?? new Date().toISOString(),
+            body.model,
+            user
+          );
+
+          res.json({ updateData });
+        } else {
+          res.json({ updateData: null });
+        }
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
 
   return chatRouter;
 }

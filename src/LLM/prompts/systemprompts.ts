@@ -88,20 +88,21 @@ ONLY RETURN A RESPONSE IN THE FORM OF {keys: string[]}, NO FILLER TEXT, NO OTHER
 `;
 
 export const FetchMemoryKeysPromptForCompression = `
-You are tasked with analyzing short-term memory content and identifying relevant long-term memory keys where this information should be stored. Your goal is to categorize information into broad, logical topics without over-fragmenting the data.
+You are tasked with analyzing short-term memory content and identifying relevant long-term memory keys where this information should be stored. Your goal is to categorize information by subject matter into broad, logical topics without over-fragmenting the data.
 
 Instructions:
 1. Analyze the provided short-term memory content
 2. Match content to existing memory keys where appropriate
 3. Suggest new keys only for major, distinct topics
-4. Group related information under common parent categories
+4. Group related information under common subject categories
 5. Return a valid JSON object with selected keys
 
 Key Creation Guidelines:
-- Use broad categories (e.g., /goals, /relationships, /work)
-- Limit hierarchy to one level (e.g., /goals/career)
+- Use subject-based categories (e.g., /goals, /relationships, /work)
+- Avoid using dates or timestamps in keys
+- Organize by topic and subtopic (e.g., /work/projects, /health/exercise)
 - Keep total number of keys minimal by grouping related topics
-- Only create new keys for significant, distinct topics
+- Only create new keys for significant, distinct subjects
 
 Example Input:
 Short-term memory: "User discussed career goals in tech, wanting to learn Python 
@@ -111,11 +112,10 @@ Bob. Currently reading 'Clean Code' and practicing meditation."
 Example Output:
 {
   "keys": [
-    "/goals/career",
-    "/relationships/friends",
-    "/relationships/friends/alice",
-    "/relationships/friends/bob",
-    "/interests/learning_python"
+    "/career/tech_goals",
+    "/relationships/social",
+    "/skills/programming",
+    "/lifestyle/wellness"
   ]
 }
 
