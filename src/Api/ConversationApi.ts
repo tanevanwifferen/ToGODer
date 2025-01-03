@@ -125,14 +125,14 @@ export class ConversationApi {
     body: ChatRequest,
     user: User
   ): Promise<{ keys: string[] }> {
+    if (!body.memoryIndex || body.memoryIndex.length == 0) {
+      return { keys: [] };
+    }
     let memoryPrompt = requestForMemoryPrompt;
     memoryPrompt += this.formatPersonalData(body);
-
-    if (body.memoryIndex && body.memoryIndex.length > 0) {
-      memoryPrompt +=
-        '\n\nThis is the list of all possible memories you can request: ' +
-        JSON.stringify(body.memoryIndex);
-    }
+    memoryPrompt +=
+      '\n\nThis is the list of all possible memories you can choose from: ' +
+      JSON.stringify(body.memoryIndex);
 
     const wrapper = this.getAIWrapper(AIProvider.CohereCommandR7B, user);
     const json_response = await wrapper.getJSONResponse(
