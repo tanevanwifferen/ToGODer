@@ -13,6 +13,7 @@ export interface ChatRequest {
   humanPrompt: boolean | undefined;
   keepGoing: boolean | undefined;
   outsideBox: boolean | undefined;
+  holisticTherapist: boolean | undefined;
   communicationStyle: ChatRequestCommunicationStyle | undefined;
   prompts: ChatCompletionMessageParam[];
   assistant_name: string | undefined;
