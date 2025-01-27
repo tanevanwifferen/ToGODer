@@ -29,6 +29,7 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
         humanPrompt: false,
         keepGoing: false,
         outsideBox: false,
+        holisticTherapist: false,
         communicationStyle: ChatRequestCommunicationStyle.Default,
         prompts: req.body,
         memories: {},

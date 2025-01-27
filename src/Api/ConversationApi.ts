@@ -5,6 +5,7 @@ import {
 import {
   AdaptToConversantsCommunicationStyle,
   FormattingPrompt,
+  holisticTherapistPrompt,
   HumanResponsePrompt,
   InformalCommunicationStyle,
   keepConversationGoingPrompt,
@@ -205,6 +206,11 @@ export class ConversationApi {
     if (input.keepGoing) {
       systemPrompt += '\n\n' + keepConversationGoingPrompt;
     }
+
+    if (input.holisticTherapist) {
+      systemPrompt += '\n\n' + holisticTherapistPrompt;
+    }
+
     systemPrompt = systemPrompt.replace(
       /{{ name }}/g,
       () => this.assistant_name!
