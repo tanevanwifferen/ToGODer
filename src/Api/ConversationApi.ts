@@ -33,6 +33,7 @@ import { BillingDecorator } from '../Decorators/BillingDecorator';
 import { wrap } from 'module';
 import { keysSchema } from '../zod/requestformemory';
 import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
+import { rootpersona } from '../LLM/prompts/rootprompts';
 
 let quote = '';
 
@@ -218,6 +219,7 @@ export class ConversationApi {
 
     systemPrompt += '\n\n' + this.formatPersonalData(input);
 
+    systemPrompt = rootpersona + '\n\n' + systemPrompt;
     var output = CompletionToContent(
       await aiWrapper.getResponse(systemPrompt, input.prompts)
     );
