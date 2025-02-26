@@ -69,26 +69,52 @@ export class OpenAIWrapper implements AIWrapper {
     userAndAgentPrompts: ChatCompletionMessageParam[],
     structure?: any
   ): Promise<ParsedChatCompletion<any>> {
-    try {
-      var isFlagged = await this.getModeration(userAndAgentPrompts);
-      if (isFlagged) {
-        return ErrorJsonCompletion(this.model);
-      }
-      var request: any = {
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...userAndAgentPrompts,
-        ],
-        model: this.model,
-        response_format: { type: 'json_object' },
-      };
-      if (structure) {
-        request.response_format.structure = structure;
-      }
-      return await this.openAI.beta.chat.completions.parse(request);
-    } catch (error) {
-      console.error('Error:', error);
-      throw new Error('Failed to get JSON response from OpenAI API');
+    // Check for moderation flags first
+    var isFlagged = await this.getModeration(userAndAgentPrompts);
+    if (isFlagged) {
+      return ErrorJsonCompletion(this.model);
     }
+
+    // Prepare the request
+    var request: any = {
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...userAndAgentPrompts,
+      ],
+      model: this.model,
+      response_format: { type: 'json_object' },
+    };
+    if (structure) {
+      request.response_format.structure = structure;
+    }
+
+    // Implement retry logic for JSON parsing
+    const maxRetries = 3;
+    let lastError: any = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await this.openAI.beta.chat.completions.parse(request);
+      } catch (error) {
+        lastError = error;
+        console.error(
+          `JSON parse attempt ${attempt}/${maxRetries} failed:`,
+          error
+        );
+
+        // If this is the last attempt, throw the error
+        if (attempt === maxRetries) {
+          throw new Error(
+            `Failed to get valid JSON response from OpenAI API after ${maxRetries} attempts: ${lastError.message}`
+          );
+        }
+
+        // Small delay before retrying
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+
+    // This should never be reached due to the throw in the loop, but TypeScript requires a return
+    throw new Error('Failed to get JSON response from OpenAI API');
   }
 }
