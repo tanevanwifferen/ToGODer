@@ -88,7 +88,7 @@ const compressMemoryHandler = async (
     }
 
     const conversationApi = new ConversationApi(getAssistantName());
-    const aiWrapper = conversationApi.getAIWrapper(AIProvider.LLama3290b, user);
+    const aiWrapper = conversationApi.getAIWrapper(AIProvider.Gpt4oMini, user);
 
     const messages = [
       {
