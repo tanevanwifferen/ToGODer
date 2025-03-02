@@ -13,6 +13,8 @@ export enum AIProvider {
   Gpt4oMini = 'gpt-4o-mini',
   Gpt35turbo = 'gpt-3.5-turbo',
   Claude3SonnetBeta = 'anthropic/claude-3.5-sonnet:beta',
+  Claude37SonnetBeta = 'anthropic/claude-3.7-sonnet:beta',
+  DeepSeekV3 = 'deepseek/deepseek-chat',
   LLama3 = 'perplexity/llama-3-sonar-large-32k-chat',
   LLama3170b = 'meta-llama/llama-3.1-70b-instruct',
   LLama31405b = 'meta-llama/llama-3.1-405b-instruct',
@@ -28,6 +30,8 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.Gpt35turbo:
       return new OpenAIWrapper(model);
     case AIProvider.Claude3SonnetBeta:
+    case AIProvider.Claude37SonnetBeta:
+    case AIProvider.DeepSeekV3:
     case AIProvider.LLama3:
     case AIProvider.LLama3170b:
     case AIProvider.LLama31405b:
@@ -47,6 +51,18 @@ export function getTokenCost(model: AIProvider): AICost {
       torReturn = {
         input_cost_per_million: new Decimal('3'),
         output_cost_per_million: new Decimal('15'),
+      };
+      break;
+    case AIProvider.Claude37SonnetBeta:
+      torReturn = {
+        input_cost_per_million: new Decimal('3'),
+        output_cost_per_million: new Decimal('15'),
+      };
+      break;
+    case AIProvider.DeepSeekV3:
+      torReturn = {
+        input_cost_per_million: new Decimal('2'),
+        output_cost_per_million: new Decimal('2'),
       };
       break;
     case AIProvider.LLama3:
@@ -124,6 +140,10 @@ export function GetModelName(provider: AIProvider): string {
       return 'GPT-3.5 Turbo';
     case AIProvider.Claude3SonnetBeta:
       return 'Claude3.5 Sonnet Beta';
+    case AIProvider.Claude37SonnetBeta:
+      return 'Claude3.7 Sonnet Beta';
+    case AIProvider.DeepSeekV3:
+      return 'DeepSeek V3';
     case AIProvider.LLama3:
       return 'LLama3 sonar 32k';
     case AIProvider.LLama3170b:
@@ -152,6 +172,8 @@ export function ListModels(): AIProvider[] {
     AIProvider.Gpt4o,
     AIProvider.Gpt35turbo,
     AIProvider.Claude3SonnetBeta,
+    AIProvider.Claude37SonnetBeta,
+    AIProvider.DeepSeekV3,
     AIProvider.LLama3,
     AIProvider.LLama3290b,
     AIProvider.LLama3370b,
@@ -165,6 +187,8 @@ export function ListModels(): AIProvider[] {
           a = new OpenAIWrapper(x);
           break;
         case AIProvider.Claude3SonnetBeta:
+        case AIProvider.Claude37SonnetBeta:
+        case AIProvider.DeepSeekV3:
         case AIProvider.LLama3:
         case AIProvider.LLama3170b:
         case AIProvider.LLama31405b:
@@ -172,6 +196,8 @@ export function ListModels(): AIProvider[] {
         case AIProvider.LLama3370b:
           a = new OpenRouterWrapper(x);
           break;
+        default:
+          throw new Error('Unknown AIProvider');
       }
       return true;
     } catch (e) {
