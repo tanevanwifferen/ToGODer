@@ -52,10 +52,28 @@ export class ChatService {
     return this.conversationApi.getQuote();
   }
 
+  /**
+   * Generates a cryptographic signature for an array of prompts.
+   * Uses HMAC SHA256 with the JWT secret to sign the concatenated prompt contents.
+   */
   generateSignature(prompts: ChatRequest['prompts']): string {
     return crypto
       .createHmac('sha256', this.jwtSecret)
       .update(prompts.map((x) => x.content).join(' '))
       .digest('base64');
+  }
+
+  /**
+   * Verifies a cryptographic signature for an array of prompts.
+   * @param prompts The array of prompts to verify
+   * @param signature The signature to verify against
+   * @returns boolean indicating if the signature is valid
+   */
+  verifySignature(prompts: ChatRequest['prompts'], signature: string): boolean {
+    const expectedSignature = this.generateSignature(prompts);
+    return crypto.timingSafeEqual(
+      Buffer.from(signature, 'base64'),
+      Buffer.from(expectedSignature, 'base64')
+    );
   }
 }

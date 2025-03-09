@@ -30,11 +30,11 @@ export class ShareService {
     owner: User
   ): Promise<SharedChat> {
     // Verify all message signatures
-    for (const { message, signature } of messages) {
-      const expectedSignature = this.chatService.generateSignature([message]);
-      if (signature !== expectedSignature) {
-        throw new Error('Invalid message signature');
-      }
+    var msgsTexts = messages.map((x) => x.message);
+    var msgSignature = messages[-1].signature;
+    const isValid = this.chatService.verifySignature(msgsTexts, msgSignature);
+    if (!isValid) {
+      throw new Error('Invalid message signature');
     }
 
     // Store the chat with verified messages
