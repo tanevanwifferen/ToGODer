@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { ExperienceSeedPrompt } from '../LLM/prompts/experienceprompts';
 import { AIProvider } from '../LLM/Model/AIProvider';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
+import exp from 'constants';
 
 export class ChatService {
   private conversationApi: ConversationApi;
@@ -70,7 +71,9 @@ export class ChatService {
    * @returns boolean indicating if the signature is valid
    */
   verifySignature(prompts: ChatRequest['prompts'], signature: string): boolean {
+    console.log('signature from frontend', signature);
     const expectedSignature = this.generateSignature(prompts);
+    console.log('calculated signature', expectedSignature);
     return crypto.timingSafeEqual(
       Buffer.from(signature, 'base64'),
       Buffer.from(expectedSignature, 'base64')
