@@ -19,6 +19,7 @@ const shareRequestSchema = z.object({
   ),
   title: z.string(),
   description: z.string().optional(),
+  visibility: z.enum(['PUBLIC', 'PRIVATE']).default('PUBLIC'),
 });
 
 const paginationSchema = z.object({
@@ -54,7 +55,8 @@ export function GetShareRouter(
           body.messages,
           body.title,
           body.description,
-          user
+          user,
+          body.visibility
         );
 
         res.json(sharedChat);

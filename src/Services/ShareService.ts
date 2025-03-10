@@ -27,7 +27,8 @@ export class ShareService {
     messages: { message: ChatCompletionMessageParam; signature: string }[],
     title: string,
     description: string | undefined,
-    owner: User
+    owner: User,
+    visibility: string = 'PUBLIC'
   ): Promise<SharedChat> {
     // Verify all message signatures
     var msgsTexts = messages.map((x) => x.message);
@@ -44,6 +45,7 @@ export class ShareService {
         title,
         description,
         messages: JSON.stringify(messages),
+        visibility,
       },
     });
   }
@@ -84,6 +86,7 @@ export class ShareService {
 
     const [chats, total] = await Promise.all([
       getDbContext().sharedChat.findMany({
+        where: { visibility: 'PUBLIC' },
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
