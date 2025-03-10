@@ -87,11 +87,35 @@ export class ShareService {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: { owner: true },
+        //include: { owner: true },
       }),
       getDbContext().sharedChat.count(),
     ]);
 
     return { chats, total };
+  }
+
+  /**
+   * Deletes a shared chat if the requesting user is the owner.
+   * @param id The ID of the shared chat to delete
+   * @param requestingUser The user attempting to delete the chat
+   * @returns true if deletion was successful, false if chat not found
+   * @throws Error if user is not the owner
+   */
+  async deleteSharedChat(id: string, requestingUser: User): Promise<boolean> {
+    const chat = await getDbContext().sharedChat.findUnique({
+      where: { id },
+      select: { ownerId: true },
+    });
+
+    if (!chat) return false;
+    if (chat.ownerId !== requestingUser.id) {
+      throw new Error('Only the original sharer can delete this chat');
+    }
+
+    await getDbContext().sharedChat.delete({
+      where: { id },
+    });
+    return true;
   }
 }

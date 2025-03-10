@@ -107,5 +107,44 @@ export function GetShareRouter(
     }
   );
 
+  // Delete a shared chat (only by owner)
+  shareRouter.delete(
+    '/api/share/:id',
+    messageLimiter,
+    setAuthUser,
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const user = (req as ToGODerRequest).togoder_auth?.user;
+        if (!user) {
+          res.status(401).json({ error: 'Authentication required' });
+          return;
+        }
+
+        try {
+          const success = await shareService.deleteSharedChat(
+            req.params.id,
+            user
+          );
+          if (!success) {
+            res.status(404).json({ error: 'Shared chat not found' });
+            return;
+          }
+          res.status(200).json({ message: 'Shared chat deleted successfully' });
+        } catch (error) {
+          if (
+            error instanceof Error &&
+            error.message === 'Only the original sharer can delete this chat'
+          ) {
+            res.status(403).json({ error: error.message });
+            return;
+          }
+          throw error;
+        }
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
   return shareRouter;
 }
