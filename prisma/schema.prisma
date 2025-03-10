@@ -7,6 +7,7 @@
 // table for users, containing id, privateKeyHash, maxMessagesPerDay, messagesLeft, and chats
 model User {
   id                String   @id @default(uuid())
+  sharedChats       SharedChat[]
   email             String   @unique
   password          String
   verified          Boolean  @default(false)
@@ -46,6 +47,20 @@ model Message {
   timestamp DateTime @default(now())
   content   String
   chat      Chat     @relation(fields: [chatId], references: [id])
+}
+
+
+// table for shared chats, containing id, title, description, messages with their signatures, owner reference, and visibility
+model SharedChat {
+  id          String   @id @default(uuid())
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id])
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  messages    String   // JSON blob containing messages with their signatures
+  views       Int      @default(0)
+  visibility  String   @default("PUBLIC") // Can be "PUBLIC" or "PRIVATE"
 }
 
 generator client {

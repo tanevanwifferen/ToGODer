@@ -60,7 +60,10 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const response = await chatService.getChatResponse(body, user);
-    const signature = chatService.generateSignature(body.prompts);
+    const signature = chatService.generateSignature([
+      ...body.prompts,
+      { content: response, role: 'assistant' },
+    ]);
 
     res.json({
       content: response,
