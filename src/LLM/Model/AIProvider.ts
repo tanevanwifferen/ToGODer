@@ -20,6 +20,7 @@ export enum AIProvider {
   LLama31405b = 'meta-llama/llama-3.1-405b-instruct',
   LLama3290b = 'meta-llama/llama-3.2-90b-vision-instruct',
   LLama3370b = 'meta-llama/llama-3.3-70b-instruct',
+  Llama4Maverick = 'meta-llama/llama-4-maverick',
   CohereCommandR7B = 'cohere/command-r7b-12-2024',
 }
 
@@ -37,6 +38,7 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.LLama31405b:
     case AIProvider.LLama3290b:
     case AIProvider.LLama3370b:
+    case AIProvider.Llama4Maverick:
     case AIProvider.CohereCommandR7B:
       return new OpenRouterWrapper(model);
     default:
@@ -93,6 +95,12 @@ export function getTokenCost(model: AIProvider): AICost {
       torReturn = {
         input_cost_per_million: new Decimal('0.90'),
         output_cost_per_million: new Decimal('0.90'),
+      };
+      break;
+    case AIProvider.Llama4Maverick:
+      torReturn = {
+        input_cost_per_million: new Decimal('0.24'),
+        output_cost_per_million: new Decimal('0.85'),
       };
       break;
     case AIProvider.Gpt4o:
@@ -154,6 +162,8 @@ export function GetModelName(provider: AIProvider): string {
       return 'Llama 3.2 90b';
     case AIProvider.LLama3370b:
       return 'Llama 3.3 70b';
+    case AIProvider.Llama4Maverick:
+      return 'Llama 4 Maverick';
     default:
       throw new Error('Unknown AIProvider');
   }
@@ -177,6 +187,7 @@ export function ListModels(): AIProvider[] {
     AIProvider.LLama3,
     AIProvider.LLama3290b,
     AIProvider.LLama3370b,
+    AIProvider.Llama4Maverick,
   ].filter((x) => {
     try {
       var a: AIWrapper | null = null;
@@ -194,6 +205,7 @@ export function ListModels(): AIProvider[] {
         case AIProvider.LLama31405b:
         case AIProvider.LLama3290b:
         case AIProvider.LLama3370b:
+        case AIProvider.Llama4Maverick:
           a = new OpenRouterWrapper(x);
           break;
         default:
