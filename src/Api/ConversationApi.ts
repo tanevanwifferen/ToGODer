@@ -262,7 +262,7 @@ export class ConversationApi {
     var aiWrapper = this.getAIWrapper(model, user);
     text = text.replace(/{{ name }}/g, this.assistant_name);
     var result = await aiWrapper.getResponse(TranslationPrompt + language, [
-      { content: text, role: 'user' },
+      { role: 'user', content: text },
     ]);
     return CompletionToContent(result);
   }

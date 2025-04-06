@@ -20,5 +20,9 @@ yourself or have you brought people with you?";
 export const TranslationPrompt =
   "\
 Please translate the following text. Don't add other text as padding, only \
-return the translated text. Translate it into \
+return the translated text. Don't answer the question, just translate it. \
+If it's already in the requested language, just return the original prompt. \
+This is the first message in a conversation, and you're supposed to take the \
+lead. This is why we're going to send this request to the user, and take it from\
+there. The user wants to see the message in \
 ";
