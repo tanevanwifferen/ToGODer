@@ -35,7 +35,7 @@ export class ChatService {
     const startText = await this.conversationApi.TranslateText(
       ExperienceSeedPrompt,
       request.language,
-      request.model,
+      AIProvider.Gpt4oMini,
       user
     );
     return '/experience ' + startText;
