@@ -14,6 +14,7 @@ import {
   PersonalGrowthPrompt,
   fiveMinuteCheckin,
   fifteenMinuteCheckin,
+  ConnectionFacilitatorPrompt,
 } from './chatprompts';
 import { ExperiencePrompt } from './experienceprompts';
 
@@ -140,5 +141,15 @@ export const PromptList: Record<string, PromptListItem> = {
     prompt: ExperiencePrompt,
     description: 'Let us lead the conversation.',
     display: false,
+  },
+  '/connection': {
+    prompt: ConnectionFacilitatorPrompt,
+    description:
+      'Helps two or more people deepen their connection with each other. \
+      Creates a safe space for vulnerability, empathy, and authentic sharing. \
+      Perfect for couples, friends, family members, or anyone wanting to \
+      understand each other better.',
+    display: true,
+    aliases: ['/connect', '/bonding'],
   },
 };
