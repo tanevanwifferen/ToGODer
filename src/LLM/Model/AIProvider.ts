@@ -9,11 +9,13 @@ export interface AICost {
 }
 
 export enum AIProvider {
+  gpt41 = 'gpt-4.1',
   Gpt4o = 'gpt-4o',
   Gpt4oMini = 'gpt-4o-mini',
   Gpt35turbo = 'gpt-3.5-turbo',
   Claude3SonnetBeta = 'anthropic/claude-3.5-sonnet:beta',
   Claude37SonnetBeta = 'anthropic/claude-3.7-sonnet:beta',
+  Claude4Sonnet = 'anthropic/claude-sonnet-4',
   DeepSeekV3 = 'deepseek/deepseek-chat',
   LLama3 = 'perplexity/llama-3-sonar-large-32k-chat',
   LLama3170b = 'meta-llama/llama-3.1-70b-instruct',
@@ -26,12 +28,14 @@ export enum AIProvider {
 
 export function getAIWrapper(model: AIProvider): AIWrapper {
   switch (model) {
+    case AIProvider.gpt41:
     case AIProvider.Gpt4oMini:
     case AIProvider.Gpt4o:
     case AIProvider.Gpt35turbo:
       return new OpenAIWrapper(model);
     case AIProvider.Claude3SonnetBeta:
     case AIProvider.Claude37SonnetBeta:
+    case AIProvider.Claude4Sonnet:
     case AIProvider.DeepSeekV3:
     case AIProvider.LLama3:
     case AIProvider.LLama3170b:
@@ -56,6 +60,12 @@ export function getTokenCost(model: AIProvider): AICost {
       };
       break;
     case AIProvider.Claude37SonnetBeta:
+      torReturn = {
+        input_cost_per_million: new Decimal('3'),
+        output_cost_per_million: new Decimal('15'),
+      };
+      break;
+    case AIProvider.Claude4Sonnet:
       torReturn = {
         input_cost_per_million: new Decimal('3'),
         output_cost_per_million: new Decimal('15'),
@@ -121,6 +131,11 @@ export function getTokenCost(model: AIProvider): AICost {
         output_cost_per_million: new Decimal('6'),
       };
       break;
+    case AIProvider.gpt41:
+      torReturn = {
+        input_cost_per_million: new Decimal('2'),
+        output_cost_per_million: new Decimal('8'),
+      };
     case AIProvider.CohereCommandR7B:
       torReturn = {
         input_cost_per_million: new Decimal('0.0375'),
@@ -144,12 +159,16 @@ export function GetModelName(provider: AIProvider): string {
       return 'GPT-4o-mini';
     case AIProvider.Gpt4o:
       return 'GPT-4o';
+    case AIProvider.gpt41:
+      return 'GPT-4.1';
     case AIProvider.Gpt35turbo:
       return 'GPT-3.5 Turbo';
     case AIProvider.Claude3SonnetBeta:
       return 'Claude3.5 Sonnet Beta';
     case AIProvider.Claude37SonnetBeta:
       return 'Claude3.7 Sonnet Beta';
+    case AIProvider.Claude4Sonnet:
+      return 'Claude 4 Sonnet';
     case AIProvider.DeepSeekV3:
       return 'DeepSeek V3';
     case AIProvider.LLama3:
@@ -181,8 +200,10 @@ export function ListModels(): AIProvider[] {
     AIProvider.LLama3170b,
     AIProvider.Gpt4o,
     AIProvider.Gpt35turbo,
+    AIProvider.gpt41,
     AIProvider.Claude3SonnetBeta,
     AIProvider.Claude37SonnetBeta,
+    AIProvider.Claude4Sonnet,
     AIProvider.DeepSeekV3,
     AIProvider.LLama3,
     AIProvider.LLama3290b,
@@ -193,12 +214,14 @@ export function ListModels(): AIProvider[] {
       var a: AIWrapper | null = null;
       switch (x) {
         case AIProvider.Gpt4o:
+        case AIProvider.gpt41:
         case AIProvider.Gpt4oMini:
         case AIProvider.Gpt35turbo:
           a = new OpenAIWrapper(x);
           break;
         case AIProvider.Claude3SonnetBeta:
         case AIProvider.Claude37SonnetBeta:
+        case AIProvider.Claude4Sonnet:
         case AIProvider.DeepSeekV3:
         case AIProvider.LLama3:
         case AIProvider.LLama3170b:
