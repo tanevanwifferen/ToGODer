@@ -127,7 +127,7 @@ export class ConversationApi {
       '\n\nThis is the list of all possible memories you can choose from: ' +
       JSON.stringify(body.memoryIndex);
 
-    const wrapper = this.getAIWrapper(AIProvider.CohereCommandR7B, user);
+    const wrapper = this.getAIWrapper(AIProvider.Grok3Mini, user);
     const json_response = await wrapper.getJSONResponse(
       memoryPrompt,
       body.prompts,
