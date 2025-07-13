@@ -15,6 +15,7 @@ import {
   fiveMinuteCheckin,
   fifteenMinuteCheckin,
   ConnectionFacilitatorPrompt,
+  RecursionPrompt,
 } from './chatprompts';
 import { ExperiencePrompt } from './experienceprompts';
 
@@ -47,6 +48,11 @@ export const PromptList: Record<string, PromptListItem> = {
   '/thirtyMinuteCheckin': {
     prompt: fifteenMinuteCheckin,
     description: "A deep dive into how you're doing.",
+    display: true,
+  },
+  '/recursion': {
+    prompt: RecursionPrompt,
+    description: 'A recursive prompt. Beware.',
     display: true,
   },
   '/growth': {
