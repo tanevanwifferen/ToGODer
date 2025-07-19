@@ -130,7 +130,16 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
   );
 
   chatRouter.get('/api/prompts', (req, res) => {
-    res.send(PromptList);
+    let toreturn = {};
+    for (let key of Object.keys(PromptList)) {
+      if (PromptList[key].display) {
+        Object.defineProperty(toreturn, key, {
+          value: PromptList[key],
+          enumerable: true,
+        });
+      }
+    }
+    res.send(toreturn);
   });
 
   chatRouter.get('/api/quote', (req, res) => {
