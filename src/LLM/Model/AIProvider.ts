@@ -25,6 +25,7 @@ export enum AIProvider {
   Llama4Maverick = 'meta-llama/llama-4-maverick',
   Grok3Mini = 'x-ai/grok-3-mini',
   Grok4 = 'x-ai/grok-4',
+  Qwen3Coder = 'qwen/qwen3-coder',
 }
 
 export function getAIWrapper(model: AIProvider): AIWrapper {
@@ -46,6 +47,7 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.Llama4Maverick:
     case AIProvider.Grok3Mini:
     case AIProvider.Grok4:
+    case AIProvider.Qwen3Coder:
       return new OpenRouterWrapper(model);
     default:
       return new OpenRouterWrapper(AIProvider.LLama3370b);
@@ -150,6 +152,12 @@ export function getTokenCost(model: AIProvider): AICost {
         output_cost_per_million: new Decimal('15'),
       };
       break;
+    case AIProvider.Qwen3Coder:
+      torReturn = {
+        input_cost_per_million: new Decimal('2'),
+        output_cost_per_million: new Decimal('2'),
+      };
+      break;
     default:
       throw new Error('unknown price for model: ' + model);
   }
@@ -193,6 +201,8 @@ export function GetModelName(provider: AIProvider): string {
       return 'Llama 4 Maverick';
     case AIProvider.Grok4:
       return 'Grok 4';
+    case AIProvider.Qwen3Coder:
+      return 'Qwen 3 Coder';
     default:
       throw new Error('Unknown AIProvider');
   }

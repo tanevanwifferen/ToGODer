@@ -127,7 +127,7 @@ export class ConversationApi {
       '\n\nThis is the list of all possible memories you can choose from: ' +
       JSON.stringify(body.memoryIndex);
 
-    const wrapper = this.getAIWrapper(AIProvider.Grok3Mini, user);
+    const wrapper = this.getAIWrapper(AIProvider.Qwen3Coder, user);
     const json_response = await wrapper.getJSONResponse(
       memoryPrompt,
       body.prompts,
@@ -141,6 +141,7 @@ export class ConversationApi {
     var keys = JSON.parse(content) as { keys: string[] };
     var existing_keys = Object.keys(body.memories);
     keys.keys = keys.keys.filter((x) => !existing_keys.includes(x));
+    console.log('keys', keys.keys);
     return keys;
   }
 
