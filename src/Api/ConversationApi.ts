@@ -172,16 +172,16 @@ export class ConversationApi {
 
     var firstPrompt = (<string>input.prompts[0].content)?.split(' ')[0];
 
-    var systemPrompt = PromptList['/default'].prompt;
+    var systemPrompt =
+      input.customSystemPrompt ?? PromptList['/default'].prompt;
     if (firstPrompt in PromptList) {
       systemPrompt = PromptList[firstPrompt].prompt;
     } else if (
       Object.values(PromptList).some((x) => x.aliases?.includes(firstPrompt))
     ) {
-      systemPrompt =
-        input.customSystemPrompt ??
-        Object.values(PromptList).find((x) => x.aliases?.includes(firstPrompt))
-          ?.prompt!;
+      systemPrompt = Object.values(PromptList).find((x) =>
+        x.aliases?.includes(firstPrompt)
+      )?.prompt!;
     }
     systemPrompt += '\n\n' + FormattingPrompt;
     if (input.humanPrompt) {
