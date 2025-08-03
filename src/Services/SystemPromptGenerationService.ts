@@ -21,7 +21,7 @@ export class SystemPromptGenerationService {
 
   /**
    * Generates a personalized system prompt for a user based on their memories and existing prompt examples.
-   * Follows the same pattern as the chat endpoint - either returns the generated prompt or requests more memories.
+   * Uses a two-phase approach: first generates a basic system prompt, then requests relevant memories to enhance it.
    * @param body ChatRequest containing memory information and configuration
    * @param user The user to generate the prompt for
    * @returns Either a request for more memories or the generated system prompt
@@ -30,25 +30,14 @@ export class SystemPromptGenerationService {
     body: ChatRequest,
     user: User
   ): Promise<{ requestForMemory?: { keys: string[] }; systemPrompt?: string }> {
-    // First, check if we need to request memories (similar to chat endpoint)
-    var requestForMemory: { keys: string[] } = { keys: [] };
-    if (!!body.memoryIndex && body.memoryIndex.length > 0) {
-      requestForMemory = await this.memoryService.requestMemories(body, user);
-    }
-
-    // If we need more memories, return the request
-    if (requestForMemory.keys.length > 0) {
-      return { requestForMemory };
-    }
-
-    // We have all the memories we need, generate the system prompt
+    // Phase 1: Generate initial system prompt with available memories
     const promptExamples = this.getPromptExamples();
     const systemPromptInput = this.formatSystemPromptInput(
-      body.memories,
+      body.memories || {},
       promptExamples
     );
 
-    // Generate the personalized system prompt
+    // Generate the initial personalized system prompt
     const aiWrapper = this.conversationApi.getAIWrapper(body.model, user);
     const response = await aiWrapper.getResponse(
       AutoGenerateSystemPromptPrompt,
@@ -67,6 +56,25 @@ export class SystemPromptGenerationService {
     const generatedPrompt =
       response.choices[0].message.content ||
       'Unable to generate personalized system prompt.';
+
+    // Phase 2: Check if we need additional memories based on the generated system prompt
+    var requestForMemory: { keys: string[] } = { keys: [] };
+    if (!!body.memoryIndex && body.memoryIndex.length > 0) {
+      requestForMemory =
+        await this.conversationApi.requestMemoriesForSystemPrompt(
+          generatedPrompt,
+          body.memoryIndex,
+          body.memories || {},
+          user
+        );
+    }
+
+    // If we need more memories, return the request
+    if (requestForMemory.keys.length > 0) {
+      return { requestForMemory };
+    }
+
+    // We have all the memories we need, return the generated system prompt
     return { systemPrompt: generatedPrompt };
   }
 

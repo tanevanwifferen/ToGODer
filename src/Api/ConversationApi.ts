@@ -16,6 +16,7 @@ import { PromptList } from '../LLM/prompts/promptlist';
 import {
   GetTitlePrompt,
   requestForMemoryPrompt,
+  requestForMemoryBasedOnSystemPromptPrompt,
   UpdatePersonalDataPrompt,
 } from '../LLM/prompts/systemprompts';
 import {
@@ -142,6 +143,54 @@ export class ConversationApi {
     var existing_keys = Object.keys(body.memories);
     keys.keys = keys.keys.filter((x) => !existing_keys.includes(x));
     console.log('keys', keys.keys);
+    return keys;
+  }
+
+  /**
+   * Request memories that are relevant to a generated system prompt.
+   * This method analyzes the system prompt content to determine which memories would enhance it.
+   */
+  public async requestMemoriesForSystemPrompt(
+    systemPrompt: string,
+    memoryIndex: string[],
+    existingMemories: { [key: string]: string },
+    user: User
+  ): Promise<{ keys: string[] }> {
+    if (!memoryIndex || memoryIndex.length == 0) {
+      return { keys: [] };
+    }
+
+    let memoryPrompt = requestForMemoryBasedOnSystemPromptPrompt;
+    memoryPrompt += '\n\nGenerated system prompt:\n' + systemPrompt;
+    memoryPrompt +=
+      '\n\nThis is the list of all possible memories you can choose from: ' +
+      JSON.stringify(memoryIndex);
+
+    const wrapper = this.getAIWrapper(AIProvider.Qwen3Coder, user);
+    const json_response = await wrapper.getJSONResponse(
+      memoryPrompt,
+      [
+        {
+          role: 'system',
+          content: `Current date: ${new Date().toISOString()}`,
+        },
+        {
+          role: 'user',
+          content:
+            'Please analyze the system prompt and return relevant memory keys.',
+        },
+      ],
+      keysSchema
+    );
+    const content = JsonToContent(json_response);
+    if ((await json_response).usage?.total_tokens == 0) {
+      return { keys: [] };
+    }
+
+    var keys = JSON.parse(content) as { keys: string[] };
+    var existing_keys = Object.keys(existingMemories);
+    keys.keys = keys.keys.filter((x) => !existing_keys.includes(x));
+    console.log('system prompt memory keys', keys.keys);
     return keys;
   }
 
