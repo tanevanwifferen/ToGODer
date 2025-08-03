@@ -5,6 +5,7 @@ import { User } from '@prisma/client';
 import { AIProvider } from '../LLM/Model/AIProvider';
 import { PromptList } from '../LLM/prompts/promptlist';
 import { AutoGenerateSystemPromptPrompt } from '../LLM/prompts/systemPromptGeneration';
+import { requestForMemoryBasedOnSystemPromptPrompt } from '../LLM/prompts/systemprompts';
 
 /**
  * Service for auto-generating personalized system prompts based on user memories and existing prompt examples.
@@ -30,15 +31,43 @@ export class SystemPromptGenerationService {
     body: ChatRequest,
     user: User
   ): Promise<{ requestForMemory?: { keys: string[] }; systemPrompt?: string }> {
-    // Phase 1: Generate initial system prompt with available memories
+    // Phase 1: Check if we need additional memories
+    var requestForMemory: { keys: string[] } = { keys: [] };
+    if (!!body.memoryIndex && body.memoryIndex.length > 0) {
+      var memories = body.memories || {};
+      Object.defineProperty(memories, 'root', {
+        value: body.configurableData ?? undefined,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      requestForMemory =
+        await this.conversationApi.requestMemoriesForSystemPrompt(
+          requestForMemoryBasedOnSystemPromptPrompt,
+          body.memoryIndex,
+          memories,
+          user
+        );
+    }
+
+    // If we need more memories, return the request
+    if (requestForMemory.keys.length > 0) {
+      return { requestForMemory };
+    }
+
+    // Phase 2: Generate initial system prompt with available memories
     const promptExamples = this.getPromptExamples();
     const systemPromptInput = this.formatSystemPromptInput(
       body.memories || {},
+      body.configurableData,
       promptExamples
     );
 
     // Generate the initial personalized system prompt
-    const aiWrapper = this.conversationApi.getAIWrapper(body.model, user);
+    const aiWrapper = this.conversationApi.getAIWrapper(
+      AIProvider.Grok3Mini,
+      user
+    );
     const response = await aiWrapper.getResponse(
       AutoGenerateSystemPromptPrompt,
       [
@@ -56,23 +85,6 @@ export class SystemPromptGenerationService {
     const generatedPrompt =
       response.choices[0].message.content ||
       'Unable to generate personalized system prompt.';
-
-    // Phase 2: Check if we need additional memories based on the generated system prompt
-    var requestForMemory: { keys: string[] } = { keys: [] };
-    if (!!body.memoryIndex && body.memoryIndex.length > 0) {
-      requestForMemory =
-        await this.conversationApi.requestMemoriesForSystemPrompt(
-          generatedPrompt,
-          body.memoryIndex,
-          body.memories || {},
-          user
-        );
-    }
-
-    // If we need more memories, return the request
-    if (requestForMemory.keys.length > 0) {
-      return { requestForMemory };
-    }
 
     // We have all the memories we need, return the generated system prompt
     return { systemPrompt: generatedPrompt };
@@ -115,6 +127,7 @@ export class SystemPromptGenerationService {
    */
   private formatSystemPromptInput(
     memories: { [key: string]: string },
+    configurableData: { [key: string]: string },
     promptExamples: { [key: string]: { prompt: string; description: string } }
   ): string {
     let input = 'USER MEMORIES AND PERSONAL DATA:\n\n';
@@ -126,6 +139,13 @@ export class SystemPromptGenerationService {
     } else {
       input +=
         'No specific memories available. Generate a general but helpful system prompt.\n\n';
+    }
+
+    input += 'CONFIGURABLE DATA:\n\n';
+    if (configurableData) {
+      input += '\n' + JSON.stringify(configurableData, null, 2) + '\n\n';
+    } else {
+      input += 'No configurable data available.\n';
     }
 
     input += 'EXISTING PROMPT EXAMPLES:\n\n';
