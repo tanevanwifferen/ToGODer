@@ -21,7 +21,7 @@ export interface ChatRequest {
   staticData?: any;
   memoryIndex: string[];
   memories: Record<string, string>;
-  constomSystemPrompt?: string;
+  customSystemPrompt?: string;
 }
 
 export interface ExperienceRequest {

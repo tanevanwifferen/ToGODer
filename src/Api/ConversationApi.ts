@@ -179,7 +179,7 @@ export class ConversationApi {
       Object.values(PromptList).some((x) => x.aliases?.includes(firstPrompt))
     ) {
       systemPrompt =
-        input.constomSystemPrompt ??
+        input.customSystemPrompt ??
         Object.values(PromptList).find((x) => x.aliases?.includes(firstPrompt))
           ?.prompt!;
     }
