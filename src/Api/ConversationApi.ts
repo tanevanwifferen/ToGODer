@@ -178,9 +178,10 @@ export class ConversationApi {
     } else if (
       Object.values(PromptList).some((x) => x.aliases?.includes(firstPrompt))
     ) {
-      systemPrompt = Object.values(PromptList).find((x) =>
-        x.aliases?.includes(firstPrompt)
-      )?.prompt!;
+      systemPrompt =
+        input.constomSystemPrompt ??
+        Object.values(PromptList).find((x) => x.aliases?.includes(firstPrompt))
+          ?.prompt!;
     }
     systemPrompt += '\n\n' + FormattingPrompt;
     if (input.humanPrompt) {
