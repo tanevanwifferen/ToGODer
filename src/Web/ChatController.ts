@@ -15,6 +15,8 @@ import { setAuthUser } from './Middleware/auth';
 import { ToGODerRequest } from './Model/ToGODerRequest';
 import { ChatService } from '../Services/ChatService';
 import { MemoryService } from '../Services/MemoryService';
+import { SystemPromptGenerationService } from '../Services/SystemPromptGenerationService';
+import { BillingApi } from '../Api/BillingApi';
 
 function getAssistantName(): string {
   return process.env.ASSISTANT_NAME ?? 'ToGODer';
@@ -45,6 +47,24 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
     const chatService = new ChatService(body.assistant_name);
 
     const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
+    const billingApi = new BillingApi();
+    if (user && body.prompts.length > 10) {
+      const msg =
+        'Insufficient balance. Please donate through KoFi with this email address to continue using the service.';
+      var balance = await billingApi.GetBalance(user.email);
+      const signature = chatService.generateSignature([
+        ...body.prompts,
+        { content: msg, role: 'assistant' },
+      ]);
+      if (balance.lessThanOrEqualTo(0)) {
+        res.json({
+          signature: signature,
+          content: msg,
+          updateDate: null,
+        });
+        return;
+      }
+    }
 
     var requestForMemory: { keys: string[] } = { keys: [] };
     if (!!body.memoryIndex && body.memoryIndex.length > 0 && user != null) {
@@ -130,7 +150,16 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
   );
 
   chatRouter.get('/api/prompts', (req, res) => {
-    res.send(PromptList);
+    let toreturn = {};
+    for (let key of Object.keys(PromptList)) {
+      if (PromptList[key].display) {
+        Object.defineProperty(toreturn, key, {
+          value: PromptList[key],
+          enumerable: true,
+        });
+      }
+    }
+    res.send(toreturn);
   });
 
   chatRouter.get('/api/quote', (req, res) => {
@@ -165,6 +194,66 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
           res.json({ updateData });
         } else {
           res.json({ updateData: null });
+        }
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  // Endpoint for auto-generating personalized system prompts
+  chatRouter.post(
+    '/api/generate-system-prompt',
+    messageLimiter,
+    setAuthUser,
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const user = (req as ToGODerRequest).togoder_auth?.user;
+
+        if (!user) {
+          res.status(401).json({
+            error: 'Authentication required for system prompt generation',
+          });
+          return;
+        }
+
+        let body: ChatRequest = req.body;
+        if (body.assistant_name == null || body.assistant_name == '') {
+          body.assistant_name = getAssistantName();
+        }
+
+        // Set default values if not provided
+        if (!body.model) {
+          body.model = getDefaultModel();
+        }
+        if (!body.memoryIndex) {
+          body.memoryIndex = [];
+        }
+        if (!body.memories) {
+          body.memories = {};
+        }
+
+        const systemPromptService = new SystemPromptGenerationService(
+          body.assistant_name
+        );
+
+        const result =
+          await systemPromptService.generatePersonalizedSystemPrompt(
+            body,
+            user
+          );
+
+        if (result.requestForMemory) {
+          res.json({
+            requestForMemory: result.requestForMemory,
+            systemPrompt: null,
+          });
+        } else {
+          res.json({
+            systemPrompt: result.systemPrompt,
+            requestForMemory: null,
+            assistant_name: body.assistant_name,
+          });
         }
       } catch (error) {
         next(error);

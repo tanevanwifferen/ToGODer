@@ -16,6 +16,7 @@ import { PromptList } from '../LLM/prompts/promptlist';
 import {
   GetTitlePrompt,
   requestForMemoryPrompt,
+  requestForMemoryBasedOnSystemPromptPrompt,
   UpdatePersonalDataPrompt,
 } from '../LLM/prompts/systemprompts';
 import {
@@ -30,7 +31,6 @@ import {
 import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
 import { User } from '@prisma/client';
 import { BillingDecorator } from '../Decorators/BillingDecorator';
-import { wrap } from 'module';
 import { keysSchema } from '../zod/requestformemory';
 import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
 import { rootpersona } from '../LLM/prompts/rootprompts';
@@ -127,7 +127,7 @@ export class ConversationApi {
       '\n\nThis is the list of all possible memories you can choose from: ' +
       JSON.stringify(body.memoryIndex);
 
-    const wrapper = this.getAIWrapper(AIProvider.Grok3Mini, user);
+    const wrapper = this.getAIWrapper(AIProvider.Qwen3Coder, user);
     const json_response = await wrapper.getJSONResponse(
       memoryPrompt,
       body.prompts,
@@ -140,6 +140,53 @@ export class ConversationApi {
 
     var keys = JSON.parse(content) as { keys: string[] };
     var existing_keys = Object.keys(body.memories);
+    keys.keys = keys.keys.filter((x) => !existing_keys.includes(x));
+    return keys;
+  }
+
+  /**
+   * Request memories that are relevant to a generated system prompt.
+   * This method analyzes the system prompt content to determine which memories would enhance it.
+   */
+  public async requestMemoriesForSystemPrompt(
+    systemPrompt: string,
+    memoryIndex: string[],
+    existingMemories: { [key: string]: string },
+    user: User
+  ): Promise<{ keys: string[] }> {
+    if (!memoryIndex || memoryIndex.length == 0) {
+      return { keys: [] };
+    }
+
+    let memoryPrompt = requestForMemoryBasedOnSystemPromptPrompt;
+    memoryPrompt += '\n\nGenerated system prompt:\n' + systemPrompt;
+    memoryPrompt +=
+      '\n\nThis is the list of all possible memories you can choose from: ' +
+      JSON.stringify(memoryIndex);
+
+    const wrapper = this.getAIWrapper(AIProvider.Grok3Mini, user);
+    const json_response = await wrapper.getJSONResponse(
+      memoryPrompt,
+      [
+        {
+          role: 'system',
+          content: `Current date: ${new Date().toISOString()}`,
+        },
+        {
+          role: 'user',
+          content:
+            'Please analyze the system prompt and return relevant memory keys.',
+        },
+      ],
+      keysSchema
+    );
+    const content = JsonToContent(json_response);
+    if ((await json_response).usage?.total_tokens == 0) {
+      return { keys: [] };
+    }
+
+    var keys = JSON.parse(content) as { keys: string[] };
+    var existing_keys = Object.keys(existingMemories);
     keys.keys = keys.keys.filter((x) => !existing_keys.includes(x));
     return keys;
   }
@@ -171,7 +218,8 @@ export class ConversationApi {
 
     var firstPrompt = (<string>input.prompts[0].content)?.split(' ')[0];
 
-    var systemPrompt = PromptList['/default'].prompt;
+    var systemPrompt =
+      input.customSystemPrompt ?? PromptList['/default'].prompt;
     if (firstPrompt in PromptList) {
       systemPrompt = PromptList[firstPrompt].prompt;
     } else if (

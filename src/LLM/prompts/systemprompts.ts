@@ -92,6 +92,38 @@ name of the key.
 ONLY RETURN A RESPONSE IN THE FORM OF {keys: string[]}, NO FILLER TEXT, NO OTHER STUFF, PURE JSON
 `;
 
+export const requestForMemoryBasedOnSystemPromptPrompt = `
+You will receive a generated system prompt and a memory index.
+The memory index contains a list of strings, and each string is a key
+to a memory containing context about the user.
+
+Instructions:
+1. Analyze the generated system prompt to understand what kind of user it was designed for.
+2. Determine which memories from the memory index would be most relevant to enhance this system prompt.
+3. Focus on memories that would help the AI assistant better understand the user's context, goals, preferences, and background.
+4. Return the keys for memories that would make the system prompt more personalized and effective.
+5. If no additional memories are needed, return an empty array.
+6. Return valid JSON.
+
+Example:
+Generated system prompt: "You are a supportive AI assistant helping with career development and learning new programming skills..."
+Memory index: ["/career/tech_goals", "/skills/programming", "/goals/learning_guitar", "/relationships/family", "/health/exercise"]
+
+You will return:
+{keys: ["/career/tech_goals", "/skills/programming"]}
+
+Guidelines:
+- Prioritize memories that directly relate to the themes and focus areas mentioned in the system prompt
+- Don't ask for too many memories - focus on the most relevant ones (typically 3-5 keys maximum)
+- Consider memories about goals, preferences, background, and context that would help personalize responses
+- Avoid memories that are unrelated to the system prompt's purpose
+
+If you don't want to ask for any additional context, return this:
+{keys: []}
+
+ONLY RETURN A RESPONSE IN THE FORM OF {keys: string[]}, NO FILLER TEXT, NO OTHER STUFF, PURE JSON
+`;
+
 export const FetchMemoryKeysPromptForCompression = `
 You are tasked with analyzing short-term memory content and identifying relevant long-term memory keys where this information should be stored. Your goal is to categorize information by subject matter into broad, logical topics without over-fragmenting the data.
 
