@@ -16,6 +16,7 @@ import { ToGODerRequest } from './Model/ToGODerRequest';
 import { ChatService } from '../Services/ChatService';
 import { MemoryService } from '../Services/MemoryService';
 import { SystemPromptGenerationService } from '../Services/SystemPromptGenerationService';
+import { BillingApi } from '../Api/BillingApi';
 
 function getAssistantName(): string {
   return process.env.ASSISTANT_NAME ?? 'ToGODer';
@@ -46,6 +47,24 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
     const chatService = new ChatService(body.assistant_name);
 
     const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
+    const billingApi = new BillingApi();
+    if (user && body.prompts.length > 10) {
+      const msg =
+        'Insufficient balance. Please donate through KoFi with this email address to continue using the service.';
+      var balance = await billingApi.GetBalance(user.email);
+      const signature = chatService.generateSignature([
+        ...body.prompts,
+        { content: msg, role: 'assistant' },
+      ]);
+      if (balance.lessThanOrEqualTo(0)) {
+        res.json({
+          signature: signature,
+          content: msg,
+          updateDate: null,
+        });
+        return;
+      }
+    }
 
     var requestForMemory: { keys: string[] } = { keys: [] };
     if (!!body.memoryIndex && body.memoryIndex.length > 0 && user != null) {
@@ -192,11 +211,9 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
         const user = (req as ToGODerRequest).togoder_auth?.user;
 
         if (!user) {
-          res
-            .status(401)
-            .json({
-              error: 'Authentication required for system prompt generation',
-            });
+          res.status(401).json({
+            error: 'Authentication required for system prompt generation',
+          });
           return;
         }
 

@@ -7,6 +7,7 @@ import { BillingApi } from '../Api/BillingApi';
 import { AIProvider, getTokenCost } from '../LLM/Model/AIProvider';
 import { User } from '@prisma/client';
 import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
+import { ChatCompletionRunner } from 'openai/src/lib/ChatCompletionRunner.js';
 
 export class BillingDecorator implements AIWrapper {
   public constructor(
@@ -22,6 +23,8 @@ export class BillingDecorator implements AIWrapper {
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[]
   ): Promise<ChatCompletion> {
+    const billingApi = new BillingApi();
+
     const result = await this.aiWrapper.getResponse(
       systemPrompt,
       userAndAgentPrompts
@@ -36,7 +39,6 @@ export class BillingDecorator implements AIWrapper {
       .mul(result.usage!.completion_tokens)
       .div('1000000');
 
-    const billingApi = new BillingApi();
     await billingApi.BillForMonth(this.user.email, inputPrice.add(outputPrice));
 
     return result;
@@ -53,6 +55,8 @@ export class BillingDecorator implements AIWrapper {
       structure
     );
 
+    const billingApi = new BillingApi();
+
     const price = getTokenCost(this.aiWrapper.Model);
 
     const inputPrice = price.input_cost_per_million
@@ -62,7 +66,6 @@ export class BillingDecorator implements AIWrapper {
       .mul(result.usage!.completion_tokens)
       .div('1000000');
 
-    const billingApi = new BillingApi();
     await billingApi.BillForMonth(this.user.email, inputPrice.add(outputPrice));
 
     return result;

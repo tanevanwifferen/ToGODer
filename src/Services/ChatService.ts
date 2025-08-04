@@ -21,8 +21,8 @@ export class ChatService {
 
   async getChatResponse(body: ChatRequest, user: User | null): Promise<string> {
     // Only allow longer conversations for authenticated users
-    if (body.prompts.length > 20 && user === null) {
-      return 'Please create a free account or login to have longer conversations.';
+    if (body.prompts.length > 10 && user === null) {
+      return 'Please create an account or login to have longer conversations';
     }
 
     return await this.conversationApi.getResponse(body, user);
