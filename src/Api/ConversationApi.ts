@@ -141,7 +141,6 @@ export class ConversationApi {
     var keys = JSON.parse(content) as { keys: string[] };
     var existing_keys = Object.keys(body.memories);
     keys.keys = keys.keys.filter((x) => !existing_keys.includes(x));
-    console.log('keys', keys.keys);
     return keys;
   }
 
@@ -189,7 +188,6 @@ export class ConversationApi {
     var keys = JSON.parse(content) as { keys: string[] };
     var existing_keys = Object.keys(existingMemories);
     keys.keys = keys.keys.filter((x) => !existing_keys.includes(x));
-    console.log('system prompt memory keys', keys.keys);
     return keys;
   }
 
