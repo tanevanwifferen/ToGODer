@@ -9,6 +9,7 @@ export interface AICost {
 }
 
 export enum AIProvider {
+  gpt5 = 'gpt-5',
   gpt41 = 'gpt-4.1',
   Gpt4o = 'gpt-4o',
   Gpt4oMini = 'gpt-4o-mini',
@@ -34,6 +35,7 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.Gpt4oMini:
     case AIProvider.Gpt4o:
     case AIProvider.Gpt35turbo:
+    case AIProvider.gpt5:
       return new OpenAIWrapper(model);
     case AIProvider.Claude3SonnetBeta:
     case AIProvider.Claude37SonnetBeta:
@@ -140,6 +142,12 @@ export function getTokenCost(model: AIProvider): AICost {
         input_cost_per_million: new Decimal('2'),
         output_cost_per_million: new Decimal('8'),
       };
+    case AIProvider.gpt5:
+      torReturn = {
+        input_cost_per_million: new Decimal('1.25'),
+        output_cost_per_million: new Decimal('10'),
+      };
+      break;
     case AIProvider.Grok3Mini:
       torReturn = {
         input_cost_per_million: new Decimal('0.3'),
@@ -171,6 +179,8 @@ export function getTokenCost(model: AIProvider): AICost {
 
 export function GetModelName(provider: AIProvider): string {
   switch (provider) {
+    case AIProvider.gpt5:
+      return 'GPT-5';
     case AIProvider.Gpt4oMini:
       return 'GPT-4o-mini';
     case AIProvider.Gpt4o:
@@ -234,6 +244,7 @@ export function ListModels(): AIProvider[] {
     try {
       var a: AIWrapper | null = null;
       switch (x) {
+        case AIProvider.gpt5:
         case AIProvider.Gpt4o:
         case AIProvider.gpt41:
         case AIProvider.Gpt4oMini:
