@@ -225,6 +225,7 @@ export function ListModels(): AIProvider[] {
     return modelCache;
   }
   modelCache = [
+    AIProvider.gpt5,
     AIProvider.Gpt4oMini,
     AIProvider.LLama31405b,
     AIProvider.LLama3170b,
