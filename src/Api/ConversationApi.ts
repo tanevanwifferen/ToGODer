@@ -229,6 +229,13 @@ export class ConversationApi {
         x.aliases?.includes(firstPrompt)
       )?.prompt!;
     }
+    // If persona provided, prepend it as a system-level instruction before other system content
+    if (input.persona && String(input.persona).length > 0) {
+      const personaHeader =
+        'User persona (personal background/preferences for better responses): ' +
+        input.persona;
+      systemPrompt = personaHeader + '\n\n' + systemPrompt;
+    }
     systemPrompt += '\n\n' + FormattingPrompt;
     if (input.humanPrompt) {
       systemPrompt += '\n\n' + HumanResponsePrompt;
