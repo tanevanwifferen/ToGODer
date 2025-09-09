@@ -201,25 +201,12 @@ export class ConversationApi {
     return await aiWrapper.getResponse(systemPrompt, input);
   }
 
-  /**
-   * Get a chat completion for a conversation with the AI.
-   * @param input Chat history
-   * @param user User to bill for the conversation
-   * @returns string response from the AI
-   */
-  public async getResponse(
-    input: ChatRequest,
-    user: User | null | undefined
-  ): Promise<string> {
-    if (input.prompts.length == 0) {
-      return '';
-    }
-    var aiWrapper = this.getAIWrapper(input.model, user);
-
-    var firstPrompt = (<string>input.prompts[0].content)?.split(' ')[0];
-
-    var systemPrompt =
+  // Build the full system prompt string based on input request options
+  private buildSystemPrompt(input: ChatRequest): string {
+    let systemPrompt =
       input.customSystemPrompt ?? PromptList['/default'].prompt;
+
+    const firstPrompt = (<string>input.prompts[0].content)?.split(' ')[0];
     if (firstPrompt in PromptList) {
       systemPrompt = PromptList[firstPrompt].prompt;
     } else if (
@@ -229,13 +216,14 @@ export class ConversationApi {
         x.aliases?.includes(firstPrompt)
       )?.prompt!;
     }
-    // If persona provided, prepend it as a system-level instruction before other system content
+
     if (input.persona && String(input.persona).length > 0) {
       const personaHeader =
         'User persona (personal background/preferences for better responses): ' +
         input.persona;
       systemPrompt = personaHeader + '\n\n' + systemPrompt;
     }
+
     systemPrompt += '\n\n' + FormattingPrompt;
     if (input.humanPrompt) {
       systemPrompt += '\n\n' + HumanResponsePrompt;
@@ -271,14 +259,53 @@ export class ConversationApi {
       /{{ name }}/g,
       () => this.assistant_name!
     );
-
     systemPrompt += '\n\n' + this.formatPersonalData(input);
-
     systemPrompt = rootpersona + '\n\n' + systemPrompt;
-    var output = CompletionToContent(
+
+    return systemPrompt;
+  }
+
+  /**
+   * Get a chat completion for a conversation with the AI.
+   * @param input Chat history
+   * @param user User to bill for the conversation
+   * @returns string response from the AI
+   */
+  public async getResponse(
+    input: ChatRequest,
+    user: User | null | undefined
+  ): Promise<string> {
+    if (input.prompts.length == 0) {
+      return '';
+    }
+    const aiWrapper = this.getAIWrapper(input.model, user);
+    const systemPrompt = this.buildSystemPrompt(input);
+
+    const output = CompletionToContent(
       await aiWrapper.getResponse(systemPrompt, input.prompts)
     );
     return output;
+  }
+
+  /**
+   * Native streaming response generator using provider streaming.
+   * Yields incremental content deltas as they are produced by the model.
+   */
+  public async *streamResponse(
+    input: ChatRequest,
+    user: User | null | undefined
+  ): AsyncGenerator<string, void, void> {
+    if (input.prompts.length == 0) {
+      return;
+    }
+    const aiWrapper = this.getAIWrapper(input.model, user);
+    const systemPrompt = this.buildSystemPrompt(input);
+    for await (const delta of aiWrapper.streamResponse(
+      systemPrompt,
+      input.prompts
+    )) {
+      if (delta) yield delta;
+    }
   }
 
   private formatPersonalData(body: ChatRequest): string {
