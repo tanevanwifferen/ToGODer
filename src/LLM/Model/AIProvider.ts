@@ -17,7 +17,7 @@ export enum AIProvider {
   Claude3SonnetBeta = 'anthropic/claude-3.5-sonnet:beta',
   Claude37SonnetBeta = 'anthropic/claude-3.7-sonnet:beta',
   Claude4Sonnet = 'anthropic/claude-sonnet-4',
-  DeepSeekV3 = 'deepseek/deepseek-chat',
+  DeepSeekV3 = 'deepseek/deepseek-chat-v3.1',
   LLama3 = 'perplexity/llama-3-sonar-large-32k-chat',
   LLama3170b = 'meta-llama/llama-3.1-70b-instruct',
   LLama31405b = 'meta-llama/llama-3.1-405b-instruct',

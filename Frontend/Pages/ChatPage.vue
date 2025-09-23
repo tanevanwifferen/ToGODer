@@ -87,26 +87,107 @@ export default {
           date: new Date().getTime(),
         });
 
-        const response = await ChatApiClient.sendMessage(
+        // If this is the first user message, request the title ONCE immediately,
+        // before streaming starts and before we add any assistant placeholder.
+        const isFirstTurn = this.chatStore.messages.length === 1;
+        if (isFirstTurn) {
+          try {
+            const firstTurnTitle = await ChatApiClient.getTitle(
+              this.chatStore.model,
+              // Only send the user message(s) as context for the title
+              [...this.chatStore.messages]
+            );
+            if (firstTurnTitle != null) {
+              this.chatStore.setTitle(firstTurnTitle);
+            }
+          } catch (e) {
+            // Ignore title errors; do not spam /title
+            console.warn('Title fetch failed on first turn:', e?.message || e);
+          }
+        }
+
+        // Take a snapshot of messages BEFORE adding the assistant placeholder,
+        // so we don't send the empty assistant message to the backend.
+        const messagesSnapshot = [...this.chatStore.messages];
+
+        // Stream the assistant response to avoid long waits and fix UI deletion issues
+        // Start with a visible placeholder so users see immediate feedback on the first message.
+        let content = '';
+        const assistantId = this.chatStore.addMessage({
+          body: '…', // visible typing placeholder
+          author: 'assistant',
+          date: new Date().getTime(),
+        });
+
+        // Watchdog: if no first chunk arrives quickly (e.g., first message), fallback to non-streaming.
+        let gotFirstChunk = false;
+        let cancelled = false;
+        const watchdogMs = 2500;
+        const watchdog = setTimeout(async () => {
+          if (!gotFirstChunk && !cancelled) {
+            try {
+              const fallback = await ChatApiClient.sendMessage(
+                this.chatStore.model,
+                this.chatStore.humanPrompt,
+                this.chatStore.keepGoing,
+                this.chatStore.outsideBox,
+                this.chatStore.communicationStyle,
+                messagesSnapshot
+              );
+              cancelled = true; // ignore any late stream chunks
+              this.chatStore.updateMessage(assistantId, {
+                body: fallback.content || '(no content)',
+                signature: fallback.signature,
+              });
+            } catch (e) {
+              if (!content) {
+                this.chatStore.updateMessage(assistantId, {
+                  body: 'The server is taking too long to respond. Please try again.',
+                });
+              }
+            }
+          }
+        }, watchdogMs);
+
+        await ChatApiClient.streamMessage(
           this.chatStore.model,
           this.chatStore.humanPrompt,
           this.chatStore.keepGoing,
           this.chatStore.outsideBox,
           this.chatStore.communicationStyle,
-          this.chatStore.messages
+          messagesSnapshot,
+          {
+            onChunk: (delta) => {
+              if (cancelled) return;
+              gotFirstChunk = true;
+              content += delta || '';
+              this.chatStore.updateMessage(assistantId, { body: content });
+            },
+            onSignature: (signature) => {
+              if (cancelled) return;
+              if (signature) {
+                this.chatStore.updateMessage(assistantId, { signature });
+              }
+            },
+            onDone: async () => {
+              clearTimeout(watchdog);
+              if (cancelled) return;
+              // Title is now requested once, right after sending the first user message.
+              // No title request here to avoid multiple /title calls during stream chunks.
+            },
+            onError: (msg) => {
+              clearTimeout(watchdog);
+              if (cancelled) return;
+              if (!content) {
+                this.chatStore.updateMessage(assistantId, {
+                  body:
+                    msg ||
+                    'An error occurred while streaming the response. Please try again.',
+                });
+              }
+            },
+          }
         );
-
-        const title = await this.getTitle();
-        if (title != null) {
-          this.chatStore.setTitle(title);
-        }
-
-        this.chatStore.addMessage({
-          body: response.content,
-          signature: response.signature,
-          author: 'assistant',
-          date: new Date().getTime(),
-        });
 
         this.rateLimitExceeded = false;
       } catch (error) {
@@ -114,19 +195,24 @@ export default {
           await this.handleRateLimit(error);
         } else {
           console.error('Error in sendMessage:', error);
-          this.chatStore.chat.messages.pop();
-          this.chatStore.saveChats();
+          // Do not delete user or assistant messages on error. Show a system message instead.
+          this.chatStore.addMessage({
+            body: 'An error occurred while sending the message. Please try again.',
+            author: 'system',
+            date: new Date().getTime(),
+            id: 'send-error-' + Date.now(),
+          });
         }
       }
     },
-    async getTitle() {
-      if (this.chatStore.messages.length > 1) {
-        return null;
-      }
+    // Deprecated: Title is fetched once right after the first user message in sendMessage().
+    // Kept for compatibility if called elsewhere (e.g., experiences).
+    async getTitle(messagesOverride = null) {
       try {
+        const messagesToUse = messagesOverride ?? this.chatStore.messages;
         return await ChatApiClient.getTitle(
           this.chatStore.model,
-          this.chatStore.messages
+          messagesToUse
         );
       } catch (error) {
         if (error.type === 'RateLimit') {

@@ -99,10 +99,18 @@ const useChatStore = Pinia.defineStore('chats', {
       message.id ??= uuidv4();
       this.chat.messages.push(message);
       this.saveChats();
+      return message.id;
     },
     deleteMessage(id) {
       this.chat.messages = this.chat.messages.filter((x) => x.id != id);
       this.saveChats();
+    },
+    updateMessage(id, patch) {
+      const idx = this.chat.messages.findIndex((x) => x.id === id);
+      if (idx !== -1) {
+        this.chat.messages[idx] = { ...this.chat.messages[idx], ...patch };
+        this.saveChats();
+      }
     },
     setTitle(title) {
       this.chat.title = title;
