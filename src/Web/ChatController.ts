@@ -17,6 +17,8 @@ import { ChatService } from '../Services/ChatService';
 import { MemoryService } from '../Services/MemoryService';
 import { SystemPromptGenerationService } from '../Services/SystemPromptGenerationService';
 import { BillingApi } from '../Api/BillingApi';
+import { SseStream } from './Utils/Sse';
+import { StreamingChatService } from '../Services/StreamingChatService';
 
 function getAssistantName(): string {
   return process.env.ASSISTANT_NAME ?? 'ToGODer';
@@ -106,6 +108,78 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     chatHandler
   );
 
+  // Streaming chat endpoint (SSE). Streams assistant output as chunks and ends with a signature + done.
+  chatRouter.post(
+    '/api/chat/stream',
+    messageLimiter,
+    validateChatCompletionMessageArray,
+    setAuthUser,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const sse = new SseStream(res);
+
+      try {
+        // Normalize body to ChatRequest like the non-streaming endpoint
+        let body: ChatRequest = req.body;
+        if (!('prompts' in req.body)) {
+          body = {
+            model: getDefaultModel(),
+            humanPrompt: false,
+            keepGoing: false,
+            outsideBox: false,
+            holisticTherapist: false,
+            communicationStyle: ChatRequestCommunicationStyle.Default,
+            prompts: req.body,
+            memories: {},
+            memoryIndex: [],
+            assistant_name: getAssistantName(),
+          };
+        }
+        if (!body.assistant_name) {
+          body.assistant_name = getAssistantName();
+        }
+
+        const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
+
+        // Delegate the streaming logic to a service for maintainability
+        const streamingService = new StreamingChatService(body.assistant_name);
+
+        for await (const evt of streamingService.streamChat(body, user)) {
+          switch (evt.type) {
+            case 'chunk':
+              sse.event('chunk', evt.data);
+              sse.comment('keep-alive');
+              break;
+            case 'memory_request':
+              sse.event('memory_request', evt.data);
+              break;
+            case 'signature':
+              sse.event('signature', evt.data);
+              break;
+            case 'error':
+              sse.event('error', evt.data);
+              break;
+            case 'done':
+              sse.event('done', null);
+              sse.done();
+              return;
+          }
+        }
+
+        // Safety: Ensure stream is closed
+        sse.event('done', null);
+        sse.done();
+      } catch (error: any) {
+        // Stream error to client, then end
+        try {
+          sse.event('error', { message: error?.message ?? 'Unknown error' });
+          sse.event('done', null);
+          sse.done();
+        } catch {}
+        // Pass to Express error middleware
+        next(error);
+      }
+    }
+  );
   chatRouter.post(
     '/api/experience',
     messageLimiter,

@@ -22,6 +22,7 @@ export interface ChatRequest {
   memoryIndex: string[];
   memories: Record<string, string>;
   customSystemPrompt?: string;
+  persona?: string;
 }
 
 export interface ExperienceRequest {

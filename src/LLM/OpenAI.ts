@@ -8,6 +8,11 @@ import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs
 export class OpenAIWrapper implements AIWrapper {
   private apiKey: string;
   private openAI: OpenAI;
+  private lastUsage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  } | null = null;
 
   constructor(private model: AIProvider) {
     let apiKey = process.env.OPENAI_API_KEY;
@@ -47,21 +52,92 @@ export class OpenAIWrapper implements AIWrapper {
     userAndAgentPrompts: ChatCompletionMessageParam[]
   ): Promise<OpenAI.ChatCompletion> {
     try {
-      var isFlagged = await this.getModeration(userAndAgentPrompts);
+      const isFlagged = await this.getModeration(userAndAgentPrompts);
       if (isFlagged) {
         return ErrorCompletion(this.model);
       }
-      return await this.openAI.chat.completions.create({
+      const result = await this.openAI.chat.completions.create({
         messages: [
           { role: 'system', content: systemPrompt },
           ...userAndAgentPrompts,
         ],
         model: this.model,
       });
+      // Capture usage for non-streaming requests
+      const u = result.usage;
+      this.lastUsage = u
+        ? {
+            prompt_tokens: u.prompt_tokens ?? 0,
+            completion_tokens: u.completion_tokens ?? 0,
+            total_tokens:
+              u.total_tokens ??
+              (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0),
+          }
+        : null;
+      return result;
     } catch (error) {
       console.error('Error:', error);
       throw new Error('Failed to get response from OpenAI API');
     }
+  }
+
+  /**
+   * Native token streaming via OpenAI SDK. Yields incremental text deltas.
+   */
+  async *streamResponse(
+    systemPrompt: string,
+    userAndAgentPrompts: ChatCompletionMessageParam[]
+  ): AsyncGenerator<string, void, void> {
+    try {
+      // reset usage snapshot for this streaming session
+      this.lastUsage = null;
+
+      const stream = await this.openAI.chat.completions.create({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...userAndAgentPrompts,
+        ],
+        model: this.model,
+        stream: true,
+        stream_options: { include_usage: true },
+      });
+
+      for await (const chunk of stream as any) {
+        // Capture usage if the provider includes it on a terminal chunk
+        const usage = chunk?.usage;
+        if (usage) {
+          this.lastUsage = {
+            prompt_tokens: usage.prompt_tokens ?? 0,
+            completion_tokens: usage.completion_tokens ?? 0,
+            total_tokens:
+              usage.total_tokens ??
+              (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0),
+          };
+        }
+
+        // OpenAI ChatCompletionChunk shape: choices[].delta.content
+        const choices = chunk?.choices ?? [];
+        for (const ch of choices) {
+          const delta = ch?.delta?.content;
+          if (typeof delta === 'string' && delta.length > 0) {
+            yield delta;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('OpenAI stream error:', error);
+      throw new Error('Failed to stream response from OpenAI API');
+    }
+  }
+
+  getAndResetLastUsage(): {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  } | null {
+    const u = this.lastUsage;
+    this.lastUsage = null;
+    return u;
   }
 
   async getJSONResponse(

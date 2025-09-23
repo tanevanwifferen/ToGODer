@@ -9,6 +9,11 @@ export class OpenRouterWrapper implements AIWrapper {
   private apiKey: string;
   private url: string = 'https://openrouter.ai/api/v1';
   private openAI: OpenAI;
+  private lastUsage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  } | null = null;
 
   constructor(private model: AIProvider = AIProvider.Claude3SonnetBeta) {
     let apiKey = process.env.OPENROUTER_API_KEY;
@@ -37,17 +42,86 @@ export class OpenRouterWrapper implements AIWrapper {
     userAndAgentPrompts: ChatCompletionMessageParam[]
   ): Promise<OpenAI.ChatCompletion> {
     try {
-      return await this.openAI.chat.completions.create({
+      const result = await this.openAI.chat.completions.create({
         messages: [
           { role: 'system', content: systemPrompt },
           ...userAndAgentPrompts,
         ],
         model: this.model,
       });
+
+      // Capture usage for non-streaming if available
+      const u = (result as any).usage;
+      this.lastUsage = u
+        ? {
+            prompt_tokens: u.prompt_tokens ?? 0,
+            completion_tokens: u.completion_tokens ?? 0,
+            total_tokens:
+              u.total_tokens ??
+              (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0),
+          }
+        : null;
+
+      return result;
     } catch (error) {
       console.error('Error:', error);
       throw new Error('Failed to get response from OpenRouter API');
     }
+  }
+
+  /**
+   * Streaming via OpenRouter (OpenAI-compatible). Yields incremental text deltas.
+   */
+  async *streamResponse(
+    systemPrompt: string,
+    userAndAgentPrompts: ChatCompletionMessageParam[]
+  ): AsyncGenerator<string, void, void> {
+    try {
+      const stream = await this.openAI.chat.completions.create({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...userAndAgentPrompts,
+        ],
+        model: this.model,
+        stream: true,
+        stream_options: { include_usage: true },
+      });
+
+      for await (const chunk of stream as any) {
+        // Capture usage if provided by OpenRouter on terminal chunks
+        const usage = chunk?.usage;
+        if (usage) {
+          this.lastUsage = {
+            prompt_tokens: usage.prompt_tokens ?? 0,
+            completion_tokens: usage.completion_tokens ?? 0,
+            total_tokens:
+              usage.total_tokens ??
+              (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0),
+          };
+        }
+
+        const choices = chunk?.choices ?? [];
+        for (const ch of choices) {
+          const delta = ch?.delta?.content;
+          if (typeof delta === 'string' && delta.length > 0) {
+            yield delta;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('OpenRouter stream error:', error);
+      throw new Error('Failed to stream response from OpenRouter API');
+    }
+  }
+
+  getAndResetLastUsage(): {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  } | null {
+    const u = this.lastUsage;
+    this.lastUsage = null;
+    return u;
   }
 
   async getJSONResponse(

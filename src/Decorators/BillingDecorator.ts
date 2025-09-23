@@ -44,6 +44,62 @@ export class BillingDecorator implements AIWrapper {
     return result;
   }
 
+  /**
+   * Streaming with usage-based post-billing.
+   * - For providers that include usage on streaming (e.g., OpenAI with stream_options.include_usage),
+   *   we capture usage from the wrapped AIWrapper and bill exactly at the end.
+   * - If usage is unavailable, we fallback to no-op billing to avoid over/under-charging.
+   *   (This can be enhanced later by estimating tokens from prompts and deltas.)
+   */
+  async *streamResponse(
+    systemPrompt: string,
+    userAndAgentPrompts: ChatCompletionMessageParam[]
+  ): AsyncGenerator<string, void, void> {
+    // Stream through deltas while accumulating completion text,
+    // in case we need to estimate later (not currently used).
+    let completionText = '';
+    try {
+      for await (const delta of this.aiWrapper.streamResponse(
+        systemPrompt,
+        userAndAgentPrompts
+      )) {
+        if (delta) completionText += delta;
+        yield delta;
+      }
+    } finally {
+      // Try to bill using provider-reported usage, if available
+      const usage = this.aiWrapper.getAndResetLastUsage?.();
+      if (usage) {
+        const billingApi = new BillingApi();
+        const price = getTokenCost(this.aiWrapper.Model);
+
+        const inputPrice = price.input_cost_per_million
+          .mul(usage.prompt_tokens)
+          .div('1000000');
+        const outputPrice = price.output_cost_per_million
+          .mul(usage.completion_tokens)
+          .div('1000000');
+
+        await billingApi.BillForMonth(
+          this.user.email,
+          inputPrice.add(outputPrice)
+        );
+      }
+      // else: no reliable usage for streaming; skip billing to avoid inaccuracies.
+    }
+  }
+
+  // Forward last-usage access to inner wrapper so upstream callers can query it if needed
+  getAndResetLastUsage(): {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  } | null {
+    return this.aiWrapper.getAndResetLastUsage
+      ? this.aiWrapper.getAndResetLastUsage()
+      : null;
+  }
+
   async getJSONResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
