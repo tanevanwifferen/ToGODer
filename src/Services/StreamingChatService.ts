@@ -46,17 +46,29 @@ export class StreamingChatService {
     body: ChatRequest,
     user: User | null
   ): AsyncGenerator<StreamEvent, void, void> {
-    // Balance check mirrors existing behavior
-    if (user && body.prompts.length > 10) {
-      const msg =
-        'Insufficient balance. Please donate through KoFi with this email address to continue using the service.';
-      const balance = await this.billingApi.GetBalance(user.email);
-      if (balance.lessThanOrEqualTo(0)) {
-        // Emit a single message and finish
-        yield { type: 'chunk', data: { delta: msg } };
+    const totalMessages = Array.isArray(body.prompts) ? body.prompts.length : 0;
+    const paywallMessage =
+      'Insufficient balance. Please donate through KoFi with this email address to continue using the service.';
+
+    // Balance check mirrors existing behavior but also covers unauthenticated users
+    if (totalMessages >= 10) {
+      if (!user) {
+        yield { type: 'chunk', data: { delta: paywallMessage } };
         const signature = this.chatService.generateSignature([
           ...body.prompts,
-          { content: msg, role: 'assistant' },
+          { content: paywallMessage, role: 'assistant' },
+        ]);
+        yield { type: 'signature', data: { signature } };
+        yield { type: 'done' };
+        return;
+      }
+
+      const balance = await this.billingApi.GetBalance(user.email);
+      if (balance.lessThanOrEqualTo(0)) {
+        yield { type: 'chunk', data: { delta: paywallMessage } };
+        const signature = this.chatService.generateSignature([
+          ...body.prompts,
+          { content: paywallMessage, role: 'assistant' },
         ]);
         yield { type: 'signature', data: { signature } };
         yield { type: 'done' };
