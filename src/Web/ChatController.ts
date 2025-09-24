@@ -45,25 +45,35 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       body.assistant_name = getAssistantName();
     }
 
-    const memoryService = new MemoryService(body.assistant_name);
-    const chatService = new ChatService(body.assistant_name);
-
     const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
-    const billingApi = new BillingApi();
-    if (user && body.prompts.length > 10) {
-      const msg =
-        'Insufficient balance. Please donate through KoFi with this email address to continue using the service.';
-      var balance = await billingApi.GetBalance(user.email);
+    const chatService = new ChatService(body.assistant_name);
+    const memoryService = new MemoryService(body.assistant_name);
+    const totalMessages = Array.isArray(body.prompts) ? body.prompts.length : 0;
+    const paywallMessage =
+      'Insufficient balance. Please donate through KoFi with this email address to continue using the service.';
+
+    const respondWithPaywall = () => {
       const signature = chatService.generateSignature([
         ...body.prompts,
-        { content: msg, role: 'assistant' },
+        { content: paywallMessage, role: 'assistant' },
       ]);
+      res.json({
+        signature,
+        content: paywallMessage,
+        updateDate: null,
+      });
+    };
+
+    if (totalMessages >= 10) {
+      if (!user) {
+        respondWithPaywall();
+        return;
+      }
+
+      const billingApi = new BillingApi();
+      const balance = await billingApi.GetBalance(user.email);
       if (balance.lessThanOrEqualTo(0)) {
-        res.json({
-          signature: signature,
-          content: msg,
-          updateDate: null,
-        });
+        respondWithPaywall();
         return;
       }
     }
