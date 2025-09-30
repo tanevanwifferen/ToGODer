@@ -27,6 +27,11 @@ interface PromptListItem {
 }
 
 export const PromptList: Record<string, PromptListItem> = {
+  '/experience': {
+    prompt: ExperiencePrompt,
+    description: 'Let us lead the conversation.',
+    display: false,
+  },
   '/default': {
     prompt: NoSteeringPrompt,
     description:
@@ -35,6 +40,7 @@ export const PromptList: Record<string, PromptListItem> = {
     concluding work to you.',
     display: true,
   },
+  /*
   '/fiveMinuteCheckin': {
     prompt: fiveMinuteCheckin,
     description: 'A quick check-in to see how you are doing.',
@@ -143,11 +149,6 @@ export const PromptList: Record<string, PromptListItem> = {
     description: 'The AI takes on a medium persona.',
     display: true,
   },
-  '/experience': {
-    prompt: ExperiencePrompt,
-    description: 'Let us lead the conversation.',
-    display: false,
-  },
   '/connection': {
     prompt: ConnectionFacilitatorPrompt,
     description:
@@ -157,5 +158,5 @@ export const PromptList: Record<string, PromptListItem> = {
       understand each other better.',
     display: true,
     aliases: ['/connect', '/bonding'],
-  },
+  },*/
 };
