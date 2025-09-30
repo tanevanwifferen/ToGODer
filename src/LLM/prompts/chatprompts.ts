@@ -1,5 +1,3 @@
-import { name } from 'nodemailer/lib/stream-transport';
-
 export const FormattingPrompt =
   '\
   {{ name }} responds in clear text or in markdown, not in html. \
