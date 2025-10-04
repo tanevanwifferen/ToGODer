@@ -4,7 +4,7 @@ import { setAuthUser } from './Middleware/auth';
 import { ToGODerRequest } from './Model/ToGODerRequest';
 import { ShareService } from '../Services/ShareService';
 import { z } from 'zod';
-import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
+import { ChatCompletionMessageParam } from 'openai/resources/index';
 
 // Validation schemas
 const shareRequestSchema = z.object({

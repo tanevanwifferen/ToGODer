@@ -1,9 +1,9 @@
 import OpenAI from 'openai';
-import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
+import { ChatCompletionMessageParam } from 'openai/resources/index';
 import { AIWrapper } from './AIWrapper';
 import { AIProvider } from './Model/AIProvider';
 import { zodResponseFormat } from 'openai/helpers/zod';
-import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
+import { ParsedChatCompletion } from 'openai/resources/chat/completions/index';
 
 export class OpenRouterWrapper implements AIWrapper {
   private apiKey: string;
@@ -148,7 +148,7 @@ export class OpenRouterWrapper implements AIWrapper {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        return await this.openAI.beta.chat.completions.parse(request);
+        return await this.openAI.chat.completions.parse(request);
       } catch (error) {
         lastError = error;
         console.error(

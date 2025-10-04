@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  togoder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: togoder:dev
+    container_name: togoder
+    env_file:
+      - .env
+    environment:
+      - PORT=${PORT:-6968}
+      - DATABASE_URL=${DATABASE_URL:-file:/app/data/dev.db}
+      - HOST_URL=${HOST_URL:-http://localhost:${PORT:-6968}}
+    ports:
+      - "${PORT:-6968}:${PORT:-6968}"
+    volumes:
+      - togoder_data:/app/data
+    restart: unless-stopped
+    command: sh -c "npx prisma migrate deploy && node bin/index.js"
+volumes:
+  togoder_data:

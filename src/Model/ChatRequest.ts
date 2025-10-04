@@ -1,4 +1,4 @@
-import { ChatCompletionMessageParam } from 'openai/src/resources/index.js';
+import { ChatCompletionMessageParam } from 'openai/resources';
 import { AIProvider } from '../LLM/Model/AIProvider';
 
 export enum ChatRequestCommunicationStyle {

@@ -1,7 +1,7 @@
-import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
+import { ChatCompletionMessageParam } from 'openai/resources/index';
 import OpenAI from 'openai';
 import { AIProvider } from './Model/AIProvider';
-import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
+import { ParsedChatCompletion } from 'openai/resources/chat/completions/index';
 
 export interface AIWrapper {
   get Model(): AIProvider;
