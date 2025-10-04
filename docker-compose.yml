@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: togoder:dev
+    image: togoder:main
     container_name: togoder
     env_file:
       - .env
