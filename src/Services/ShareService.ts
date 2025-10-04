@@ -1,6 +1,6 @@
 import { SharedChat, User } from '@prisma/client';
 import { ChatService } from './ChatService';
-import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
+import { ChatCompletionMessageParam } from 'openai/resources/index';
 import { getDbContext } from '../Entity/Database';
 
 /**

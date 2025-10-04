@@ -4,7 +4,7 @@ import { User } from '@prisma/client';
 import crypto from 'crypto';
 import { ExperienceSeedPrompt } from '../LLM/prompts/experienceprompts';
 import { AIProvider } from '../LLM/Model/AIProvider';
-import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
+import { ChatCompletionMessageParam } from 'openai/resources/index';
 import exp from 'constants';
 
 export class ChatService {

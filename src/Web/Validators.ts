@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
+import { ChatCompletionMessageParam } from 'openai/resources/index';
 import { AIProvider } from '../LLM/Model/AIProvider';
 
 export const isValidChatCompletionMessageParam = (

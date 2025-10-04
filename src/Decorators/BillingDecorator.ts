@@ -1,13 +1,12 @@
 import {
   ChatCompletionMessageParam,
   ChatCompletion,
-} from 'openai/resources/index.mjs';
+} from 'openai/resources/index';
 import { AIWrapper } from '../LLM/AIWrapper';
 import { BillingApi } from '../Api/BillingApi';
 import { AIProvider, getTokenCost } from '../LLM/Model/AIProvider';
 import { User } from '@prisma/client';
-import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
-import { ChatCompletionRunner } from 'openai/src/lib/ChatCompletionRunner.js';
+import { ParsedChatCompletion } from 'openai/resources/chat/completions';
 
 export class BillingDecorator implements AIWrapper {
   public constructor(

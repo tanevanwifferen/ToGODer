@@ -1,7 +1,7 @@
 import {
   ChatCompletion,
   ChatCompletionMessageParam,
-} from 'openai/resources/index.mjs';
+} from 'openai/resources/index';
 import {
   AdaptToConversantsCommunicationStyle,
   FormattingPrompt,
@@ -32,8 +32,8 @@ import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
 import { User } from '@prisma/client';
 import { BillingDecorator } from '../Decorators/BillingDecorator';
 import { keysSchema } from '../zod/requestformemory';
-import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
 import { rootpersona } from '../LLM/prompts/rootprompts';
+import { ParsedChatCompletion } from 'openai/resources/chat/completions/index';
 
 let quote = '';
 
