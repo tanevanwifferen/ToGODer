@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { ParsedChatCompletion } from 'openai/resources/beta/chat/completions.mjs';
+import { ParsedChatCompletion } from 'openai/resources/chat/completions';
 
 export function ErrorJsonCompletion(model: string): ParsedChatCompletion<any> {
   return {
