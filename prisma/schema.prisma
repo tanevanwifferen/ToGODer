@@ -6,13 +6,13 @@
 
 // table for users, containing id, privateKeyHash, maxMessagesPerDay, messagesLeft, and chats
 model User {
-  id                String   @id @default(uuid())
+  id                String       @id @default(uuid())
   sharedChats       SharedChat[]
-  email             String   @unique
+  email             String       @unique
   password          String
-  verified          Boolean  @default(false)
-  verificationToken String   @default(uuid())
-  createdAt         DateTime @default(now())
+  verified          Boolean      @default(false)
+  verificationToken String       @default(uuid())
+  createdAt         DateTime     @default(now())
 }
 
 model Payment {
@@ -20,10 +20,11 @@ model Payment {
   user_email String
   timestamp  DateTime @default(now())
   amount     Decimal
+  message    String?
 }
 
 model Usage {
-  id         String   @id @default(uuid())
+  id         String  @id @default(uuid())
   user_email String
   year       Int
   month      Int
@@ -49,7 +50,6 @@ model Message {
   chat      Chat     @relation(fields: [chatId], references: [id])
 }
 
-
 // table for shared chats, containing id, title, description, messages with their signatures, owner reference, and visibility
 model SharedChat {
   id          String   @id @default(uuid())
@@ -58,7 +58,7 @@ model SharedChat {
   title       String
   description String?
   createdAt   DateTime @default(now())
-  messages    String   // JSON blob containing messages with their signatures
+  messages    String // JSON blob containing messages with their signatures
   views       Int      @default(0)
   visibility  String   @default("PUBLIC") // Can be "PUBLIC" or "PRIVATE"
 }
@@ -69,5 +69,5 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL_RAW")
 }

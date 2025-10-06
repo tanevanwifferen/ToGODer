@@ -8,7 +8,9 @@ export class BillingApi {
     await db.user.findUniqueOrThrow({ where: { email: user_email } });
 
     const payments = await db.payment.findMany({
-      where: { user_email: user_email },
+      where: {
+        user_email: user_email,
+      },
     });
     const paid = payments.reduce(
       (total, payment) => total.add(payment.amount),

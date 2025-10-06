@@ -13,6 +13,7 @@ export function setupKoFi(app: Express) {
           amount: new Decimal(donation.amount),
           user_email: donation.email,
           timestamp: new Date(),
+          message: donation.message ?? null,
         },
       });
     },
