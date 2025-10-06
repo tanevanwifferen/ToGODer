@@ -17,6 +17,6 @@ services:
     volumes:
       - togoder_data:/app/data
     restart: unless-stopped
-    command: sh -c "npx prisma migrate deploy && node bin/index.js"
+    command: sh -c "node bin/index.js"
 volumes:
   togoder_data:
