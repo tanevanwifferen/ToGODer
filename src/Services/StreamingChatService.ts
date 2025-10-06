@@ -4,6 +4,7 @@ import { ChatService } from './ChatService';
 import { MemoryService } from './MemoryService';
 import { BillingApi } from '../Api/BillingApi';
 import { ConversationApi } from '../Api/ConversationApi';
+import { AIProvider } from '../LLM/Model/AIProvider';
 
 /**
  * Events emitted during streaming. Consumers can map these to SSE frames or other transports.
@@ -63,7 +64,12 @@ export class StreamingChatService {
         return;
       }
 
-      const balance = await this.billingApi.GetBalance(user.email);
+      const userBalance = await this.billingApi.GetBalance(user.email);
+      if (userBalance.lessThanOrEqualTo(0)) {
+        body.model = AIProvider.DeepSeekV3;
+      }
+
+      const balance = await this.billingApi.GetTotalBalance(user.email);
       if (balance.lessThanOrEqualTo(0)) {
         yield { type: 'chunk', data: { delta: paywallMessage } };
         const signature = this.chatService.generateSignature([
