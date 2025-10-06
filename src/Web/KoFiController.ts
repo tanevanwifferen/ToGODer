@@ -13,7 +13,9 @@ export function setupKoFi(app: Express) {
         data: {
           amount: new Decimal(donation.amount),
           user_email:
-            donation.message == donationTag ? donationTag : donation.email,
+            donation.message.toLowerCase() == donationTag
+              ? donationTag
+              : donation.email,
           timestamp: new Date(),
           message: donation.message ?? null,
         },
