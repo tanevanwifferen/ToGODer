@@ -10,7 +10,7 @@ import {
   ChatRequestCommunicationStyle,
   ExperienceRequest,
 } from '../Model/ChatRequest';
-import { getDefaultModel } from '../LLM/Model/AIProvider';
+import { AIProvider, getDefaultModel } from '../LLM/Model/AIProvider';
 import { setAuthUser } from './Middleware/auth';
 import { ToGODerRequest } from './Model/ToGODerRequest';
 import { ChatService } from '../Services/ChatService';
@@ -71,7 +71,11 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       }
 
       const billingApi = new BillingApi();
-      const balance = await billingApi.GetBalance(user.email);
+      const userBalance = await billingApi.GetBalance(user.email);
+      if (userBalance.lessThanOrEqualTo(0)) {
+        body.model = AIProvider.DeepSeekV3;
+      }
+      const balance = await billingApi.GetTotalBalance(user.email);
       if (balance.lessThanOrEqualTo(0)) {
         respondWithPaywall();
         return;

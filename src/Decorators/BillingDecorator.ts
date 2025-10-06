@@ -18,10 +18,40 @@ export class BillingDecorator implements AIWrapper {
     return this.aiWrapper.Model;
   }
 
+  public async assertEnoughBalance(
+    prompts: ChatCompletionMessageParam[]
+  ): Promise<void> {
+    let billingApi = new BillingApi();
+    const price = getTokenCost(this.aiWrapper.Model);
+
+    // Estimate tokens from prompts (simple approx: 4 chars per token)
+    const totalChars = prompts.reduce(
+      (sum, msg) => sum + (msg.content ? msg.content.length : 0),
+      0
+    );
+    const estimatedTokens = Math.ceil(totalChars / 4);
+    const estimatedCost = price.input_cost_per_million
+      .mul(estimatedTokens)
+      .div('1000000');
+
+    let totalBalance = await billingApi.GetTotalBalance(this.user.email);
+    if (estimatedCost.greaterThan(totalBalance)) {
+      throw new Error(
+        `Insufficient balance. Estimated cost: $${estimatedCost.toFixed(
+          6
+        )}, Your balance: $${totalBalance.toFixed(6)}`
+      );
+    }
+  }
+
   async getResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[]
   ): Promise<ChatCompletion> {
+    this.assertEnoughBalance([
+      ...userAndAgentPrompts,
+      { role: 'system', content: systemPrompt },
+    ]);
     const billingApi = new BillingApi();
 
     const result = await this.aiWrapper.getResponse(
@@ -33,12 +63,12 @@ export class BillingDecorator implements AIWrapper {
 
     const inputPrice = price.input_cost_per_million
       .mul(result.usage!.prompt_tokens)
-      .div('1000000');
+      .div('1_000_000');
     const outputPrice = price.output_cost_per_million
       .mul(result.usage!.completion_tokens)
-      .div('1000000');
+      .div('1_000_000');
 
-    await billingApi.BillForMonth(this.user.email, inputPrice.add(outputPrice));
+    await billingApi.BillForMonth(inputPrice.add(outputPrice), this.user.email);
 
     return result;
   }
@@ -56,6 +86,10 @@ export class BillingDecorator implements AIWrapper {
   ): AsyncGenerator<string, void, void> {
     // Stream through deltas while accumulating completion text,
     // in case we need to estimate later (not currently used).
+    this.assertEnoughBalance([
+      ...userAndAgentPrompts,
+      { role: 'system', content: systemPrompt },
+    ]);
     let completionText = '';
     try {
       for await (const delta of this.aiWrapper.streamResponse(
@@ -80,8 +114,8 @@ export class BillingDecorator implements AIWrapper {
           .div('1000000');
 
         await billingApi.BillForMonth(
-          this.user.email,
-          inputPrice.add(outputPrice)
+          inputPrice.add(outputPrice),
+          this.user.email
         );
       }
       // else: no reliable usage for streaming; skip billing to avoid inaccuracies.
@@ -104,6 +138,10 @@ export class BillingDecorator implements AIWrapper {
     userAndAgentPrompts: ChatCompletionMessageParam[],
     structure?: any
   ): Promise<ParsedChatCompletion<any>> {
+    this.assertEnoughBalance([
+      ...userAndAgentPrompts,
+      { role: 'system', content: systemPrompt },
+    ]);
     const result = await this.aiWrapper.getJSONResponse(
       systemPrompt,
       userAndAgentPrompts,
@@ -121,7 +159,7 @@ export class BillingDecorator implements AIWrapper {
       .mul(result.usage!.completion_tokens)
       .div('1000000');
 
-    await billingApi.BillForMonth(this.user.email, inputPrice.add(outputPrice));
+    await billingApi.BillForMonth(inputPrice.add(outputPrice), this.user.email);
 
     return result;
   }
