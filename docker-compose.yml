@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: togoder:dev
-    container_name: togoder
+    container_name: togoder-dev
     env_file:
       - .env
     environment:
@@ -18,5 +18,3 @@ services:
       - togoder_data:/app/data
     restart: unless-stopped
     command: sh -c "(npx prisma migrate deploy || npx prisma db push) && node bin/index.js"
-volumes:
-  togoder_data:

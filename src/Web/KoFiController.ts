@@ -3,6 +3,7 @@ import { kofi } from '@ko-fi/express';
 import { DonationData } from '@ko-fi/types';
 import { getDbContext } from '../Entity/Database';
 import { Decimal } from '@prisma/client/runtime/binary';
+import { donationTag } from '../Api/BillingApi';
 
 export function setupKoFi(app: Express) {
   kofi(app, {
@@ -11,7 +12,8 @@ export function setupKoFi(app: Express) {
       await db.payment.create({
         data: {
           amount: new Decimal(donation.amount),
-          user_email: donation.email,
+          user_email:
+            donation.message == donationTag ? donationTag : donation.email,
           timestamp: new Date(),
           message: donation.message ?? null,
         },

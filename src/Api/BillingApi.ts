@@ -2,7 +2,7 @@ import { getDbContext } from '../Entity/Database';
 import { Decimal } from '@prisma/client/runtime/binary';
 import { randomUUID } from 'node:crypto';
 
-const donationTag = 'donation';
+export const donationTag = 'donation';
 
 export class BillingApi {
   public async GetTotalBalance(user_email?: string): Promise<Decimal> {
