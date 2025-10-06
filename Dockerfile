@@ -33,4 +33,4 @@ USER node
 EXPOSE 6968
 
 # Run migrations on startup then launch the server
-CMD sh -c "npx prisma migrate deploy && node bin/index.js"
+CMD sh -c "(npx prisma migrate deploy || npx prisma db push) && node bin/index.js"
