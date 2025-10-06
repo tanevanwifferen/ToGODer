@@ -15,6 +15,6 @@ services:
     ports:
       - "${PORT:-6968}:${PORT:-6968}"
     volumes:
-      - togoder_data:/app/data
+      - ./togoder_data:/app/data
     restart: unless-stopped
     command: sh -c "(npx prisma migrate deploy || npx prisma db push) && node bin/index.js"
