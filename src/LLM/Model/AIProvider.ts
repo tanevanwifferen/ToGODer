@@ -17,6 +17,7 @@ export enum AIProvider {
   Claude3SonnetBeta = 'anthropic/claude-3.5-sonnet:beta',
   Claude37SonnetBeta = 'anthropic/claude-3.7-sonnet:beta',
   Claude4Sonnet = 'anthropic/claude-sonnet-4',
+  Claude45Sonnet = 'anthropic/claude-sonnet-4.5',
   DeepSeekV3 = 'deepseek/deepseek-chat-v3.1',
   LLama3 = 'perplexity/llama-3-sonar-large-32k-chat',
   LLama3170b = 'meta-llama/llama-3.1-70b-instruct',
@@ -40,6 +41,7 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.Claude3SonnetBeta:
     case AIProvider.Claude37SonnetBeta:
     case AIProvider.Claude4Sonnet:
+    case AIProvider.Claude45Sonnet:
     case AIProvider.DeepSeekV3:
     case AIProvider.LLama3:
     case AIProvider.LLama3170b:
@@ -60,18 +62,9 @@ export function getTokenCost(model: AIProvider): AICost {
   let torReturn: AICost | null = null;
   switch (model) {
     case AIProvider.Claude3SonnetBeta:
-      torReturn = {
-        input_cost_per_million: new Decimal('3'),
-        output_cost_per_million: new Decimal('15'),
-      };
-      break;
     case AIProvider.Claude37SonnetBeta:
-      torReturn = {
-        input_cost_per_million: new Decimal('3'),
-        output_cost_per_million: new Decimal('15'),
-      };
-      break;
     case AIProvider.Claude4Sonnet:
+    case AIProvider.Claude45Sonnet:
       torReturn = {
         input_cost_per_million: new Decimal('3'),
         output_cost_per_million: new Decimal('15'),
@@ -195,6 +188,8 @@ export function GetModelName(provider: AIProvider): string {
       return 'Claude3.7 Sonnet Beta';
     case AIProvider.Claude4Sonnet:
       return 'Claude 4 Sonnet';
+    case AIProvider.Claude4Sonnet:
+      return 'Claude 4.5 Sonnet';
     case AIProvider.DeepSeekV3:
       return 'DeepSeek V3';
     case AIProvider.LLama3:
@@ -235,6 +230,7 @@ export function ListModels(): AIProvider[] {
     AIProvider.Claude3SonnetBeta,
     AIProvider.Claude37SonnetBeta,
     AIProvider.Claude4Sonnet,
+    AIProvider.Claude45Sonnet,
     AIProvider.DeepSeekV3,
     AIProvider.LLama3,
     AIProvider.LLama3290b,
@@ -255,6 +251,7 @@ export function ListModels(): AIProvider[] {
         case AIProvider.Claude3SonnetBeta:
         case AIProvider.Claude37SonnetBeta:
         case AIProvider.Claude4Sonnet:
+        case AIProvider.Claude45Sonnet:
         case AIProvider.DeepSeekV3:
         case AIProvider.LLama3:
         case AIProvider.LLama3170b:
