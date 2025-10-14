@@ -188,7 +188,7 @@ export function GetModelName(provider: AIProvider): string {
       return 'Claude3.7 Sonnet Beta';
     case AIProvider.Claude4Sonnet:
       return 'Claude 4 Sonnet';
-    case AIProvider.Claude4Sonnet:
+    case AIProvider.Claude45Sonnet:
       return 'Claude 4.5 Sonnet';
     case AIProvider.DeepSeekV3:
       return 'DeepSeek V3';
