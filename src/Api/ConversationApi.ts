@@ -422,7 +422,11 @@ export class ConversationApi {
     const systemPrompt = await this.buildSystemPrompt(input);
 
     const output = CompletionToContent(
-      await aiWrapper.getResponse(systemPrompt, input.prompts)
+      await aiWrapper.getResponse(
+        systemPrompt,
+        input.prompts,
+        input.libraryIntegrationEnabled ? 2 : 1
+      )
     );
     return output;
   }
@@ -442,7 +446,8 @@ export class ConversationApi {
     const systemPrompt = await this.buildSystemPrompt(input);
     for await (const delta of aiWrapper.streamResponse(
       systemPrompt,
-      input.prompts
+      input.prompts,
+      input.libraryIntegrationEnabled ? 2 : 1
     )) {
       if (delta) yield delta;
     }
