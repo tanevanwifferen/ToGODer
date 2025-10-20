@@ -327,7 +327,7 @@ export class ConversationApi {
     }
 
     const recentMessages = input.prompts
-      .slice(-1)
+      .slice(-2)
       .map((message) => {
         if (message.role !== 'user' && message.role !== 'assistant') {
           return null;
@@ -376,7 +376,9 @@ export class ConversationApi {
         return null;
       }
 
-      let context = 'Relevant book excerpts:\n' + answer.trim();
+      let context =
+        'Relevant book excerpts (refer back to the sources when used):\n' +
+        answer.trim();
       const sources = Array.isArray(response.data?.sources)
         ? response.data.sources
         : [];
