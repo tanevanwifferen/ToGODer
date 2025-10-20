@@ -371,6 +371,7 @@ export class ConversationApi {
       );
 
       const answer = response.data?.answer;
+      console.log('Library context response:', answer);
       if (typeof answer !== 'string' || answer.trim().length === 0) {
         return null;
       }
