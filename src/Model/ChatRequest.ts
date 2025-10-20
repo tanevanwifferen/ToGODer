@@ -23,6 +23,7 @@ export interface ChatRequest {
   memories: Record<string, string>;
   customSystemPrompt?: string;
   persona?: string;
+  libraryIntegrationEnabled?: boolean;
 }
 
 export interface ExperienceRequest {

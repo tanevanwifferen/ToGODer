@@ -34,6 +34,7 @@ import { BillingDecorator } from '../Decorators/BillingDecorator';
 import { keysSchema } from '../zod/requestformemory';
 import { rootpersona } from '../LLM/prompts/rootprompts';
 import { ParsedChatCompletion } from 'openai/resources/chat/completions/index';
+import axios from 'axios';
 
 let quote = '';
 
@@ -204,7 +205,7 @@ export class ConversationApi {
   }
 
   // Build the full system prompt string based on input request options
-  private buildSystemPrompt(input: ChatRequest): string {
+  private async buildSystemPrompt(input: ChatRequest): Promise<string> {
     let systemPrompt =
       input.customSystemPrompt ?? PromptList['/default'].prompt;
 
@@ -261,10 +262,144 @@ export class ConversationApi {
       /{{ name }}/g,
       () => this.assistant_name!
     );
+
+    const libraryContext = await this.getLibraryContext(input);
+    if (libraryContext) {
+      systemPrompt += '\n\n' + libraryContext;
+    }
+
     systemPrompt += '\n\n' + this.formatPersonalData(input);
     systemPrompt = rootpersona + '\n\n' + systemPrompt;
 
     return systemPrompt;
+  }
+
+  private extractMessageContent(
+    message: ChatCompletionMessageParam
+  ): string | null {
+    const content: any = message.content;
+    if (typeof content === 'string') {
+      return content.trim().length > 0 ? content : null;
+    }
+
+    if (Array.isArray(content)) {
+      const combined = content
+        .map((part: any) => {
+          if (typeof part === 'string') {
+            return part;
+          }
+          if (part && typeof part.text === 'string') {
+            return part.text;
+          }
+          return '';
+        })
+        .join('')
+        .trim();
+      return combined.length > 0 ? combined : null;
+    }
+
+    return null;
+  }
+
+  private parseBooleanFlag(value: string | undefined): boolean {
+    if (!value) {
+      return false;
+    }
+    const normalized = value.trim().toLowerCase();
+    return ['true', '1', 'yes', 'y', 'on'].includes(normalized);
+  }
+
+  private async getLibraryContext(input: ChatRequest): Promise<string | null> {
+    if (!input.libraryIntegrationEnabled) {
+      return null;
+    }
+
+    const globalEnabled = this.parseBooleanFlag(
+      process.env.LIBRARY_INTEGRATION_ENABLED
+    );
+    if (!globalEnabled) {
+      return null;
+    }
+
+    const baseUrl = (process.env.LIBRARIAN_API_URL ?? '').trim();
+    if (!baseUrl) {
+      return null;
+    }
+
+    const recentMessages = input.prompts
+      .slice(-6)
+      .map((message) => {
+        if (message.role !== 'user' && message.role !== 'assistant') {
+          return null;
+        }
+        const text = this.extractMessageContent(message);
+        if (!text) {
+          return null;
+        }
+        return {
+          role: message.role,
+          content: text,
+        };
+      })
+      .filter(
+        (msg): msg is { role: 'user' | 'assistant'; content: string } =>
+          msg !== null
+      );
+
+    if (recentMessages.length === 0) {
+      return null;
+    }
+
+    const lastUserMessage = [...recentMessages]
+      .reverse()
+      .find((msg) => msg.role === 'user');
+    if (!lastUserMessage) {
+      return null;
+    }
+
+    const endpoint = `${baseUrl.replace(/\/$/, '')}/chat`;
+
+    try {
+      const response = await axios.post(
+        endpoint,
+        {
+          messages: recentMessages,
+        },
+        {
+          timeout: 4000,
+        }
+      );
+
+      const answer = response.data?.answer;
+      if (typeof answer !== 'string' || answer.trim().length === 0) {
+        return null;
+      }
+
+      let context = 'Relevant book excerpts:\n' + answer.trim();
+      const sources = Array.isArray(response.data?.sources)
+        ? response.data.sources
+        : [];
+      if (sources.length > 0) {
+        const formattedSources = sources
+          .map((src: any) => {
+            const filename = src?.filename ?? 'unknown';
+            const chunkIndex = src?.chunk_index;
+            if (chunkIndex === undefined || chunkIndex === null) {
+              return `- ${filename}`;
+            }
+            return `- ${filename}#${chunkIndex}`;
+          })
+          .join('\n');
+        if (formattedSources.length > 0) {
+          context += '\n\nSources:\n' + formattedSources;
+        }
+      }
+
+      return context;
+    } catch (error) {
+      console.error('Failed to fetch library context', error);
+      return null;
+    }
   }
 
   /**
@@ -281,7 +416,7 @@ export class ConversationApi {
       return '';
     }
     const aiWrapper = this.getAIWrapper(input.model, user);
-    const systemPrompt = this.buildSystemPrompt(input);
+    const systemPrompt = await this.buildSystemPrompt(input);
 
     const output = CompletionToContent(
       await aiWrapper.getResponse(systemPrompt, input.prompts)
@@ -301,7 +436,7 @@ export class ConversationApi {
       return;
     }
     const aiWrapper = this.getAIWrapper(input.model, user);
-    const systemPrompt = this.buildSystemPrompt(input);
+    const systemPrompt = await this.buildSystemPrompt(input);
     for await (const delta of aiWrapper.streamResponse(
       systemPrompt,
       input.prompts
