@@ -327,7 +327,7 @@ export class ConversationApi {
     }
 
     const recentMessages = input.prompts
-      .slice(-6)
+      .slice(-1)
       .map((message) => {
         if (message.role !== 'user' && message.role !== 'assistant') {
           return null;
