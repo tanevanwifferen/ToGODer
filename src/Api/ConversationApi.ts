@@ -366,7 +366,7 @@ export class ConversationApi {
           messages: recentMessages,
         },
         {
-          timeout: 4000,
+          timeout: 30000,
         }
       );
 
