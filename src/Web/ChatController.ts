@@ -44,6 +44,9 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
     if (body.assistant_name == null || body.assistant_name == '') {
       body.assistant_name = getAssistantName();
     }
+    if (body.libraryIntegrationEnabled == null) {
+      body.libraryIntegrationEnabled = false;
+    }
 
     const user = (req as ToGODerRequest).togoder_auth?.user ?? null;
     const chatService = new ChatService(body.assistant_name);
@@ -150,6 +153,9 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
         }
         if (!body.assistant_name) {
           body.assistant_name = getAssistantName();
+        }
+        if (body.libraryIntegrationEnabled == null) {
+          body.libraryIntegrationEnabled = false;
         }
 
         const user = (req as ToGODerRequest).togoder_auth?.user ?? null;

@@ -36,7 +36,7 @@ export class OpenAIWrapper implements AIWrapper {
       }
       const moderationResult = await this.openAI.moderations.create({
         input: itemsToSend,
-        model: 'text-moderation-stable',
+        model: 'omni-moderation-latest',
       });
       // Check if any of the messages are flagged
       return moderationResult.results
@@ -49,7 +49,8 @@ export class OpenAIWrapper implements AIWrapper {
 
   async getResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    multiplier: number = 1
   ): Promise<OpenAI.ChatCompletion> {
     try {
       const isFlagged = await this.getModeration(userAndAgentPrompts);
@@ -67,11 +68,12 @@ export class OpenAIWrapper implements AIWrapper {
       const u = result.usage;
       this.lastUsage = u
         ? {
-            prompt_tokens: u.prompt_tokens ?? 0,
-            completion_tokens: u.completion_tokens ?? 0,
+            prompt_tokens: u.prompt_tokens ?? 0 * multiplier,
+            completion_tokens: u.completion_tokens ?? 0 * multiplier,
             total_tokens:
-              u.total_tokens ??
-              (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0),
+              (u.total_tokens ??
+                (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0)) *
+              multiplier,
           }
         : null;
       return result;
@@ -86,7 +88,8 @@ export class OpenAIWrapper implements AIWrapper {
    */
   async *streamResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    multiplier: number = 1
   ): AsyncGenerator<string, void, void> {
     try {
       // reset usage snapshot for this streaming session
@@ -107,11 +110,17 @@ export class OpenAIWrapper implements AIWrapper {
         const usage = chunk?.usage;
         if (usage) {
           this.lastUsage = {
-            prompt_tokens: usage.prompt_tokens ?? 0,
-            completion_tokens: usage.completion_tokens ?? 0,
+            prompt_tokens:
+              ((this.lastUsage as any)?.prompt_tokens ?? 0) +
+              (usage.prompt_tokens ?? 0) * multiplier,
+            completion_tokens:
+              ((this.lastUsage as any)?.completion_tokens ?? 0) +
+              (usage.completion_tokens ?? 0) * multiplier,
             total_tokens:
-              usage.total_tokens ??
-              (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0),
+              ((this.lastUsage as any)?.total_tokens ?? 0) +
+              (usage.total_tokens ??
+                (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0)) *
+                multiplier,
           };
         }
 

@@ -73,11 +73,18 @@ app.get('/api/global_config', (req, res) => {
   var showLogin = JSON.parse(process.env.SHOW_LOGIN || 'false');
   var quote = new ConversationApi('').getQuote();
   var models = ListModels().map((x) => ({ model: x, title: GetModelName(x) }));
+  const libraryIntegrationEnabled =
+    String(process.env.LIBRARY_INTEGRATION_ENABLED || 'false')
+      .trim()
+      .toLowerCase() === 'true';
+  const librarianApiUrl = process.env.LIBRARIAN_API_URL || '';
   res.json({
     donateOptions: donateOptions,
     quote: quote,
     models,
     showLogin,
+    libraryIntegrationEnabled,
+    librarianApiUrl,
   });
 });
 

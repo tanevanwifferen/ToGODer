@@ -44,6 +44,9 @@ export class MemoryService {
     var result: any = null;
     let tries = 0;
     const memory_index = body.memoryIndex;
+    if (memory_index.length === 0) {
+      return { keys: [] };
+    }
     while (
       result == null ||
       !('keys' in result) ||

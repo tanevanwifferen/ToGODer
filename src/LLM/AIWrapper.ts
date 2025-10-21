@@ -8,7 +8,8 @@ export interface AIWrapper {
 
   getResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    multiplier?: number
   ): Promise<OpenAI.ChatCompletion>;
 
   /**
@@ -16,7 +17,8 @@ export interface AIWrapper {
    */
   streamResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    multiplier?: number
   ): AsyncGenerator<string, void, void>;
 
   /**
@@ -33,6 +35,7 @@ export interface AIWrapper {
   getJSONResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    structure?: any
+    structure?: any,
+    multiplier?: number
   ): Promise<ParsedChatCompletion<any>>;
 }
