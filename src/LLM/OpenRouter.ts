@@ -39,7 +39,8 @@ export class OpenRouterWrapper implements AIWrapper {
 
   async getResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    multiplier: number = 1
   ): Promise<OpenAI.ChatCompletion> {
     try {
       const result = await this.openAI.chat.completions.create({
@@ -54,11 +55,12 @@ export class OpenRouterWrapper implements AIWrapper {
       const u = (result as any).usage;
       this.lastUsage = u
         ? {
-            prompt_tokens: u.prompt_tokens ?? 0,
-            completion_tokens: u.completion_tokens ?? 0,
+            prompt_tokens: u.prompt_tokens ?? 0 * multiplier,
+            completion_tokens: u.completion_tokens ?? 0 * multiplier,
             total_tokens:
-              u.total_tokens ??
-              (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0),
+              (u.total_tokens ??
+                (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0)) *
+              multiplier,
           }
         : null;
 
@@ -101,9 +103,9 @@ export class OpenRouterWrapper implements AIWrapper {
               (usage.completion_tokens ?? 0) * multiplier,
             total_tokens:
               ((this.lastUsage as any)?.total_tokens ?? 0) +
-              ((usage.total_tokens ??
-                (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0)) &
-                multiplier),
+              (usage.total_tokens ??
+                (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0)) *
+                multiplier,
           };
         }
 

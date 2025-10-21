@@ -50,7 +50,7 @@ export class OpenAIWrapper implements AIWrapper {
   async getResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    multiplier?: number
+    multiplier: number = 1
   ): Promise<OpenAI.ChatCompletion> {
     try {
       const isFlagged = await this.getModeration(userAndAgentPrompts);
@@ -68,11 +68,12 @@ export class OpenAIWrapper implements AIWrapper {
       const u = result.usage;
       this.lastUsage = u
         ? {
-            prompt_tokens: u.prompt_tokens ?? 0,
-            completion_tokens: u.completion_tokens ?? 0,
+            prompt_tokens: u.prompt_tokens ?? 0 * multiplier,
+            completion_tokens: u.completion_tokens ?? 0 * multiplier,
             total_tokens:
-              u.total_tokens ??
-              (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0),
+              (u.total_tokens ??
+                (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0)) *
+              multiplier,
           }
         : null;
       return result;
