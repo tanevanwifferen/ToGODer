@@ -327,7 +327,7 @@ export class ConversationApi {
     }
 
     const recentMessages = input.prompts
-      .slice(-2)
+      .slice(-6)
       .map((message) => {
         if (message.role !== 'user' && message.role !== 'assistant') {
           return null;
@@ -377,8 +377,9 @@ export class ConversationApi {
       }
 
       let context =
-        "Relevant book excerpts (refer back to the sources when used, you're allowed to be a bit more verbose when referring to the relevant literature):\n" +
-        answer.trim();
+        "Relevant book excerpts (refer back to the sources when used, you're \
+        allowed to be a bit more verbose when referring to the relevant literature. \
+        And use source links, book names, authors etc):\n" + answer.trim();
       const sources = Array.isArray(response.data?.sources)
         ? response.data.sources
         : [];
