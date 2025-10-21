@@ -377,7 +377,7 @@ export class ConversationApi {
       }
 
       let context =
-        'Relevant book excerpts (refer back to the sources when used):\n' +
+        "Relevant book excerpts (refer back to the sources when used, you're allowed to be a bit more verbose when referring to the relevant literature):\n" +
         answer.trim();
       const sources = Array.isArray(response.data?.sources)
         ? response.data.sources
