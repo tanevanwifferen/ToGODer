@@ -220,6 +220,7 @@ export function ListModels(): AIProvider[] {
     return modelCache;
   }
   modelCache = [
+    AIProvider.DeepSeekV3,
     AIProvider.gpt5,
     AIProvider.Gpt4oMini,
     AIProvider.LLama31405b,
@@ -231,7 +232,6 @@ export function ListModels(): AIProvider[] {
     AIProvider.Claude37SonnetBeta,
     AIProvider.Claude4Sonnet,
     AIProvider.Claude45Sonnet,
-    AIProvider.DeepSeekV3,
     AIProvider.LLama3,
     AIProvider.LLama3290b,
     AIProvider.LLama3370b,
