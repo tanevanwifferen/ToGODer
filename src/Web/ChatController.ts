@@ -14,7 +14,10 @@ import { AIProvider, getDefaultModel } from '../LLM/Model/AIProvider';
 import { setAuthUser } from './Middleware/auth';
 import { ToGODerRequest } from './Model/ToGODerRequest';
 import { ChatService } from '../Services/ChatService';
-import { MemoryService } from '../Services/MemoryService';
+import {
+  MemoryService,
+  MAX_MEMORY_FETCH_LOOPS,
+} from '../Services/MemoryService';
 import { SystemPromptGenerationService } from '../Services/SystemPromptGenerationService';
 import { BillingApi } from '../Api/BillingApi';
 import { SseStream } from './Utils/Sse';
@@ -86,7 +89,13 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     var requestForMemory: { keys: string[] } = { keys: [] };
-    if (!!body.memoryIndex && body.memoryIndex.length > 0 && user != null) {
+    if (
+      !!body.memoryIndex &&
+      body.memoryIndex.length > 0 &&
+      user != null &&
+      !body.memoryLoopLimitReached &&
+      (body.memoryLoopCount ?? 0) < MAX_MEMORY_FETCH_LOOPS
+    ) {
       requestForMemory = await memoryService.requestMemories(body, user);
     }
 

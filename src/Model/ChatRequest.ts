@@ -24,6 +24,8 @@ export interface ChatRequest {
   customSystemPrompt?: string;
   persona?: string;
   libraryIntegrationEnabled?: boolean;
+  memoryLoopCount?: number;
+  memoryLoopLimitReached?: boolean;
 }
 
 export interface ExperienceRequest {

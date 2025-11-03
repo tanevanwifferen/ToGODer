@@ -1,5 +1,5 @@
 import { ConversationApi } from '../Api/ConversationApi';
-import { MemoryService } from './MemoryService';
+import { MemoryService, MAX_MEMORY_FETCH_LOOPS } from './MemoryService';
 import { ChatRequest } from '../Model/ChatRequest';
 import { User } from '@prisma/client';
 import { AIProvider } from '../LLM/Model/AIProvider';
@@ -33,7 +33,10 @@ export class SystemPromptGenerationService {
   ): Promise<{ requestForMemory?: { keys: string[] }; systemPrompt?: string }> {
     // Phase 1: Check if we need additional memories
     var requestForMemory: { keys: string[] } = { keys: [] };
-    if (!!body.memoryIndex && body.memoryIndex.length > 0) {
+    const limitReached =
+      body.memoryLoopLimitReached ||
+      (body.memoryLoopCount ?? 0) >= MAX_MEMORY_FETCH_LOOPS;
+    if (!!body.memoryIndex && body.memoryIndex.length > 0 && !limitReached) {
       var memories = body.memories || {};
       Object.defineProperty(memories, 'root', {
         value: body.configurableData ?? undefined,
@@ -48,6 +51,10 @@ export class SystemPromptGenerationService {
           memories,
           user
         );
+    } else if (limitReached) {
+      console.warn(
+        'SystemPromptGenerationService: memory fetch limit reached, skipping additional requests'
+      );
     }
 
     // If we need more memories, return the request

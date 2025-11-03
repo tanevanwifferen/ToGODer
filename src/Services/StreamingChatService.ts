@@ -1,7 +1,7 @@
 import { ChatRequest } from '../Model/ChatRequest';
 import { User } from '@prisma/client';
 import { ChatService } from './ChatService';
-import { MemoryService } from './MemoryService';
+import { MemoryService, MAX_MEMORY_FETCH_LOOPS } from './MemoryService';
 import { BillingApi } from '../Api/BillingApi';
 import { ConversationApi } from '../Api/ConversationApi';
 import { AIProvider } from '../LLM/Model/AIProvider';
@@ -83,7 +83,13 @@ export class StreamingChatService {
     }
 
     // Memory request flow (requires user)
-    if (!!body.memoryIndex && body.memoryIndex.length > 0 && user != null) {
+    if (
+      !!body.memoryIndex &&
+      body.memoryIndex.length > 0 &&
+      user != null &&
+      !body.memoryLoopLimitReached &&
+      (body.memoryLoopCount ?? 0) < MAX_MEMORY_FETCH_LOOPS
+    ) {
       const requestForMemory = await this.memoryService.requestMemories(
         body,
         user
