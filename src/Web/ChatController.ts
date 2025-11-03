@@ -190,13 +190,25 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
         sse.done();
       } catch (error: any) {
         // Stream error to client, then end
+        // Do NOT call next(error) as headers are already sent via SSE
         try {
-          sse.event('error', { message: error?.message ?? 'Unknown error' });
-          sse.event('done', null);
-          sse.done();
-        } catch {}
-        // Pass to Express error middleware
-        next(error);
+          if (!res.headersSent) {
+            // If headers haven't been sent yet, we can still use SSE
+            sse.event('error', { message: error?.message ?? 'Unknown error' });
+            sse.event('done', null);
+            sse.done();
+          } else {
+            // Headers already sent, just log the error
+            console.error(
+              'Error during SSE streaming (headers already sent):',
+              error
+            );
+          }
+        } catch (sseError) {
+          // If SSE operations fail, just log
+          console.error('Failed to send error via SSE:', sseError);
+        }
+        // Do NOT call next(error) - it would try to send another response
       }
     }
   );
