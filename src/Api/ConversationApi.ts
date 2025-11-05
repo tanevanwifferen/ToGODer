@@ -400,8 +400,23 @@ export class ConversationApi {
       }
 
       return context;
-    } catch (error) {
-      console.error('Failed to fetch library context', error);
+    } catch (error: any) {
+      // Log detailed error information for debugging
+      if (axios.isAxiosError(error)) {
+        console.error('Library API error:', {
+          message: error.message,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          code: error.code,
+          endpoint,
+        });
+      } else {
+        console.error(
+          'Failed to fetch library context:',
+          error?.message ?? error
+        );
+      }
+      // Always return null to gracefully degrade - don't let external service errors break the chat
       return null;
     }
   }

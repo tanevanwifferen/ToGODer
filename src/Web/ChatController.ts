@@ -14,7 +14,10 @@ import { AIProvider, getDefaultModel } from '../LLM/Model/AIProvider';
 import { setAuthUser } from './Middleware/auth';
 import { ToGODerRequest } from './Model/ToGODerRequest';
 import { ChatService } from '../Services/ChatService';
-import { MemoryService } from '../Services/MemoryService';
+import {
+  MemoryService,
+  MAX_MEMORY_FETCH_LOOPS,
+} from '../Services/MemoryService';
 import { SystemPromptGenerationService } from '../Services/SystemPromptGenerationService';
 import { BillingApi } from '../Api/BillingApi';
 import { SseStream } from './Utils/Sse';
@@ -86,7 +89,13 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     var requestForMemory: { keys: string[] } = { keys: [] };
-    if (!!body.memoryIndex && body.memoryIndex.length > 0 && user != null) {
+    if (
+      !!body.memoryIndex &&
+      body.memoryIndex.length > 0 &&
+      user != null &&
+      !body.memoryLoopLimitReached &&
+      (body.memoryLoopCount ?? 0) < MAX_MEMORY_FETCH_LOOPS
+    ) {
       requestForMemory = await memoryService.requestMemories(body, user);
     }
 
@@ -190,13 +199,25 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
         sse.done();
       } catch (error: any) {
         // Stream error to client, then end
+        // Do NOT call next(error) as headers are already sent via SSE
         try {
-          sse.event('error', { message: error?.message ?? 'Unknown error' });
-          sse.event('done', null);
-          sse.done();
-        } catch {}
-        // Pass to Express error middleware
-        next(error);
+          if (!res.headersSent) {
+            // If headers haven't been sent yet, we can still use SSE
+            sse.event('error', { message: error?.message ?? 'Unknown error' });
+            sse.event('done', null);
+            sse.done();
+          } else {
+            // Headers already sent, just log the error
+            console.error(
+              'Error during SSE streaming (headers already sent):',
+              error
+            );
+          }
+        } catch (sseError) {
+          // If SSE operations fail, just log
+          console.error('Failed to send error via SSE:', sseError);
+        }
+        // Do NOT call next(error) - it would try to send another response
       }
     }
   );

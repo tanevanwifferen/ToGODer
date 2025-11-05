@@ -4,6 +4,8 @@ import { User } from '@prisma/client';
 import { AIProvider, getAIWrapper } from '../LLM/Model/AIProvider';
 import { requestForMemoryPrompt } from '../LLM/prompts/systemprompts';
 
+export const MAX_MEMORY_FETCH_LOOPS = 4;
+
 export class MemoryService {
   private conversationApi: ConversationApi;
 
@@ -41,6 +43,13 @@ export class MemoryService {
     body: ChatRequest,
     user: User
   ): Promise<{ keys: string[] }> {
+    if (
+      body.memoryLoopLimitReached ||
+      (body.memoryLoopCount ?? 0) >= MAX_MEMORY_FETCH_LOOPS
+    ) {
+      return { keys: [] };
+    }
+
     var result: any = null;
     let tries = 0;
     const memory_index = body.memoryIndex;
@@ -56,6 +65,18 @@ export class MemoryService {
     ) {
       result = await this.conversationApi.requestMemories(body, user);
       console.log('fetching memories', tries++);
+      if (tries >= MAX_MEMORY_FETCH_LOOPS) {
+        break;
+      }
+    }
+    if (
+      result == null ||
+      !('keys' in result) ||
+      !Array.isArray(result.keys) ||
+      result?.keys?.some((k: any) => typeof k !== 'string') ||
+      result.keys.some((x: string) => !memory_index.includes(x))
+    ) {
+      return { keys: [] };
     }
     return result;
   }
