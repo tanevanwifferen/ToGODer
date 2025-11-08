@@ -173,7 +173,7 @@ export class RealtimeVoiceService {
 
         // Forward to OpenAI
         if (openAiWs.readyState === WebSocket.OPEN) {
-          openAiWs.send(data);
+          openAiWs.send(message.audio);
         }
       } catch (error) {
         console.error('Error processing client message:', error);
