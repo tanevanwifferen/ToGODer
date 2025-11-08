@@ -152,7 +152,7 @@ export class RealtimeVoiceService {
     onTranscript?: (role: 'user' | 'assistant', text: string) => void
   ): void {
     // Forward messages from client to OpenAI
-    clientWs.on('message', (data: Buffer) => {
+    clientWs.on('message', (data: Buffer, isBinary: boolean) => {
       try {
         const message = JSON.parse(data.toString());
 
@@ -171,9 +171,25 @@ export class RealtimeVoiceService {
           }
         }
 
-        // Forward to OpenAI
         if (openAiWs.readyState === WebSocket.OPEN) {
-          openAiWs.send(message.audio);
+          if (isBinary) {
+            // A. Binary audio from the client (e.g., mic frames)
+            // Base64-encode it and push into the input audio buffer
+            const b64 = data.toString('base64');
+            openAiWs.send(
+              JSON.stringify({
+                type: 'input_audio_buffer.append',
+                audio: b64,
+              })
+            );
+          }
+        } else {
+          openAiWs.send(
+            JSON.stringify({
+              type: 'input_audio_buffer.append',
+              audio: message.audio,
+            })
+          );
         }
       } catch (error) {
         console.error('Error processing client message:', error);
