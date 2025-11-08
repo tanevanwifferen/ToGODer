@@ -79,6 +79,11 @@ export class RealtimeVoiceService {
           JSON.stringify(sessionConfig, null, 2)
         );
         ws.send(JSON.stringify(sessionConfig));
+        ws.send(
+          JSON.stringify({
+            type: 'response.create',
+          })
+        );
         resolve(ws);
       });
 
