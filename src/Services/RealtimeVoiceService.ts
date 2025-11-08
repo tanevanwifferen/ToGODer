@@ -69,7 +69,7 @@ export class RealtimeVoiceService {
               prefix_padding_ms: 300,
               silence_duration_ms: 500,
             },
-            temperature: 0.8,
+            temperature: 1.0,
             max_response_output_tokens: 4096,
           },
         };
