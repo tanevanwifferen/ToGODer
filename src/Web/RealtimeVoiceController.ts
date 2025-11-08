@@ -13,6 +13,9 @@ import WebSocket from 'ws';
 import { IncomingMessage } from 'http';
 import { Duplex } from 'stream';
 import { Decimal } from '@prisma/client/runtime/binary';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { getDbContext } from '../Entity/Database';
+import { User } from '@prisma/client';
 
 function getAssistantName(): string {
   return process.env.ASSISTANT_NAME ?? 'ToGODer';
@@ -85,21 +88,54 @@ export function setupRealtimeVoiceWebSocket(
 
     const billingApi = new BillingApi();
     let sessionStartTime: number | null = null;
-    let userEmail: string | null = null;
+    let user: User | null = null;
 
     try {
       // Parse query parameters for session configuration
       const url = new URL(req.url || '', `http://${req.headers.host}`);
       const params = url.searchParams;
 
-      // Extract user email from query params (should be added by frontend)
-      userEmail = params.get('user_email') || null;
+      // Authenticate user via JWT token
+      // Try authorization header first, then fall back to query parameter
+      const authHeader = req.headers.authorization;
+      let token: string | null = null;
 
-      // Check balance before allowing connection
-      if (userEmail) {
-        const balance = await billingApi.GetTotalBalance(userEmail);
+      if (authHeader) {
+        token = authHeader.split(' ')[1];
+      } else {
+        // WebSocket in browsers doesn't support custom headers, so check query params
+        token = params.get('token');
+      }
+
+      if (token) {
+        try {
+          if (!process.env.JWT_SECRET) {
+            throw new Error('JWT_SECRET not configured');
+          }
+          const { id } = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+          ) as JwtPayload;
+          const db = getDbContext();
+          user = await db.user.findUnique({ where: { id } });
+
+          if (!user) {
+            console.log('User not found for token');
+            ws.close(1008, 'Authentication failed: User not found');
+            return;
+          }
+        } catch (error) {
+          console.log('JWT verification failed:', error);
+          ws.close(1008, 'Authentication failed: Invalid token');
+          return;
+        }
+      }
+
+      // Check balance before allowing connection (if authenticated)
+      if (user) {
+        const balance = await billingApi.GetTotalBalance(user.email);
         if (balance.lessThanOrEqualTo(0)) {
-          console.log(`Insufficient balance for user: ${userEmail}`);
+          console.log(`Insufficient balance for user: ${user.email}`);
           ws.close(
             1008,
             'Insufficient balance. Please add credits to continue.'
@@ -162,7 +198,7 @@ export function setupRealtimeVoiceWebSocket(
         console.log('Realtime voice connection closed');
 
         // Calculate session duration and bill
-        if (sessionStartTime && userEmail) {
+        if (sessionStartTime && user) {
           const sessionDurationMs = Date.now() - sessionStartTime;
           const sessionDurationMinutes = sessionDurationMs / 60000;
 
@@ -178,9 +214,9 @@ export function setupRealtimeVoiceWebSocket(
           const sessionCost = costPerMinute.mul(sessionDurationMinutes);
 
           try {
-            await billingApi.BillForMonth(sessionCost, userEmail);
+            await billingApi.BillForMonth(sessionCost, user.email);
             console.log(
-              `Billed ${userEmail} $${sessionCost.toFixed(4)} for ${sessionDurationMinutes.toFixed(2)} minute voice session`
+              `Billed ${user.email} $${sessionCost.toFixed(4)} for ${sessionDurationMinutes.toFixed(2)} minute voice session`
             );
           } catch (error) {
             console.error('Error billing for voice session:', error);
