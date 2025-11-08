@@ -10,6 +10,12 @@ import { setupKoFi } from './Web/KoFiController';
 import { setupRunners } from './Auth/Runners';
 import { GetShareRouter } from './Web/ShareController';
 import { GetMemoryRouter } from './Web/MemoryController';
+import {
+  GetRealtimeVoiceRouter,
+  setupRealtimeVoiceWebSocket,
+} from './Web/RealtimeVoiceController';
+import { createServer } from 'http';
+import WebSocket from 'ws';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -50,12 +56,14 @@ const authRouter = GetAuthRouter();
 const billingRouter = GetBillingRouter(messageLimiter);
 const memoryRouter = GetMemoryRouter(messageLimiter);
 const shareRouter = GetShareRouter(messageLimiter);
+const realtimeVoiceRouter = GetRealtimeVoiceRouter(messageLimiter);
 
 app.use(chatRouter);
 app.use(authRouter);
 app.use(billingRouter);
 app.use(memoryRouter);
 app.use(shareRouter);
+app.use(realtimeVoiceRouter);
 
 const donateOptions: { address: string }[] = JSON.parse(
   process.env.DONATE_OPTIONS || '[]'
@@ -99,8 +107,21 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).send('Internal Server Error');
 });
 
-app.listen(port, () => {
+// Create HTTP server and WebSocket server
+const server = createServer(app);
+const wss = new WebSocket.Server({
+  server,
+  path: '/api/realtime/ws',
+});
+
+// Setup realtime voice WebSocket handling
+setupRealtimeVoiceWebSocket(wss, messageLimiter);
+
+server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  console.log(
+    `WebSocket server is available at ws://localhost:${port}/api/realtime/ws`
+  );
 });
 
 setupRunners();
