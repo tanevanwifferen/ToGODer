@@ -52,30 +52,50 @@ export class RealtimeVoiceService {
         console.log('Connected to OpenAI Realtime API');
 
         // Configure session with system instructions
-        ws.send(
-          JSON.stringify({
-            type: 'session.update',
-            session: {
-              modalities: ['text', 'audio'],
-              instructions: systemPrompt,
-              voice: 'alloy',
-              input_audio_format: 'pcm16',
-              output_audio_format: 'pcm16',
-              input_audio_transcription: {
-                model: 'whisper-1',
-              },
-              turn_detection: {
-                type: 'server_vad',
-                threshold: 0.5,
-                prefix_padding_ms: 300,
-                silence_duration_ms: 500,
-              },
-              temperature: 0.8,
-              max_response_output_tokens: 4096,
+        const sessionConfig = {
+          type: 'session.update',
+          session: {
+            modalities: ['text', 'audio'],
+            instructions: systemPrompt,
+            voice: 'alloy',
+            input_audio_format: 'pcm16',
+            output_audio_format: 'pcm16',
+            input_audio_transcription: {
+              model: 'whisper-1',
             },
-          })
+            turn_detection: {
+              type: 'server_vad',
+              threshold: 0.5,
+              prefix_padding_ms: 300,
+              silence_duration_ms: 500,
+            },
+            temperature: 0.8,
+            max_response_output_tokens: 4096,
+          },
+        };
+
+        console.log(
+          'Sending session config to OpenAI:',
+          JSON.stringify(sessionConfig, null, 2)
         );
+        ws.send(JSON.stringify(sessionConfig));
         resolve(ws);
+      });
+
+      ws.on('message', (data: Buffer) => {
+        try {
+          const message = JSON.parse(data.toString());
+          console.log(
+            'OpenAI connection - received message:',
+            message.type,
+            JSON.stringify(message).substring(0, 200)
+          );
+        } catch (error) {
+          console.log(
+            'OpenAI connection - received non-JSON message, length:',
+            data.length
+          );
+        }
       });
 
       ws.on('error', (error: Error) => {
@@ -154,8 +174,18 @@ export class RealtimeVoiceService {
     // Forward messages from client to OpenAI
     clientWs.on('message', (data: Buffer, isBinary: boolean) => {
       try {
+        console.log(
+          'Received message from client, isBinary:',
+          isBinary,
+          'size:',
+          data.length
+        );
+
         if (openAiWs.readyState !== WebSocket.OPEN) {
-          console.warn('OpenAI WebSocket not open, cannot forward message');
+          console.warn(
+            'OpenAI WebSocket not open, cannot forward message. State:',
+            openAiWs.readyState
+          );
           return;
         }
 
@@ -163,6 +193,7 @@ export class RealtimeVoiceService {
           // A. Binary audio from the client (e.g., mic frames)
           // Base64-encode it and push into the input audio buffer
           const b64 = data.toString('base64');
+          console.log('Forwarding binary audio to OpenAI, size:', b64.length);
           openAiWs.send(
             JSON.stringify({
               type: 'input_audio_buffer.append',
@@ -172,6 +203,7 @@ export class RealtimeVoiceService {
         } else {
           // B. Text/JSON messages from the client
           const message = JSON.parse(data.toString());
+          console.log('Forwarding JSON message to OpenAI:', message.type);
 
           // Track transcripts if callback provided
           if (onTranscript && message.type === 'conversation.item.created') {
@@ -200,6 +232,7 @@ export class RealtimeVoiceService {
     openAiWs.on('message', (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString());
+        console.log('Received message from OpenAI:', message.type);
 
         // Track transcripts from OpenAI events
         if (onTranscript) {
@@ -214,9 +247,22 @@ export class RealtimeVoiceService {
           }
         }
 
-        // Forward to client
+        // Forward to client as text (not binary)
         if (clientWs.readyState === WebSocket.OPEN) {
-          clientWs.send(data);
+          console.log(
+            'Forwarding message to client:',
+            message.type,
+            'Client state:',
+            clientWs.readyState
+          );
+          // Convert Buffer to string to ensure text frame is sent
+          const messageString = data.toString();
+          clientWs.send(messageString);
+        } else {
+          console.warn(
+            'Client WebSocket not open, cannot forward message. State:',
+            clientWs.readyState
+          );
         }
       } catch (error) {
         console.error('Error processing OpenAI message:', error);
