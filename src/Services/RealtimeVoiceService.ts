@@ -154,42 +154,42 @@ export class RealtimeVoiceService {
     // Forward messages from client to OpenAI
     clientWs.on('message', (data: Buffer, isBinary: boolean) => {
       try {
-        const message = JSON.parse(data.toString());
-
-        // Track transcripts if callback provided
-        if (onTranscript && message.type === 'conversation.item.created') {
-          const item = message.item;
-          if (item?.type === 'message' && item.content) {
-            for (const content of item.content) {
-              if (content.type === 'input_text' || content.type === 'text') {
-                onTranscript(
-                  item.role === 'user' ? 'user' : 'assistant',
-                  content.text || content.transcript || ''
-                );
-              }
-            }
-          }
+        if (openAiWs.readyState !== WebSocket.OPEN) {
+          console.warn('OpenAI WebSocket not open, cannot forward message');
+          return;
         }
 
-        if (openAiWs.readyState === WebSocket.OPEN) {
-          if (isBinary) {
-            // A. Binary audio from the client (e.g., mic frames)
-            // Base64-encode it and push into the input audio buffer
-            const b64 = data.toString('base64');
-            openAiWs.send(
-              JSON.stringify({
-                type: 'input_audio_buffer.append',
-                audio: b64,
-              })
-            );
-          }
-        } else {
+        if (isBinary) {
+          // A. Binary audio from the client (e.g., mic frames)
+          // Base64-encode it and push into the input audio buffer
+          const b64 = data.toString('base64');
           openAiWs.send(
             JSON.stringify({
               type: 'input_audio_buffer.append',
-              audio: message.audio,
+              audio: b64,
             })
           );
+        } else {
+          // B. Text/JSON messages from the client
+          const message = JSON.parse(data.toString());
+
+          // Track transcripts if callback provided
+          if (onTranscript && message.type === 'conversation.item.created') {
+            const item = message.item;
+            if (item?.type === 'message' && item.content) {
+              for (const content of item.content) {
+                if (content.type === 'input_text' || content.type === 'text') {
+                  onTranscript(
+                    item.role === 'user' ? 'user' : 'assistant',
+                    content.text || content.transcript || ''
+                  );
+                }
+              }
+            }
+          }
+
+          // Forward the JSON message as-is to OpenAI
+          openAiWs.send(data);
         }
       } catch (error) {
         console.error('Error processing client message:', error);
