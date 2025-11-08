@@ -268,6 +268,15 @@ export function setupRealtimeVoiceWebSocket(
         ) {
           errorMessage = 'Authentication failed';
           closeCode = 1008;
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Connection to OpenAI timed out';
+          closeCode = 1011;
+        } else if (error.message.includes('Rate limit')) {
+          errorMessage = 'OpenAI rate limit exceeded';
+          closeCode = 1008;
+        } else if (error.message.includes('Invalid API key')) {
+          errorMessage = 'Invalid OpenAI API key';
+          closeCode = 1011;
         } else {
           errorMessage = error.message;
         }
@@ -279,7 +288,15 @@ export function setupRealtimeVoiceWebSocket(
         'message:',
         errorMessage
       );
-      ws.close(closeCode, errorMessage);
+
+      // Ensure the close is sent before terminating
+      try {
+        ws.close(closeCode, errorMessage);
+      } catch (closeError) {
+        console.error('Error closing WebSocket:', closeError);
+        // Force terminate if close fails
+        ws.terminate();
+      }
     }
   });
 }
