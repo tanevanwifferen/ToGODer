@@ -42,7 +42,15 @@ export class RealtimeVoiceService {
     });
 
     return new Promise((resolve, reject) => {
+      const connectionTimeout = setTimeout(() => {
+        reject(new Error('OpenAI Realtime API connection timeout'));
+        ws.close();
+      }, 15000); // 15 second timeout for OpenAI connection
+
       ws.on('open', () => {
+        clearTimeout(connectionTimeout);
+        console.log('Connected to OpenAI Realtime API');
+
         // Configure session with system instructions
         ws.send(
           JSON.stringify({
@@ -71,7 +79,25 @@ export class RealtimeVoiceService {
       });
 
       ws.on('error', (error: Error) => {
-        reject(error);
+        clearTimeout(connectionTimeout);
+        console.error('OpenAI Realtime API WebSocket error:', error);
+
+        // Enhance error message
+        let errorMessage = 'Failed to connect to OpenAI Realtime API';
+        if (
+          error.message.includes('401') ||
+          error.message.includes('Unauthorized')
+        ) {
+          errorMessage += ': Invalid API key';
+        } else if (error.message.includes('429')) {
+          errorMessage += ': Rate limit exceeded';
+        } else if (error.message.includes('timeout')) {
+          errorMessage += ': Connection timeout';
+        } else if (error.message) {
+          errorMessage += `: ${error.message}`;
+        }
+
+        reject(new Error(errorMessage));
       });
     });
   }

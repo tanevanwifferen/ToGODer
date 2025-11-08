@@ -169,6 +169,18 @@ export function setupRealtimeVoiceWebSocket(
         libraryIntegrationEnabled: false, // Disable for realtime
       };
 
+      // Handle custom prompt mode (e.g., '/wakeUp' for morning routine)
+      const promptMode = params.get('promptMode');
+      if (promptMode) {
+        // Add prompt mode as the first message to trigger the specific system prompt
+        chatRequest.prompts = [
+          {
+            role: 'user',
+            content: promptMode,
+          },
+        ];
+      }
+
       const service = new RealtimeVoiceService(chatRequest.assistant_name!);
 
       // Track transcripts for potential storage
@@ -235,7 +247,39 @@ export function setupRealtimeVoiceWebSocket(
       ws.on('close', handleSessionEnd);
     } catch (error) {
       console.error('Error setting up realtime voice connection:', error);
-      ws.close(1011, 'Internal server error');
+
+      // Provide specific error message based on error type
+      let errorMessage = 'Internal server error';
+      let closeCode = 1011;
+
+      if (error instanceof Error) {
+        if (error.message.includes('OPENAI_API_KEY')) {
+          errorMessage = 'OpenAI API key not configured';
+          closeCode = 1011;
+        } else if (
+          error.message.includes('balance') ||
+          error.message.includes('credits')
+        ) {
+          errorMessage = 'Insufficient balance';
+          closeCode = 1008;
+        } else if (
+          error.message.includes('authentication') ||
+          error.message.includes('token')
+        ) {
+          errorMessage = 'Authentication failed';
+          closeCode = 1008;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      console.error(
+        'Closing WebSocket with code:',
+        closeCode,
+        'message:',
+        errorMessage
+      );
+      ws.close(closeCode, errorMessage);
     }
   });
 }
