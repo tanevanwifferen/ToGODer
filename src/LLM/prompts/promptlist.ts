@@ -16,6 +16,7 @@ import {
   fifteenMinuteCheckin,
   ConnectionFacilitatorPrompt,
   RecursionPrompt,
+  WakeUpPrompt,
 } from './chatprompts';
 import { ExperiencePrompt } from './experienceprompts';
 
@@ -157,5 +158,14 @@ export const PromptList: Record<string, PromptListItem> = {
       understand each other better.',
     display: true,
     aliases: ['/connect', '/bonding'],
+  },
+  '/wakeUp': {
+    prompt: WakeUpPrompt,
+    description:
+      'A morning check-in to set intentions for the day. Helps you connect with \
+      your aspirations, clarify what matters most, and align with your highest \
+      purpose as you begin your day.',
+    display: true,
+    aliases: ['/morning', '/morningRoutine'],
   },
 };
