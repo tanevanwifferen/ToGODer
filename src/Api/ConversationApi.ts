@@ -210,7 +210,7 @@ export class ConversationApi {
     let systemPrompt =
       input.customSystemPrompt ?? PromptList['/default'].prompt;
 
-    const firstPrompt = (<string>input.prompts[0].content)?.split(' ')[0];
+    const firstPrompt = (<string>input.prompts[0]?.content)?.split(' ')[0];
     if (firstPrompt in PromptList) {
       systemPrompt = PromptList[firstPrompt].prompt;
     } else if (
