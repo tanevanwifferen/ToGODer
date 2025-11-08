@@ -214,9 +214,17 @@ export class RealtimeVoiceService {
       }
     });
 
-    openAiWs.on('close', () => {
+    openAiWs.on('close', (code: number, reason: Buffer) => {
+      console.log(
+        'OpenAI WebSocket closed. Code:',
+        code,
+        'Reason:',
+        reason.toString()
+      );
       if (clientWs.readyState === WebSocket.OPEN) {
-        clientWs.close();
+        // Forward the close code and reason from OpenAI to the client
+        const reasonText = reason.toString() || 'OpenAI connection closed';
+        clientWs.close(code || 1011, reasonText);
       }
     });
 
