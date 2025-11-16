@@ -10,6 +10,7 @@ export interface AICost {
 
 export enum AIProvider {
   gpt5 = 'gpt-5',
+  gpt51Chat = 'gpt-5.1',
   gpt41 = 'gpt-4.1',
   Gpt4o = 'gpt-4o',
   Gpt4oMini = 'gpt-4o-mini',
@@ -37,6 +38,7 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.Gpt4o:
     case AIProvider.Gpt35turbo:
     case AIProvider.gpt5:
+    case AIProvider.gpt51Chat:
       return new OpenAIWrapper(model);
     case AIProvider.Claude3SonnetBeta:
     case AIProvider.Claude37SonnetBeta:
@@ -136,6 +138,7 @@ export function getTokenCost(model: AIProvider): AICost {
         output_cost_per_million: new Decimal('8'),
       };
     case AIProvider.gpt5:
+    case AIProvider.gpt51Chat:
       torReturn = {
         input_cost_per_million: new Decimal('1.25'),
         output_cost_per_million: new Decimal('10'),
@@ -174,6 +177,8 @@ export function GetModelName(provider: AIProvider): string {
   switch (provider) {
     case AIProvider.gpt5:
       return 'GPT-5';
+    case AIProvider.gpt51Chat:
+      return 'GPT-5.1';
     case AIProvider.Gpt4oMini:
       return 'GPT-4o-mini';
     case AIProvider.Gpt4o:
@@ -222,6 +227,7 @@ export function ListModels(): AIProvider[] {
   modelCache = [
     AIProvider.DeepSeekV3,
     AIProvider.gpt5,
+    AIProvider.gpt51Chat,
     AIProvider.Gpt4oMini,
     AIProvider.LLama31405b,
     AIProvider.LLama3170b,
@@ -242,6 +248,7 @@ export function ListModels(): AIProvider[] {
       var a: AIWrapper | null = null;
       switch (x) {
         case AIProvider.gpt5:
+        case AIProvider.gpt51Chat:
         case AIProvider.Gpt4o:
         case AIProvider.gpt41:
         case AIProvider.Gpt4oMini:
