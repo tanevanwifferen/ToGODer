@@ -282,6 +282,7 @@ export function ListModels(): AIProvider[] {
         case AIProvider.Claude4Sonnet:
         case AIProvider.Claude45Sonnet:
         case AIProvider.DeepSeekV3:
+        case AIProvider.DeepSeekV32:
         case AIProvider.LLama3:
         case AIProvider.LLama3170b:
         case AIProvider.LLama31405b:
