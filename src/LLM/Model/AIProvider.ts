@@ -20,6 +20,7 @@ export enum AIProvider {
   Claude4Sonnet = 'anthropic/claude-sonnet-4',
   Claude45Sonnet = 'anthropic/claude-sonnet-4.5',
   DeepSeekV3 = 'deepseek/deepseek-chat-v3.1',
+  DeepSeekV32 = 'deepseek/deepseek-v3.2',
   LLama3 = 'perplexity/llama-3-sonar-large-32k-chat',
   LLama3170b = 'meta-llama/llama-3.1-70b-instruct',
   LLama31405b = 'meta-llama/llama-3.1-405b-instruct',
@@ -46,6 +47,7 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.Claude4Sonnet:
     case AIProvider.Claude45Sonnet:
     case AIProvider.DeepSeekV3:
+    case AIProvider.DeepSeekV32:
     case AIProvider.LLama3:
     case AIProvider.LLama3170b:
     case AIProvider.LLama31405b:
@@ -78,6 +80,12 @@ export function getTokenCost(model: AIProvider): AICost {
       torReturn = {
         input_cost_per_million: new Decimal('2'),
         output_cost_per_million: new Decimal('2'),
+      };
+      break;
+    case AIProvider.DeepSeekV32:
+      torReturn = {
+        input_cost_per_million: new Decimal('0.27'),
+        output_cost_per_million: new Decimal('0.42'),
       };
       break;
     case AIProvider.LLama3:
@@ -205,6 +213,8 @@ export function GetModelName(provider: AIProvider): string {
       return 'Claude 4.5 Sonnet';
     case AIProvider.DeepSeekV3:
       return 'DeepSeek V3';
+    case AIProvider.DeepSeekV32:
+      return 'DeepSeek V3.2';
     case AIProvider.LLama3:
       return 'LLama3 sonar 32k';
     case AIProvider.LLama3170b:
@@ -236,6 +246,7 @@ export function ListModels(): AIProvider[] {
   }
   modelCache = [
     AIProvider.DeepSeekV3,
+    AIProvider.DeepSeekV32,
     AIProvider.gpt5,
     AIProvider.gpt51Chat,
     AIProvider.Gpt4oMini,
