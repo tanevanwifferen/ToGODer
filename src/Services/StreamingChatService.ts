@@ -11,8 +11,8 @@ import { AIProvider } from '../LLM/Model/AIProvider';
  */
 export interface ToolCallData {
   id: string;
-  tool: string;
-  args: Record<string, any>;
+  name: string;
+  arguments: Record<string, any>;
 }
 
 /**
@@ -135,8 +135,8 @@ export class StreamingChatService {
             type: 'tool_call',
             data: {
               id: chunk.id,
-              tool: chunk.name,
-              args,
+              name: chunk.name,
+              arguments: args,
             },
           };
         }
