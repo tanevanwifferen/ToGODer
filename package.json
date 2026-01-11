@@ -5,7 +5,7 @@
   "main": "bin/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx tsc",
+    "build": "npx prisma generate && npx tsc",
     "start": "node --env-file=.env bin/index.js",
     "prepare": "husky install",
     "postinstall": "prisma generate"
