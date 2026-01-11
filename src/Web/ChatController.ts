@@ -184,6 +184,9 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
             case 'signature':
               sse.event('signature', evt.data);
               break;
+            case 'tool_call':
+              sse.event('tool_call', evt.data);
+              break;
             case 'error':
               sse.event('error', evt.data);
               break;
