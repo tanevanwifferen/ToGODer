@@ -49,6 +49,7 @@ export class OpenRouterWrapper implements AIWrapper {
           ...userAndAgentPrompts,
         ],
         model: this.model,
+        max_tokens: 16384,
       });
 
       // Capture usage for non-streaming if available
@@ -86,6 +87,7 @@ export class OpenRouterWrapper implements AIWrapper {
           ...userAndAgentPrompts,
         ],
         model: this.model,
+        max_tokens: 16384,
         stream: true,
         stream_options: { include_usage: true },
       });
@@ -140,6 +142,7 @@ export class OpenRouterWrapper implements AIWrapper {
           ...userAndAgentPrompts,
         ],
         model: this.model,
+        max_tokens: 16384,
         stream: true,
         stream_options: { include_usage: true },
       };
@@ -253,6 +256,7 @@ export class OpenRouterWrapper implements AIWrapper {
         ...userAndAgentPrompts,
       ],
       model: this.model,
+      max_tokens: 16384,
       response_format: { type: 'json_object' },
     };
     if (structure) {
