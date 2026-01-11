@@ -1,4 +1,4 @@
-import { ChatCompletionMessageParam } from 'openai/resources';
+import { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources';
 import { AIProvider } from '../LLM/Model/AIProvider';
 
 export enum ChatRequestCommunicationStyle {
@@ -6,6 +6,12 @@ export enum ChatRequestCommunicationStyle {
   LessBloat = 1,
   AdaptToConversant = 2,
   Informal = 3,
+}
+
+export interface ArtifactInfo {
+  path: string;
+  name: string;
+  mimeType: string;
 }
 
 export interface ChatRequest {
@@ -26,6 +32,8 @@ export interface ChatRequest {
   libraryIntegrationEnabled?: boolean;
   memoryLoopCount?: number;
   memoryLoopLimitReached?: boolean;
+  artifactIndex?: ArtifactInfo[];
+  tools?: ChatCompletionTool[];
 }
 
 export interface ExperienceRequest {

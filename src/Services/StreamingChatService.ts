@@ -7,11 +7,21 @@ import { ConversationApi } from '../Api/ConversationApi';
 import { AIProvider } from '../LLM/Model/AIProvider';
 
 /**
+ * Tool call event data for artifact operations
+ */
+export interface ToolCallData {
+  id: string;
+  tool: string;
+  args: Record<string, any>;
+}
+
+/**
  * Events emitted during streaming. Consumers can map these to SSE frames or other transports.
  */
 export type StreamEvent =
   | { type: 'memory_request'; data: { keys: string[] } }
   | { type: 'chunk'; data: { delta: string } }
+  | { type: 'tool_call'; data: ToolCallData }
   | { type: 'signature'; data: { signature: string } }
   | { type: 'error'; data: { message: string } }
   | { type: 'done'; data?: null };
@@ -103,10 +113,41 @@ export class StreamingChatService {
 
     // Stream response from provider and forward chunks, accumulating for signature
     let full = '';
-    for await (const delta of this.conversationApi.streamResponse(body, user)) {
-      if (delta && delta.length > 0) {
-        full += delta;
-        yield { type: 'chunk', data: { delta } };
+
+    // Use tool-aware streaming if tools are provided
+    if (body.tools && body.tools.length > 0) {
+      for await (const chunk of this.conversationApi.streamResponseWithTools(body, user)) {
+        if (chunk.type === 'text') {
+          if (chunk.content && chunk.content.length > 0) {
+            full += chunk.content;
+            yield { type: 'chunk', data: { delta: chunk.content } };
+          }
+        } else if (chunk.type === 'tool_call') {
+          // Parse the arguments JSON string into an object
+          let args: Record<string, any> = {};
+          try {
+            args = chunk.arguments ? JSON.parse(chunk.arguments) : {};
+          } catch (e) {
+            console.error('Failed to parse tool call arguments:', e);
+            args = { raw: chunk.arguments };
+          }
+          yield {
+            type: 'tool_call',
+            data: {
+              id: chunk.id,
+              tool: chunk.name,
+              args,
+            },
+          };
+        }
+      }
+    } else {
+      // Use standard streaming without tools
+      for await (const delta of this.conversationApi.streamResponse(body, user)) {
+        if (delta && delta.length > 0) {
+          full += delta;
+          yield { type: 'chunk', data: { delta } };
+        }
       }
     }
 

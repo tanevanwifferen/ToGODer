@@ -3,8 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: togoder:dev
-    container_name: togoder-dev
+    image: togoder:main
+    container_name: togoder-prod
     env_file:
       - .env
     environment:

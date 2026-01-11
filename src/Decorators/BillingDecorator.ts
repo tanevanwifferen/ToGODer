@@ -1,8 +1,9 @@
 import {
   ChatCompletionMessageParam,
   ChatCompletion,
+  ChatCompletionTool,
 } from 'openai/resources/index';
-import { AIWrapper } from '../LLM/AIWrapper';
+import { AIWrapper, StreamChunk } from '../LLM/AIWrapper';
 import { BillingApi } from '../Api/BillingApi';
 import { AIProvider, getTokenCost } from '../LLM/Model/AIProvider';
 import { User } from '@prisma/client';
@@ -119,6 +120,48 @@ export class BillingDecorator implements AIWrapper {
         );
       }
       // else: no reliable usage for streaming; skip billing to avoid inaccuracies.
+    }
+  }
+
+  /**
+   * Streaming with tools and usage-based post-billing.
+   */
+  async *streamResponseWithTools(
+    systemPrompt: string,
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    tools?: ChatCompletionTool[]
+  ): AsyncGenerator<StreamChunk, void, void> {
+    this.assertEnoughBalance([
+      ...userAndAgentPrompts,
+      { role: 'system', content: systemPrompt },
+    ]);
+    try {
+      for await (const chunk of this.aiWrapper.streamResponseWithTools(
+        systemPrompt,
+        userAndAgentPrompts,
+        tools
+      )) {
+        yield chunk;
+      }
+    } finally {
+      // Try to bill using provider-reported usage, if available
+      const usage = this.aiWrapper.getAndResetLastUsage?.();
+      if (usage) {
+        const billingApi = new BillingApi();
+        const price = getTokenCost(this.aiWrapper.Model);
+
+        const inputPrice = price.input_cost_per_million
+          .mul(usage.prompt_tokens)
+          .div('1000000');
+        const outputPrice = price.output_cost_per_million
+          .mul(usage.completion_tokens)
+          .div('1000000');
+
+        await billingApi.BillForMonth(
+          inputPrice.add(outputPrice),
+          this.user.email
+        );
+      }
     }
   }
 

@@ -28,6 +28,7 @@ import {
   getAIWrapper,
   getDefaultModel,
 } from '../LLM/Model/AIProvider';
+import { StreamChunk } from '../LLM/AIWrapper';
 import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
 import { User } from '@prisma/client';
 import { BillingDecorator } from '../Decorators/BillingDecorator';
@@ -466,6 +467,29 @@ export class ConversationApi {
       input.libraryIntegrationEnabled ? 2 : 1
     )) {
       if (delta) yield delta;
+    }
+  }
+
+  /**
+   * Streaming response with tool support.
+   * Yields StreamChunk objects that can be either text deltas or tool calls.
+   */
+  public async *streamResponseWithTools(
+    input: ChatRequest,
+    user: User | null | undefined
+  ): AsyncGenerator<StreamChunk, void, void> {
+    if (input.prompts.length == 0) {
+      return;
+    }
+    const aiWrapper = this.getAIWrapper(input.model, user);
+    const systemPrompt = await this.buildSystemPrompt(input);
+    for await (const chunk of aiWrapper.streamResponseWithTools(
+      systemPrompt,
+      input.prompts,
+      input.tools,
+      input.libraryIntegrationEnabled ? 2 : 1
+    )) {
+      yield chunk;
     }
   }
 
