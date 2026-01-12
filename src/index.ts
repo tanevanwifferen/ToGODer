@@ -1,4 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
+import bodyParser from 'body-parser';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { GetChatRouter } from './Web/ChatController';
@@ -23,7 +24,7 @@ const port = process.env.PORT || 3000;
 
 // Trust the first proxy to allow the app to get the client's IP address
 app.set('trust proxy', 1);
-app.use(express.bodyParser({limit: '50mb'}));
+app.use(bodyParser({limit: '50mb'}));
 
 // Rate limiter to prevent abuse
 const messageLimiter = rateLimit({
