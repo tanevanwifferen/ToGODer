@@ -45,7 +45,6 @@
     "@types/ws": "^8.18.1",
     "axios": "^1.7.8",
     "bcrypt": "^5.1.1",
-    "body-parser": "^2.2.2",
     "express": "^4.19.2",
     "express-rate-limit": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
