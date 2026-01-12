@@ -6,13 +6,24 @@
 
 // table for users, containing id, privateKeyHash, maxMessagesPerDay, messagesLeft, and chats
 model User {
-  id                String       @id @default(uuid())
+  id                String        @id @default(uuid())
   sharedChats       SharedChat[]
-  email             String       @unique
+  email             String        @unique
   password          String
-  verified          Boolean      @default(false)
-  verificationToken String       @default(uuid())
-  createdAt         DateTime     @default(now())
+  verified          Boolean       @default(false)
+  verificationToken String        @default(uuid())
+  createdAt         DateTime      @default(now())
+  dataSync          UserDataSync?
+}
+
+model UserDataSync {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  encryptedData String   // Base64 encrypted blob
+  lastModified  DateTime @updatedAt
+  version       Int      @default(1)
+  createdAt     DateTime @default(now())
 }
 
 model Payment {

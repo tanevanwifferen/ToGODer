@@ -10,6 +10,7 @@ import { setupKoFi } from './Web/KoFiController';
 import { setupRunners } from './Auth/Runners';
 import { GetShareRouter } from './Web/ShareController';
 import { GetMemoryRouter } from './Web/MemoryController';
+import { GetSyncRouter } from './Web/SyncController';
 import {
   GetRealtimeVoiceRouter,
   setupRealtimeVoiceWebSocket,
@@ -57,6 +58,7 @@ const billingRouter = GetBillingRouter(messageLimiter);
 const memoryRouter = GetMemoryRouter(messageLimiter);
 const shareRouter = GetShareRouter(messageLimiter);
 const realtimeVoiceRouter = GetRealtimeVoiceRouter(messageLimiter);
+const syncRouter = GetSyncRouter(messageLimiter);
 
 app.use(chatRouter);
 app.use(authRouter);
@@ -64,6 +66,7 @@ app.use(billingRouter);
 app.use(memoryRouter);
 app.use(shareRouter);
 app.use(realtimeVoiceRouter);
+app.use(syncRouter);
 
 const donateOptions: { address: string }[] = JSON.parse(
   process.env.DONATE_OPTIONS || '[]'
