@@ -5,3 +5,4 @@ prisma/dev.*
 .DS_Store
 
 .idea
+.beads/
