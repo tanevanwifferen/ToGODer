@@ -1,5 +1,8 @@
 import OpenAI from 'openai';
-import { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/index';
+import {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+} from 'openai/resources/index';
 import { AIWrapper, StreamChunk } from './AIWrapper';
 import { AIProvider } from './Model/AIProvider';
 import { zodResponseFormat } from 'openai/helpers/zod';
@@ -78,19 +81,23 @@ export class OpenRouterWrapper implements AIWrapper {
   async *streamResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    multiplier: number = 1
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): AsyncGenerator<string, void, void> {
     try {
-      const stream = await this.openAI.chat.completions.create({
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...userAndAgentPrompts,
-        ],
-        model: this.model,
-        max_tokens: 16384,
-        stream: true,
-        stream_options: { include_usage: true },
-      });
+      const stream = await this.openAI.chat.completions.create(
+        {
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...userAndAgentPrompts,
+          ],
+          model: this.model,
+          max_tokens: 16384,
+          stream: true,
+          stream_options: { include_usage: true },
+        },
+        { signal }
+      );
 
       for await (const chunk of stream as any) {
         // Capture usage if provided by OpenRouter on terminal chunks
@@ -133,7 +140,8 @@ export class OpenRouterWrapper implements AIWrapper {
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
     tools?: ChatCompletionTool[],
-    multiplier: number = 1
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): AsyncGenerator<StreamChunk, void, void> {
     try {
       const requestParams: any = {
@@ -151,10 +159,15 @@ export class OpenRouterWrapper implements AIWrapper {
         requestParams.tools = tools;
       }
 
-      const stream = await this.openAI.chat.completions.create(requestParams);
+      const stream = await this.openAI.chat.completions.create(requestParams, {
+        signal,
+      });
 
       // Track tool calls being accumulated across chunks
-      const toolCallAccumulators: Map<number, { id: string; name: string; arguments: string }> = new Map();
+      const toolCallAccumulators: Map<
+        number,
+        { id: string; name: string; arguments: string }
+      > = new Map();
 
       for await (const chunk of stream as any) {
         // Capture usage if provided
@@ -213,7 +226,10 @@ export class OpenRouterWrapper implements AIWrapper {
           }
 
           // Check if this choice is finished and emit any complete tool calls
-          if (ch?.finish_reason === 'tool_calls' || ch?.finish_reason === 'stop') {
+          if (
+            ch?.finish_reason === 'tool_calls' ||
+            ch?.finish_reason === 'stop'
+          ) {
             for (const [, accumulator] of toolCallAccumulators) {
               if (accumulator.id && accumulator.name) {
                 yield {
@@ -230,7 +246,9 @@ export class OpenRouterWrapper implements AIWrapper {
       }
     } catch (error) {
       console.error('OpenRouter stream with tools error:', error);
-      throw new Error('Failed to stream response with tools from OpenRouter API');
+      throw new Error(
+        'Failed to stream response with tools from OpenRouter API'
+      );
     }
   }
 

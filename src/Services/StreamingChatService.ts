@@ -55,7 +55,8 @@ export class StreamingChatService {
    */
   async *streamChat(
     body: ChatRequest,
-    user: User | null
+    user: User | null,
+    signal?: AbortSignal
   ): AsyncGenerator<StreamEvent, void, void> {
     const totalMessages = Array.isArray(body.prompts) ? body.prompts.length : 0;
     const paywallMessage =
@@ -116,7 +117,11 @@ export class StreamingChatService {
 
     // Use tool-aware streaming if tools are provided
     if (body.tools && body.tools.length > 0) {
-      for await (const chunk of this.conversationApi.streamResponseWithTools(body, user)) {
+      for await (const chunk of this.conversationApi.streamResponseWithTools(
+        body,
+        user,
+        signal
+      )) {
         if (chunk.type === 'text') {
           if (chunk.content && chunk.content.length > 0) {
             full += chunk.content;
@@ -143,7 +148,11 @@ export class StreamingChatService {
       }
     } else {
       // Use standard streaming without tools
-      for await (const delta of this.conversationApi.streamResponse(body, user)) {
+      for await (const delta of this.conversationApi.streamResponse(
+        body,
+        user,
+        signal
+      )) {
         if (delta && delta.length > 0) {
           full += delta;
           yield { type: 'chunk', data: { delta } };

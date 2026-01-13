@@ -1,5 +1,8 @@
 import OpenAI from 'openai';
-import { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/index';
+import {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+} from 'openai/resources/index';
 import { AIWrapper, StreamChunk } from './AIWrapper';
 import { AIProvider } from './Model/AIProvider';
 import { ErrorJsonCompletion, ErrorCompletion } from './Errors';
@@ -90,22 +93,26 @@ export class OpenAIWrapper implements AIWrapper {
   async *streamResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    multiplier: number = 1
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): AsyncGenerator<string, void, void> {
     try {
       // reset usage snapshot for this streaming session
       this.lastUsage = null;
 
-      const stream = await this.openAI.chat.completions.create({
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...userAndAgentPrompts,
-        ],
-        model: this.model,
-        max_tokens: 16384,
-        stream: true,
-        stream_options: { include_usage: true },
-      });
+      const stream = await this.openAI.chat.completions.create(
+        {
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...userAndAgentPrompts,
+          ],
+          model: this.model,
+          max_tokens: 16384,
+          stream: true,
+          stream_options: { include_usage: true },
+        },
+        { signal }
+      );
 
       for await (const chunk of stream as any) {
         // Capture usage if the provider includes it on a terminal chunk
@@ -149,7 +156,8 @@ export class OpenAIWrapper implements AIWrapper {
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
     tools?: ChatCompletionTool[],
-    multiplier: number = 1
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): AsyncGenerator<StreamChunk, void, void> {
     try {
       this.lastUsage = null;
@@ -169,10 +177,15 @@ export class OpenAIWrapper implements AIWrapper {
         requestParams.tools = tools;
       }
 
-      const stream = await this.openAI.chat.completions.create(requestParams);
+      const stream = await this.openAI.chat.completions.create(requestParams, {
+        signal,
+      });
 
       // Track tool calls being accumulated across chunks
-      const toolCallAccumulators: Map<number, { id: string; name: string; arguments: string }> = new Map();
+      const toolCallAccumulators: Map<
+        number,
+        { id: string; name: string; arguments: string }
+      > = new Map();
 
       for await (const chunk of stream as any) {
         // Capture usage if provided
@@ -231,7 +244,10 @@ export class OpenAIWrapper implements AIWrapper {
           }
 
           // Check if this choice is finished and emit any complete tool calls
-          if (ch?.finish_reason === 'tool_calls' || ch?.finish_reason === 'stop') {
+          if (
+            ch?.finish_reason === 'tool_calls' ||
+            ch?.finish_reason === 'stop'
+          ) {
             for (const [, accumulator] of toolCallAccumulators) {
               if (accumulator.id && accumulator.name) {
                 yield {

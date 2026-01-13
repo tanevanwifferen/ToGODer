@@ -1,4 +1,7 @@
-import { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/index';
+import {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+} from 'openai/resources/index';
 import OpenAI from 'openai';
 import { AIProvider } from './Model/AIProvider';
 import { ParsedChatCompletion } from 'openai/resources/chat/completions/index';
@@ -25,7 +28,8 @@ export interface AIWrapper {
   streamResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    multiplier?: number
+    multiplier?: number,
+    signal?: AbortSignal
   ): AsyncGenerator<string, void, void>;
 
   /**
@@ -36,7 +40,8 @@ export interface AIWrapper {
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
     tools?: ChatCompletionTool[],
-    multiplier?: number
+    multiplier?: number,
+    signal?: AbortSignal
   ): AsyncGenerator<StreamChunk, void, void>;
 
   /**
