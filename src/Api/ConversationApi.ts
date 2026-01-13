@@ -454,7 +454,8 @@ export class ConversationApi {
    */
   public async *streamResponse(
     input: ChatRequest,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): AsyncGenerator<string, void, void> {
     if (input.prompts.length == 0) {
       return;
@@ -464,7 +465,8 @@ export class ConversationApi {
     for await (const delta of aiWrapper.streamResponse(
       systemPrompt,
       input.prompts,
-      input.libraryIntegrationEnabled ? 2 : 1
+      input.libraryIntegrationEnabled ? 2 : 1,
+      signal
     )) {
       if (delta) yield delta;
     }
@@ -476,7 +478,8 @@ export class ConversationApi {
    */
   public async *streamResponseWithTools(
     input: ChatRequest,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): AsyncGenerator<StreamChunk, void, void> {
     if (input.prompts.length == 0) {
       return;
@@ -487,7 +490,8 @@ export class ConversationApi {
       systemPrompt,
       input.prompts,
       input.tools,
-      input.libraryIntegrationEnabled ? 2 : 1
+      input.libraryIntegrationEnabled ? 2 : 1,
+      signal
     )) {
       yield chunk;
     }
