@@ -43,17 +43,21 @@ export class OpenRouterWrapper implements AIWrapper {
   async getResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    multiplier: number = 1
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): Promise<OpenAI.ChatCompletion> {
     try {
-      const result = await this.openAI.chat.completions.create({
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...userAndAgentPrompts,
-        ],
-        model: this.model,
-        max_tokens: 16384,
-      });
+      const result = await this.openAI.chat.completions.create(
+        {
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...userAndAgentPrompts,
+          ],
+          model: this.model,
+          max_tokens: 16384,
+        },
+        { signal }
+      );
 
       // Capture usage for non-streaming if available
       const u = (result as any).usage;
@@ -265,7 +269,9 @@ export class OpenRouterWrapper implements AIWrapper {
   async getJSONResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    structure?: any
+    structure?: any,
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): Promise<ParsedChatCompletion<any>> {
     // Prepare the request
     var request: any = {
@@ -287,7 +293,7 @@ export class OpenRouterWrapper implements AIWrapper {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        return await this.openAI.chat.completions.parse(request);
+        return await this.openAI.chat.completions.parse(request, { signal });
       } catch (error) {
         lastError = error;
         console.error(

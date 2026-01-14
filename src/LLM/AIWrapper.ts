@@ -19,7 +19,8 @@ export interface AIWrapper {
   getResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    multiplier?: number
+    multiplier?: number,
+    signal?: AbortSignal
   ): Promise<OpenAI.ChatCompletion>;
 
   /**
@@ -59,6 +60,7 @@ export interface AIWrapper {
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
     structure?: any,
-    multiplier?: number
+    multiplier?: number,
+    signal?: AbortSignal
   ): Promise<ParsedChatCompletion<any>>;
 }
