@@ -539,6 +539,17 @@ export class ConversationApi {
       });
     }
 
+    // Include artifact index so AI knows what files are available to read
+    if (body.artifactIndex && body.artifactIndex.length > 0) {
+      const artifactList = body.artifactIndex
+        .map((a) => `- ${a.name} (${a.mimeType}) at path: ${a.path}`)
+        .join('\n');
+      personalData.push(
+        'Available artifacts (files you can read using the read_file tool):\n' +
+          artifactList
+      );
+    }
+
     var date = () =>
       new Date().toDateString() + ' ' + new Date().toTimeString();
     personalData.push('The date today = ' + body.staticData?.date || date());
