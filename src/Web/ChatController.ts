@@ -143,6 +143,13 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     async (req: Request, res: Response, next: NextFunction) => {
       const sse = new SseStream(res);
 
+      // Create AbortController to cancel streaming when client disconnects
+      const abortController = new AbortController();
+      const onClientDisconnect = () => {
+        abortController.abort();
+      };
+      res.on('close', onClientDisconnect);
+
       try {
         // Normalize body to ChatRequest like the non-streaming endpoint
         let body: ChatRequest = req.body;
@@ -172,7 +179,11 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
         // Delegate the streaming logic to a service for maintainability
         const streamingService = new StreamingChatService(body.assistant_name);
 
-        for await (const evt of streamingService.streamChat(body, user)) {
+        for await (const evt of streamingService.streamChat(
+          body,
+          user,
+          abortController.signal
+        )) {
           switch (evt.type) {
             case 'chunk':
               sse.event('chunk', evt.data);
@@ -203,6 +214,15 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
       } catch (error: any) {
         // Stream error to client, then end
         // Do NOT call next(error) as headers are already sent via SSE
+
+        // Check if this is an abort error from client disconnect
+        const isAbortError =
+          error?.name === 'AbortError' || abortController.signal.aborted;
+        if (isAbortError) {
+          // Client disconnected - this is expected, no need to log or send error
+          return;
+        }
+
         try {
           if (!res.headersSent) {
             // If headers haven't been sent yet, we can still use SSE
@@ -221,6 +241,9 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
           console.error('Failed to send error via SSE:', sseError);
         }
         // Do NOT call next(error) - it would try to send another response
+      } finally {
+        // Clean up the disconnect listener
+        res.off('close', onClientDisconnect);
       }
     }
   );
