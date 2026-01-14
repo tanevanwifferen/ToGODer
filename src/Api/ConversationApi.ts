@@ -28,12 +28,14 @@ import {
   getAIWrapper,
   getDefaultModel,
 } from '../LLM/Model/AIProvider';
+import { StreamChunk } from '../LLM/AIWrapper';
 import { TranslationPrompt } from '../LLM/prompts/experienceprompts';
 import { User } from '@prisma/client';
 import { BillingDecorator } from '../Decorators/BillingDecorator';
 import { keysSchema } from '../zod/requestformemory';
 import { rootpersona } from '../LLM/prompts/rootprompts';
 import { ParsedChatCompletion } from 'openai/resources/chat/completions/index';
+import axios from 'axios';
 
 let quote = '';
 
@@ -73,7 +75,8 @@ export class ConversationApi {
     shortTermMemory: any,
     date: string,
     model: AIProvider,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
     var inputMessages = prompts.length > 2 ? prompts.slice(-2) : prompts;
@@ -93,7 +96,9 @@ export class ConversationApi {
     ];
     const response = await aiWrapper.getResponse(
       UpdatePersonalDataPrompt,
-      messages
+      messages,
+      1,
+      signal
     );
     const content = CompletionToContent(response);
     return content;
@@ -105,18 +110,22 @@ export class ConversationApi {
   public async getTitle(
     body: ChatCompletionMessageParam[],
     model: AIProvider,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model, user);
 
     var prompt = GetTitlePrompt + body[0].content;
 
-    return CompletionToContent(await aiWrapper.getResponse(prompt, body));
+    return CompletionToContent(
+      await aiWrapper.getResponse(prompt, body, 1, signal)
+    );
   }
 
   public async requestMemories(
     body: ChatRequest,
-    user: User
+    user: User,
+    signal?: AbortSignal
   ): Promise<{ keys: string[] }> {
     if (!body.memoryIndex || body.memoryIndex.length == 0) {
       return { keys: [] };
@@ -131,7 +140,9 @@ export class ConversationApi {
     const json_response = await wrapper.getJSONResponse(
       memoryPrompt,
       body.prompts,
-      keysSchema
+      keysSchema,
+      1,
+      signal
     );
     const content = JsonToContent(json_response);
     if ((await json_response).usage?.total_tokens == 0) {
@@ -153,7 +164,8 @@ export class ConversationApi {
     systemPrompt: string,
     memoryIndex: string[],
     existingMemories: { [key: string]: string },
-    user: User
+    user: User,
+    signal?: AbortSignal
   ): Promise<{ keys: string[] }> {
     if (!memoryIndex || memoryIndex.length == 0) {
       return { keys: [] };
@@ -179,7 +191,9 @@ export class ConversationApi {
             'Please analyze the system prompt and return relevant memory keys.',
         },
       ],
-      keysSchema
+      keysSchema,
+      1,
+      signal
     );
     const content = JsonToContent(json_response);
     if ((await json_response).usage?.total_tokens == 0) {
@@ -197,18 +211,19 @@ export class ConversationApi {
     input: ChatCompletionMessageParam[],
     systemPrompt: string,
     model: AIProvider = getDefaultModel(),
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): Promise<ChatCompletion> {
     var aiWrapper = this.getAIWrapper(model, user);
-    return await aiWrapper.getResponse(systemPrompt, input);
+    return await aiWrapper.getResponse(systemPrompt, input, 1, signal);
   }
 
   // Build the full system prompt string based on input request options
-  private buildSystemPrompt(input: ChatRequest): string {
+  private async buildSystemPrompt(input: ChatRequest): Promise<string> {
     let systemPrompt =
       input.customSystemPrompt ?? PromptList['/default'].prompt;
 
-    const firstPrompt = (<string>input.prompts[0].content)?.split(' ')[0];
+    const firstPrompt = (<string>input.prompts[0]?.content)?.split(' ')[0];
     if (firstPrompt in PromptList) {
       systemPrompt = PromptList[firstPrompt].prompt;
     } else if (
@@ -261,30 +276,190 @@ export class ConversationApi {
       /{{ name }}/g,
       () => this.assistant_name!
     );
+
+    const libraryContext = await this.getLibraryContext(input);
+    if (libraryContext) {
+      systemPrompt += '\n\n' + libraryContext;
+    }
+
     systemPrompt += '\n\n' + this.formatPersonalData(input);
     systemPrompt = rootpersona + '\n\n' + systemPrompt;
 
     return systemPrompt;
   }
 
+  private extractMessageContent(
+    message: ChatCompletionMessageParam
+  ): string | null {
+    const content: any = message.content;
+    if (typeof content === 'string') {
+      return content.trim().length > 0 ? content : null;
+    }
+
+    if (Array.isArray(content)) {
+      const combined = content
+        .map((part: any) => {
+          if (typeof part === 'string') {
+            return part;
+          }
+          if (part && typeof part.text === 'string') {
+            return part.text;
+          }
+          return '';
+        })
+        .join('')
+        .trim();
+      return combined.length > 0 ? combined : null;
+    }
+
+    return null;
+  }
+
+  private parseBooleanFlag(value: string | undefined): boolean {
+    if (!value) {
+      return false;
+    }
+    const normalized = value.trim().toLowerCase();
+    return ['true', '1', 'yes', 'y', 'on'].includes(normalized);
+  }
+
+  private async getLibraryContext(input: ChatRequest): Promise<string | null> {
+    if (!input.libraryIntegrationEnabled) {
+      return null;
+    }
+
+    const globalEnabled = this.parseBooleanFlag(
+      process.env.LIBRARY_INTEGRATION_ENABLED
+    );
+    if (!globalEnabled) {
+      return null;
+    }
+
+    const baseUrl = (process.env.LIBRARIAN_API_URL ?? '').trim();
+    if (!baseUrl) {
+      return null;
+    }
+
+    const recentMessages = input.prompts
+      .slice(-6)
+      .map((message) => {
+        if (message.role !== 'user' && message.role !== 'assistant') {
+          return null;
+        }
+        const text = this.extractMessageContent(message);
+        if (!text) {
+          return null;
+        }
+        return {
+          role: message.role,
+          content: text,
+        };
+      })
+      .filter(
+        (msg): msg is { role: 'user' | 'assistant'; content: string } =>
+          msg !== null
+      );
+
+    if (recentMessages.length === 0) {
+      return null;
+    }
+
+    const lastUserMessage = [...recentMessages]
+      .reverse()
+      .find((msg) => msg.role === 'user');
+    if (!lastUserMessage) {
+      return null;
+    }
+
+    const endpoint = `${baseUrl.replace(/\/$/, '')}/chat`;
+
+    try {
+      const response = await axios.post(
+        endpoint,
+        {
+          messages: recentMessages,
+        },
+        {
+          timeout: 30000,
+        }
+      );
+
+      const answer = response.data?.answer;
+      console.log('Library context response:', answer);
+      if (typeof answer !== 'string' || answer.trim().length === 0) {
+        return null;
+      }
+
+      let context =
+        "Relevant book excerpts (refer back to the sources when used, you're \
+        allowed to be a bit more verbose when referring to the relevant literature. \
+        And use source links, book names, authors etc):\n" + answer.trim();
+      const sources = Array.isArray(response.data?.sources)
+        ? response.data.sources
+        : [];
+      if (sources.length > 0) {
+        const formattedSources = sources
+          .map((src: any) => {
+            const filename = src?.filename ?? 'unknown';
+            const chunkIndex = src?.chunk_index;
+            if (chunkIndex === undefined || chunkIndex === null) {
+              return `- ${filename}`;
+            }
+            return `- ${filename}#${chunkIndex}`;
+          })
+          .join('\n');
+        if (formattedSources.length > 0) {
+          context += '\n\nSources:\n' + formattedSources;
+        }
+      }
+
+      return context;
+    } catch (error: any) {
+      // Log detailed error information for debugging
+      if (axios.isAxiosError(error)) {
+        console.error('Library API error:', {
+          message: error.message,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          code: error.code,
+          endpoint,
+        });
+      } else {
+        console.error(
+          'Failed to fetch library context:',
+          error?.message ?? error
+        );
+      }
+      // Always return null to gracefully degrade - don't let external service errors break the chat
+      return null;
+    }
+  }
+
   /**
    * Get a chat completion for a conversation with the AI.
    * @param input Chat history
    * @param user User to bill for the conversation
+   * @param signal Optional AbortSignal to cancel the request
    * @returns string response from the AI
    */
   public async getResponse(
     input: ChatRequest,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): Promise<string> {
     if (input.prompts.length == 0) {
       return '';
     }
     const aiWrapper = this.getAIWrapper(input.model, user);
-    const systemPrompt = this.buildSystemPrompt(input);
+    const systemPrompt = await this.buildSystemPrompt(input);
 
     const output = CompletionToContent(
-      await aiWrapper.getResponse(systemPrompt, input.prompts)
+      await aiWrapper.getResponse(
+        systemPrompt,
+        input.prompts,
+        input.libraryIntegrationEnabled ? 2 : 1,
+        signal
+      )
     );
     return output;
   }
@@ -292,21 +467,55 @@ export class ConversationApi {
   /**
    * Native streaming response generator using provider streaming.
    * Yields incremental content deltas as they are produced by the model.
+   * @param input Chat history and configuration
+   * @param user User to bill for the conversation
+   * @param signal Optional AbortSignal to cancel the streaming request
    */
   public async *streamResponse(
     input: ChatRequest,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): AsyncGenerator<string, void, void> {
     if (input.prompts.length == 0) {
       return;
     }
     const aiWrapper = this.getAIWrapper(input.model, user);
-    const systemPrompt = this.buildSystemPrompt(input);
+    const systemPrompt = await this.buildSystemPrompt(input);
     for await (const delta of aiWrapper.streamResponse(
       systemPrompt,
-      input.prompts
+      input.prompts,
+      input.libraryIntegrationEnabled ? 2 : 1,
+      signal
     )) {
       if (delta) yield delta;
+    }
+  }
+
+  /**
+   * Streaming response with tool support.
+   * Yields StreamChunk objects that can be either text deltas or tool calls.
+   * @param input Chat history and configuration
+   * @param user User to bill for the conversation
+   * @param signal Optional AbortSignal to cancel the streaming request
+   */
+  public async *streamResponseWithTools(
+    input: ChatRequest,
+    user: User | null | undefined,
+    signal?: AbortSignal
+  ): AsyncGenerator<StreamChunk, void, void> {
+    if (input.prompts.length == 0) {
+      return;
+    }
+    const aiWrapper = this.getAIWrapper(input.model, user);
+    const systemPrompt = await this.buildSystemPrompt(input);
+    for await (const chunk of aiWrapper.streamResponseWithTools(
+      systemPrompt,
+      input.prompts,
+      input.tools,
+      input.libraryIntegrationEnabled ? 2 : 1,
+      signal
+    )) {
+      yield chunk;
     }
   }
 
@@ -330,6 +539,17 @@ export class ConversationApi {
       });
     }
 
+    // Include artifact index so AI knows what files are available to read
+    if (body.artifactIndex && body.artifactIndex.length > 0) {
+      const artifactList = body.artifactIndex
+        .map((a) => `- ${a.name} (${a.mimeType}) at path: ${a.path}`)
+        .join('\n');
+      personalData.push(
+        'Available artifacts (files you can read using the read_file tool):\n' +
+          artifactList
+      );
+    }
+
     var date = () =>
       new Date().toDateString() + ' ' + new Date().toTimeString();
     personalData.push('The date today = ' + body.staticData?.date || date());
@@ -341,13 +561,17 @@ export class ConversationApi {
     text: string,
     language: string = 'English',
     model: AIProvider = AIProvider.LLama3370b,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model, user);
     text = text.replace(/{{ name }}/g, this.assistant_name);
-    var result = await aiWrapper.getResponse(TranslationPrompt + language, [
-      { role: 'user', content: text },
-    ]);
+    var result = await aiWrapper.getResponse(
+      TranslationPrompt + language,
+      [{ role: 'user', content: text }],
+      1,
+      signal
+    );
     return CompletionToContent(result);
   }
 }

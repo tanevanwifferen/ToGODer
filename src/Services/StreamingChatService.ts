@@ -1,10 +1,19 @@
 import { ChatRequest } from '../Model/ChatRequest';
 import { User } from '@prisma/client';
 import { ChatService } from './ChatService';
-import { MemoryService } from './MemoryService';
+import { MemoryService, MAX_MEMORY_FETCH_LOOPS } from './MemoryService';
 import { BillingApi } from '../Api/BillingApi';
 import { ConversationApi } from '../Api/ConversationApi';
 import { AIProvider } from '../LLM/Model/AIProvider';
+
+/**
+ * Tool call event data for artifact operations
+ */
+export interface ToolCallData {
+  id: string;
+  name: string;
+  arguments: Record<string, any>;
+}
 
 /**
  * Events emitted during streaming. Consumers can map these to SSE frames or other transports.
@@ -12,6 +21,7 @@ import { AIProvider } from '../LLM/Model/AIProvider';
 export type StreamEvent =
   | { type: 'memory_request'; data: { keys: string[] } }
   | { type: 'chunk'; data: { delta: string } }
+  | { type: 'tool_call'; data: ToolCallData }
   | { type: 'signature'; data: { signature: string } }
   | { type: 'error'; data: { message: string } }
   | { type: 'done'; data?: null };
@@ -45,7 +55,8 @@ export class StreamingChatService {
    */
   async *streamChat(
     body: ChatRequest,
-    user: User | null
+    user: User | null,
+    signal?: AbortSignal
   ): AsyncGenerator<StreamEvent, void, void> {
     const totalMessages = Array.isArray(body.prompts) ? body.prompts.length : 0;
     const paywallMessage =
@@ -83,7 +94,13 @@ export class StreamingChatService {
     }
 
     // Memory request flow (requires user)
-    if (!!body.memoryIndex && body.memoryIndex.length > 0 && user != null) {
+    if (
+      !!body.memoryIndex &&
+      body.memoryIndex.length > 0 &&
+      user != null &&
+      !body.memoryLoopLimitReached &&
+      (body.memoryLoopCount ?? 0) < MAX_MEMORY_FETCH_LOOPS
+    ) {
       const requestForMemory = await this.memoryService.requestMemories(
         body,
         user
@@ -97,10 +114,49 @@ export class StreamingChatService {
 
     // Stream response from provider and forward chunks, accumulating for signature
     let full = '';
-    for await (const delta of this.conversationApi.streamResponse(body, user)) {
-      if (delta && delta.length > 0) {
-        full += delta;
-        yield { type: 'chunk', data: { delta } };
+
+    // Use tool-aware streaming if tools are provided
+    if (body.tools && body.tools.length > 0) {
+      for await (const chunk of this.conversationApi.streamResponseWithTools(
+        body,
+        user,
+        signal
+      )) {
+        if (chunk.type === 'text') {
+          if (chunk.content && chunk.content.length > 0) {
+            full += chunk.content;
+            yield { type: 'chunk', data: { delta: chunk.content } };
+          }
+        } else if (chunk.type === 'tool_call') {
+          // Parse the arguments JSON string into an object
+          let args: Record<string, any> = {};
+          try {
+            args = chunk.arguments ? JSON.parse(chunk.arguments) : {};
+          } catch (e) {
+            console.error('Failed to parse tool call arguments:', e);
+            args = { raw: chunk.arguments };
+          }
+          yield {
+            type: 'tool_call',
+            data: {
+              id: chunk.id,
+              name: chunk.name,
+              arguments: args,
+            },
+          };
+        }
+      }
+    } else {
+      // Use standard streaming without tools
+      for await (const delta of this.conversationApi.streamResponse(
+        body,
+        user,
+        signal
+      )) {
+        if (delta && delta.length > 0) {
+          full += delta;
+          yield { type: 'chunk', data: { delta } };
+        }
       }
     }
 

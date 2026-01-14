@@ -1,8 +1,9 @@
 import {
   ChatCompletionMessageParam,
   ChatCompletion,
+  ChatCompletionTool,
 } from 'openai/resources/index';
-import { AIWrapper } from '../LLM/AIWrapper';
+import { AIWrapper, StreamChunk } from '../LLM/AIWrapper';
 import { BillingApi } from '../Api/BillingApi';
 import { AIProvider, getTokenCost } from '../LLM/Model/AIProvider';
 import { User } from '@prisma/client';
@@ -46,7 +47,9 @@ export class BillingDecorator implements AIWrapper {
 
   async getResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): Promise<ChatCompletion> {
     this.assertEnoughBalance([
       ...userAndAgentPrompts,
@@ -56,7 +59,9 @@ export class BillingDecorator implements AIWrapper {
 
     const result = await this.aiWrapper.getResponse(
       systemPrompt,
-      userAndAgentPrompts
+      userAndAgentPrompts,
+      multiplier,
+      signal
     );
 
     const price = getTokenCost(this.aiWrapper.Model);
@@ -82,7 +87,9 @@ export class BillingDecorator implements AIWrapper {
    */
   async *streamResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): AsyncGenerator<string, void, void> {
     // Stream through deltas while accumulating completion text,
     // in case we need to estimate later (not currently used).
@@ -94,7 +101,9 @@ export class BillingDecorator implements AIWrapper {
     try {
       for await (const delta of this.aiWrapper.streamResponse(
         systemPrompt,
-        userAndAgentPrompts
+        userAndAgentPrompts,
+        multiplier,
+        signal
       )) {
         if (delta) completionText += delta;
         yield delta;
@@ -122,6 +131,52 @@ export class BillingDecorator implements AIWrapper {
     }
   }
 
+  /**
+   * Streaming with tools and usage-based post-billing.
+   */
+  async *streamResponseWithTools(
+    systemPrompt: string,
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    tools?: ChatCompletionTool[],
+    multiplier: number = 1,
+    signal?: AbortSignal
+  ): AsyncGenerator<StreamChunk, void, void> {
+    this.assertEnoughBalance([
+      ...userAndAgentPrompts,
+      { role: 'system', content: systemPrompt },
+    ]);
+    try {
+      for await (const chunk of this.aiWrapper.streamResponseWithTools(
+        systemPrompt,
+        userAndAgentPrompts,
+        tools,
+        multiplier,
+        signal
+      )) {
+        yield chunk;
+      }
+    } finally {
+      // Try to bill using provider-reported usage, if available
+      const usage = this.aiWrapper.getAndResetLastUsage?.();
+      if (usage) {
+        const billingApi = new BillingApi();
+        const price = getTokenCost(this.aiWrapper.Model);
+
+        const inputPrice = price.input_cost_per_million
+          .mul(usage.prompt_tokens)
+          .div('1000000');
+        const outputPrice = price.output_cost_per_million
+          .mul(usage.completion_tokens)
+          .div('1000000');
+
+        await billingApi.BillForMonth(
+          inputPrice.add(outputPrice),
+          this.user.email
+        );
+      }
+    }
+  }
+
   // Forward last-usage access to inner wrapper so upstream callers can query it if needed
   getAndResetLastUsage(): {
     prompt_tokens: number;
@@ -136,7 +191,9 @@ export class BillingDecorator implements AIWrapper {
   async getJSONResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    structure?: any
+    structure?: any,
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): Promise<ParsedChatCompletion<any>> {
     this.assertEnoughBalance([
       ...userAndAgentPrompts,
@@ -145,7 +202,9 @@ export class BillingDecorator implements AIWrapper {
     const result = await this.aiWrapper.getJSONResponse(
       systemPrompt,
       userAndAgentPrompts,
-      structure
+      structure,
+      multiplier,
+      signal
     );
 
     const billingApi = new BillingApi();

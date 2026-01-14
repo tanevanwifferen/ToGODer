@@ -5,9 +5,10 @@
   "main": "bin/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx tsc",
+    "build": "npx prisma generate && npx tsc",
     "start": "node --env-file=.env bin/index.js",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "postinstall": "prisma generate"
   },
   "repository": {
     "type": "git",
@@ -41,6 +42,7 @@
     "@ko-fi/types": "^1.0.4",
     "@prisma/client": "^6.16.3",
     "@types/bcrypt": "^5.0.2",
+    "@types/ws": "^8.18.1",
     "axios": "^1.7.8",
     "bcrypt": "^5.1.1",
     "express": "^4.19.2",
@@ -51,6 +53,7 @@
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7",
     "vue-icon": "^2.3.0",
+    "ws": "^8.18.3",
     "zod": "^3.24.1"
   },
   "lint-staged": {

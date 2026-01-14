@@ -16,6 +16,7 @@ import {
   fifteenMinuteCheckin,
   ConnectionFacilitatorPrompt,
   RecursionPrompt,
+  WakeUpPrompt,
 } from './chatprompts';
 import { ExperiencePrompt } from './experienceprompts';
 

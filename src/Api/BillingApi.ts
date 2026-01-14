@@ -1,4 +1,5 @@
 import { getDbContext } from '../Entity/Database';
+import { Payment, Usage } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/binary';
 import { randomUUID } from 'node:crypto';
 
@@ -24,7 +25,7 @@ export class BillingApi {
       },
     });
     const paid = payments.reduce(
-      (total, payment) => total.add(payment.amount),
+      (total: Decimal, payment: Payment) => total.add(payment.amount),
       new Decimal(0)
     );
 
@@ -32,7 +33,7 @@ export class BillingApi {
       where: { user_email: user_email },
     });
     const used = usages.reduce(
-      (total, usage) => total.add(usage.amount),
+      (total: Decimal, usage: Usage) => total.add(usage.amount),
       new Decimal(0)
     );
 
@@ -48,7 +49,7 @@ export class BillingApi {
       },
     });
     const paid = payments.reduce(
-      (total, payment) => total.add(payment.amount),
+      (total: Decimal, payment: Payment) => total.add(payment.amount),
       new Decimal(0)
     );
 
@@ -56,7 +57,7 @@ export class BillingApi {
       where: { user_email: donationTag },
     });
     const used = usages.reduce(
-      (total, usage) => total.add(usage.amount),
+      (total: Decimal, usage: Usage) => total.add(usage.amount),
       new Decimal(0)
     );
 
@@ -88,7 +89,9 @@ export class BillingApi {
     const year = date.getFullYear();
     const month = date.getMonth();
     var usage = await db.usage.findMany({ where: { user_email } });
-    var usageForMonth = usage.find((x) => x.month == month && x.year == year);
+    var usageForMonth = usage.find(
+      (x: Usage) => x.month == month && x.year == year
+    );
     if (usageForMonth == null) {
       usageForMonth = {
         id: randomUUID(),

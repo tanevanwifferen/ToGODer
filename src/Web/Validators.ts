@@ -5,13 +5,31 @@ import { AIProvider } from '../LLM/Model/AIProvider';
 export const isValidChatCompletionMessageParam = (
   obj: any
 ): obj is ChatCompletionMessageParam => {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    typeof obj.role === 'string' &&
-    typeof obj.content === 'string' &&
-    (obj.role === 'user' || obj.role === 'assistant' || obj.role === 'system')
-  );
+  if (typeof obj !== 'object' || obj === null || typeof obj.role !== 'string') {
+    return false;
+  }
+
+  // Tool result messages: role='tool' with tool_call_id and content
+  if (obj.role === 'tool') {
+    return (
+      typeof obj.tool_call_id === 'string' && typeof obj.content === 'string'
+    );
+  }
+
+  // Assistant messages: may have content string, or tool_calls array, or both
+  if (obj.role === 'assistant') {
+    const hasContent = typeof obj.content === 'string';
+    const hasToolCalls = Array.isArray(obj.tool_calls);
+    // Must have at least content or tool_calls
+    return hasContent || hasToolCalls;
+  }
+
+  // User and system messages: require string content
+  if (obj.role === 'user' || obj.role === 'system') {
+    return typeof obj.content === 'string';
+  }
+
+  return false;
 };
 
 export const validateChatCompletionMessageArray = (
@@ -36,7 +54,7 @@ export const validateChatCompletionMessageArray = (
       return res
         .status(400)
         .send(
-          "Invalid request body: Each item must have 'role' and 'content' as strings, with 'role' being 'user', 'assistant', or 'system'."
+          "Invalid request body: Each item must have 'role' as string. Valid roles: 'user', 'assistant', 'system' (with content), or 'tool' (with tool_call_id and content)."
         );
     }
 
@@ -81,7 +99,7 @@ export const validateTitleMessage = (
     return res
       .status(400)
       .send(
-        "Invalid request body: Expected an object with 'role' and 'content' as strings, with 'role' being 'user', 'assistant', or 'system'."
+        "Invalid request body: Each item must have 'role' as string. Valid roles: 'user', 'assistant', 'system' (with content), or 'tool' (with tool_call_id and content)."
       );
   }
 
@@ -102,7 +120,7 @@ export const validateSingleChatCompletionMessage = (
     return res
       .status(400)
       .send(
-        "Invalid request body: Expected exactly one item with 'role' and 'content' as strings, with 'role' being 'user', 'assistant', or 'system'."
+        "Invalid request body: Expected exactly one valid message. Valid roles: 'user', 'assistant', 'system' (with content), or 'tool' (with tool_call_id and content)."
       );
   }
   next();
