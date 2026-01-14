@@ -47,7 +47,9 @@ export class BillingDecorator implements AIWrapper {
 
   async getResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): Promise<ChatCompletion> {
     this.assertEnoughBalance([
       ...userAndAgentPrompts,
@@ -57,7 +59,9 @@ export class BillingDecorator implements AIWrapper {
 
     const result = await this.aiWrapper.getResponse(
       systemPrompt,
-      userAndAgentPrompts
+      userAndAgentPrompts,
+      multiplier,
+      signal
     );
 
     const price = getTokenCost(this.aiWrapper.Model);
@@ -83,7 +87,9 @@ export class BillingDecorator implements AIWrapper {
    */
   async *streamResponse(
     systemPrompt: string,
-    userAndAgentPrompts: ChatCompletionMessageParam[]
+    userAndAgentPrompts: ChatCompletionMessageParam[],
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): AsyncGenerator<string, void, void> {
     // Stream through deltas while accumulating completion text,
     // in case we need to estimate later (not currently used).
@@ -95,7 +101,9 @@ export class BillingDecorator implements AIWrapper {
     try {
       for await (const delta of this.aiWrapper.streamResponse(
         systemPrompt,
-        userAndAgentPrompts
+        userAndAgentPrompts,
+        multiplier,
+        signal
       )) {
         if (delta) completionText += delta;
         yield delta;
@@ -129,7 +137,9 @@ export class BillingDecorator implements AIWrapper {
   async *streamResponseWithTools(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    tools?: ChatCompletionTool[]
+    tools?: ChatCompletionTool[],
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): AsyncGenerator<StreamChunk, void, void> {
     this.assertEnoughBalance([
       ...userAndAgentPrompts,
@@ -139,7 +149,9 @@ export class BillingDecorator implements AIWrapper {
       for await (const chunk of this.aiWrapper.streamResponseWithTools(
         systemPrompt,
         userAndAgentPrompts,
-        tools
+        tools,
+        multiplier,
+        signal
       )) {
         yield chunk;
       }
@@ -179,7 +191,9 @@ export class BillingDecorator implements AIWrapper {
   async getJSONResponse(
     systemPrompt: string,
     userAndAgentPrompts: ChatCompletionMessageParam[],
-    structure?: any
+    structure?: any,
+    multiplier: number = 1,
+    signal?: AbortSignal
   ): Promise<ParsedChatCompletion<any>> {
     this.assertEnoughBalance([
       ...userAndAgentPrompts,
@@ -188,7 +202,9 @@ export class BillingDecorator implements AIWrapper {
     const result = await this.aiWrapper.getJSONResponse(
       systemPrompt,
       userAndAgentPrompts,
-      structure
+      structure,
+      multiplier,
+      signal
     );
 
     const billingApi = new BillingApi();

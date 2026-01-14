@@ -75,7 +75,8 @@ export class ConversationApi {
     shortTermMemory: any,
     date: string,
     model: AIProvider,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(AIProvider.LLama3370b, user);
     var inputMessages = prompts.length > 2 ? prompts.slice(-2) : prompts;
@@ -95,7 +96,9 @@ export class ConversationApi {
     ];
     const response = await aiWrapper.getResponse(
       UpdatePersonalDataPrompt,
-      messages
+      messages,
+      1,
+      signal
     );
     const content = CompletionToContent(response);
     return content;
@@ -107,18 +110,22 @@ export class ConversationApi {
   public async getTitle(
     body: ChatCompletionMessageParam[],
     model: AIProvider,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model, user);
 
     var prompt = GetTitlePrompt + body[0].content;
 
-    return CompletionToContent(await aiWrapper.getResponse(prompt, body));
+    return CompletionToContent(
+      await aiWrapper.getResponse(prompt, body, 1, signal)
+    );
   }
 
   public async requestMemories(
     body: ChatRequest,
-    user: User
+    user: User,
+    signal?: AbortSignal
   ): Promise<{ keys: string[] }> {
     if (!body.memoryIndex || body.memoryIndex.length == 0) {
       return { keys: [] };
@@ -133,7 +140,9 @@ export class ConversationApi {
     const json_response = await wrapper.getJSONResponse(
       memoryPrompt,
       body.prompts,
-      keysSchema
+      keysSchema,
+      1,
+      signal
     );
     const content = JsonToContent(json_response);
     if ((await json_response).usage?.total_tokens == 0) {
@@ -155,7 +164,8 @@ export class ConversationApi {
     systemPrompt: string,
     memoryIndex: string[],
     existingMemories: { [key: string]: string },
-    user: User
+    user: User,
+    signal?: AbortSignal
   ): Promise<{ keys: string[] }> {
     if (!memoryIndex || memoryIndex.length == 0) {
       return { keys: [] };
@@ -181,7 +191,9 @@ export class ConversationApi {
             'Please analyze the system prompt and return relevant memory keys.',
         },
       ],
-      keysSchema
+      keysSchema,
+      1,
+      signal
     );
     const content = JsonToContent(json_response);
     if ((await json_response).usage?.total_tokens == 0) {
@@ -199,10 +211,11 @@ export class ConversationApi {
     input: ChatCompletionMessageParam[],
     systemPrompt: string,
     model: AIProvider = getDefaultModel(),
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): Promise<ChatCompletion> {
     var aiWrapper = this.getAIWrapper(model, user);
-    return await aiWrapper.getResponse(systemPrompt, input);
+    return await aiWrapper.getResponse(systemPrompt, input, 1, signal);
   }
 
   // Build the full system prompt string based on input request options
@@ -426,11 +439,13 @@ export class ConversationApi {
    * Get a chat completion for a conversation with the AI.
    * @param input Chat history
    * @param user User to bill for the conversation
+   * @param signal Optional AbortSignal to cancel the request
    * @returns string response from the AI
    */
   public async getResponse(
     input: ChatRequest,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): Promise<string> {
     if (input.prompts.length == 0) {
       return '';
@@ -442,7 +457,8 @@ export class ConversationApi {
       await aiWrapper.getResponse(
         systemPrompt,
         input.prompts,
-        input.libraryIntegrationEnabled ? 2 : 1
+        input.libraryIntegrationEnabled ? 2 : 1,
+        signal
       )
     );
     return output;
@@ -451,6 +467,9 @@ export class ConversationApi {
   /**
    * Native streaming response generator using provider streaming.
    * Yields incremental content deltas as they are produced by the model.
+   * @param input Chat history and configuration
+   * @param user User to bill for the conversation
+   * @param signal Optional AbortSignal to cancel the streaming request
    */
   public async *streamResponse(
     input: ChatRequest,
@@ -475,6 +494,9 @@ export class ConversationApi {
   /**
    * Streaming response with tool support.
    * Yields StreamChunk objects that can be either text deltas or tool calls.
+   * @param input Chat history and configuration
+   * @param user User to bill for the conversation
+   * @param signal Optional AbortSignal to cancel the streaming request
    */
   public async *streamResponseWithTools(
     input: ChatRequest,
@@ -528,13 +550,17 @@ export class ConversationApi {
     text: string,
     language: string = 'English',
     model: AIProvider = AIProvider.LLama3370b,
-    user: User | null | undefined
+    user: User | null | undefined,
+    signal?: AbortSignal
   ): Promise<string> {
     var aiWrapper = this.getAIWrapper(model, user);
     text = text.replace(/{{ name }}/g, this.assistant_name);
-    var result = await aiWrapper.getResponse(TranslationPrompt + language, [
-      { role: 'user', content: text },
-    ]);
+    var result = await aiWrapper.getResponse(
+      TranslationPrompt + language,
+      [{ role: 'user', content: text }],
+      1,
+      signal
+    );
     return CompletionToContent(result);
   }
 }
