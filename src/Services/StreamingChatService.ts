@@ -5,6 +5,8 @@ import { MemoryService, MAX_MEMORY_FETCH_LOOPS } from './MemoryService';
 import { BillingApi } from '../Api/BillingApi';
 import { ConversationApi } from '../Api/ConversationApi';
 import { AIProvider } from '../LLM/Model/AIProvider';
+import { isServerTool, getServerTool } from './ServerToolRegistry';
+import { ChatCompletionMessageParam } from 'openai/resources/index';
 
 /**
  * Tool call event data for artifact operations
@@ -117,34 +119,113 @@ export class StreamingChatService {
 
     // Use tool-aware streaming if tools are provided
     if (body.tools && body.tools.length > 0) {
-      for await (const chunk of this.conversationApi.streamResponseWithTools(
-        body,
-        user,
-        signal
-      )) {
-        if (chunk.type === 'text') {
-          if (chunk.content && chunk.content.length > 0) {
-            full += chunk.content;
-            yield { type: 'chunk', data: { delta: chunk.content } };
+      const MAX_TOOL_LOOPS = 10;
+
+      for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
+        const pendingToolCalls: Array<{
+          id: string;
+          name: string;
+          arguments: string;
+        }> = [];
+        let assistantText = '';
+
+        for await (const chunk of this.conversationApi.streamResponseWithTools(
+          body,
+          user,
+          signal
+        )) {
+          if (chunk.type === 'text') {
+            if (chunk.content && chunk.content.length > 0) {
+              full += chunk.content;
+              assistantText += chunk.content;
+              yield { type: 'chunk', data: { delta: chunk.content } };
+            }
+          } else if (chunk.type === 'tool_call') {
+            pendingToolCalls.push({
+              id: chunk.id,
+              name: chunk.name,
+              arguments: chunk.arguments,
+            });
           }
-        } else if (chunk.type === 'tool_call') {
-          // Parse the arguments JSON string into an object
+        }
+
+        // No tool calls — LLM finished with a text response
+        if (pendingToolCalls.length === 0) {
+          break;
+        }
+
+        const serverCalls = pendingToolCalls.filter((tc) =>
+          isServerTool(tc.name)
+        );
+        const clientCalls = pendingToolCalls.filter(
+          (tc) => !isServerTool(tc.name)
+        );
+
+        // Emit client-side tool calls to SSE stream
+        for (const tc of clientCalls) {
           let args: Record<string, any> = {};
           try {
-            args = chunk.arguments ? JSON.parse(chunk.arguments) : {};
+            args = tc.arguments ? JSON.parse(tc.arguments) : {};
           } catch (e) {
             console.error('Failed to parse tool call arguments:', e);
-            args = { raw: chunk.arguments };
+            args = { raw: tc.arguments };
           }
           yield {
             type: 'tool_call',
-            data: {
-              id: chunk.id,
-              name: chunk.name,
-              arguments: args,
-            },
+            data: { id: tc.id, name: tc.name, arguments: args },
           };
         }
+
+        // No server-side tool calls — all were client-side, stop looping
+        if (serverCalls.length === 0) {
+          break;
+        }
+
+        // Build assistant message with ALL tool_calls for conversation history
+        const assistantMessage: ChatCompletionMessageParam = {
+          role: 'assistant',
+          content: assistantText || null,
+          tool_calls: pendingToolCalls.map((tc) => ({
+            id: tc.id,
+            type: 'function' as const,
+            function: { name: tc.name, arguments: tc.arguments },
+          })),
+        };
+        body.prompts.push(assistantMessage);
+
+        // Execute server-side tools and append results
+        for (const tc of serverCalls) {
+          let args: Record<string, any> = {};
+          try {
+            args = tc.arguments ? JSON.parse(tc.arguments) : {};
+          } catch (e) {
+            args = {};
+          }
+
+          const handler = getServerTool(tc.name)!;
+          let result: string;
+          try {
+            result = await handler.execute(args);
+          } catch (error: any) {
+            result = JSON.stringify({
+              error: error?.message ?? 'Tool execution failed',
+            });
+          }
+
+          body.prompts.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            content: result,
+          } as ChatCompletionMessageParam);
+        }
+
+        // If there were also client-side tool calls, stop looping —
+        // the client needs to provide those results in a follow-up request
+        if (clientCalls.length > 0) {
+          break;
+        }
+
+        // All tool calls were server-side — continue loop for next LLM response
       }
     } else {
       // Use standard streaming without tools
