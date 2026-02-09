@@ -19,6 +19,7 @@ export enum AIProvider {
   Claude37SonnetBeta = 'anthropic/claude-3.7-sonnet:beta',
   Claude4Sonnet = 'anthropic/claude-sonnet-4',
   Claude45Sonnet = 'anthropic/claude-sonnet-4.5',
+  Claude46Opus = 'anthropic/claude-opus-4.6',
   DeepSeekV3 = 'deepseek/deepseek-chat-v3.1',
   DeepSeekV32 = 'deepseek/deepseek-v3.2',
   LLama3 = 'perplexity/llama-3-sonar-large-32k-chat',
@@ -46,6 +47,7 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.Claude37SonnetBeta:
     case AIProvider.Claude4Sonnet:
     case AIProvider.Claude45Sonnet:
+    case AIProvider.Claude46Opus:
     case AIProvider.DeepSeekV3:
     case AIProvider.DeepSeekV32:
     case AIProvider.LLama3:
@@ -74,6 +76,12 @@ export function getTokenCost(model: AIProvider): AICost {
       torReturn = {
         input_cost_per_million: new Decimal('3'),
         output_cost_per_million: new Decimal('15'),
+      };
+      break;
+    case AIProvider.Claude46Opus:
+      torReturn = {
+        input_cost_per_million: new Decimal('5'),
+        output_cost_per_million: new Decimal('25'),
       };
       break;
     case AIProvider.DeepSeekV3:
@@ -211,6 +219,8 @@ export function GetModelName(provider: AIProvider): string {
       return 'Claude 4 Sonnet';
     case AIProvider.Claude45Sonnet:
       return 'Claude 4.5 Sonnet';
+    case AIProvider.Claude46Opus:
+      return 'Claude 4.6 Opus';
     case AIProvider.DeepSeekV3:
       return 'DeepSeek V3';
     case AIProvider.DeepSeekV32:
@@ -259,6 +269,7 @@ export function ListModels(): AIProvider[] {
     AIProvider.Claude37SonnetBeta,
     AIProvider.Claude4Sonnet,
     AIProvider.Claude45Sonnet,
+    AIProvider.Claude46Opus,
     AIProvider.LLama3,
     AIProvider.LLama3290b,
     AIProvider.LLama3370b,
@@ -281,6 +292,7 @@ export function ListModels(): AIProvider[] {
         case AIProvider.Claude37SonnetBeta:
         case AIProvider.Claude4Sonnet:
         case AIProvider.Claude45Sonnet:
+        case AIProvider.Claude46Opus:
         case AIProvider.DeepSeekV3:
         case AIProvider.DeepSeekV32:
         case AIProvider.LLama3:
