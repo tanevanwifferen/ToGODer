@@ -127,7 +127,7 @@ export class StreamingChatService {
     const registry = ToolRegistry.getInstance();
     const hasTools =
       (body.tools && body.tools.length > 0) ||
-      registry.getDefinitions().length > 0;
+      registry.getDefinitionsForRequest(body).length > 0;
 
     if (hasTools) {
       yield* this.streamWithToolLoop(body, user, signal);
@@ -182,7 +182,7 @@ export class StreamingChatService {
     const registry = ToolRegistry.getInstance();
 
     // Merge backend tool definitions with frontend-provided tools
-    const mergedTools = this.mergeTools(body.tools ?? [], registry);
+    const mergedTools = this.mergeTools(body.tools ?? [], registry, body);
 
     // Work with a mutable copy of prompts that we extend with tool results
     const prompts: ChatCompletionMessageParam[] = [...body.prompts];
@@ -251,7 +251,10 @@ export class StreamingChatService {
 
         let result: string;
         try {
-          result = await tool.handler({ arguments: tc.arguments });
+          result = await tool.handler({
+            arguments: tc.arguments,
+            request: body,
+          });
         } catch (err: any) {
           result = `Error executing tool ${tc.name}: ${err?.message ?? String(err)}`;
           console.error(`Backend tool execution error (${tc.name}):`, err);
@@ -327,9 +330,10 @@ export class StreamingChatService {
    */
   private mergeTools(
     frontendTools: ChatCompletionTool[],
-    registry: ToolRegistry
+    registry: ToolRegistry,
+    request: ChatRequest
   ): ChatCompletionTool[] {
-    const backendDefs = registry.getDefinitions();
+    const backendDefs = registry.getDefinitionsForRequest(request);
     const backendNames = new Set(
       backendDefs.map((d) => (d.type === 'function' ? d.function.name : ''))
     );

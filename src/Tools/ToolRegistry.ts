@@ -2,6 +2,7 @@ import {
   ChatCompletionFunctionTool,
   ChatCompletionTool,
 } from 'openai/resources/chat/completions/completions';
+import { ChatRequest } from '../Model/ChatRequest';
 
 /**
  * Context passed to a backend tool handler when executed.
@@ -9,6 +10,8 @@ import {
 export interface ToolContext {
   /** The parsed arguments from the LLM tool call */
   arguments: Record<string, any>;
+  /** The original chat request (for checking per-request flags) */
+  request: ChatRequest;
 }
 
 /**
@@ -19,6 +22,8 @@ export interface RegisteredTool {
   definition: ChatCompletionFunctionTool;
   /** Async handler that executes the tool and returns a string result */
   handler: (ctx: ToolContext) => Promise<string>;
+  /** Optional predicate: if provided, tool is only included when this returns true */
+  isEnabled?: (request: ChatRequest) => boolean;
 }
 
 /**
@@ -53,9 +58,10 @@ export class ToolRegistry {
   register(
     name: string,
     definition: ChatCompletionFunctionTool,
-    handler: (ctx: ToolContext) => Promise<string>
+    handler: (ctx: ToolContext) => Promise<string>,
+    isEnabled?: (request: ChatRequest) => boolean
   ): void {
-    this.tools.set(name, { definition, handler });
+    this.tools.set(name, { definition, handler, isEnabled });
   }
 
   /** Check if a tool is registered as a backend tool */
@@ -71,6 +77,13 @@ export class ToolRegistry {
   /** Get all registered tool definitions (for merging into LLM requests) */
   getDefinitions(): ChatCompletionTool[] {
     return Array.from(this.tools.values()).map((t) => t.definition);
+  }
+
+  /** Get tool definitions filtered by per-request isEnabled predicate */
+  getDefinitionsForRequest(request: ChatRequest): ChatCompletionTool[] {
+    return Array.from(this.tools.values())
+      .filter((t) => !t.isEnabled || t.isEnabled(request))
+      .map((t) => t.definition);
   }
 
   /** Remove a registered tool */
