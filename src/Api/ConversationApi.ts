@@ -35,7 +35,6 @@ import { BillingDecorator } from '../Decorators/BillingDecorator';
 import { keysSchema } from '../zod/requestformemory';
 import { rootpersona } from '../LLM/prompts/rootprompts';
 import { ParsedChatCompletion } from 'openai/resources/chat/completions/index';
-import axios from 'axios';
 
 let quote = '';
 
@@ -277,162 +276,10 @@ export class ConversationApi {
       () => this.assistant_name!
     );
 
-    const libraryContext = await this.getLibraryContext(input);
-    if (libraryContext) {
-      systemPrompt += '\n\n' + libraryContext;
-    }
-
     systemPrompt += '\n\n' + this.formatPersonalData(input);
     systemPrompt = rootpersona + '\n\n' + systemPrompt;
 
     return systemPrompt;
-  }
-
-  private extractMessageContent(
-    message: ChatCompletionMessageParam
-  ): string | null {
-    const content: any = message.content;
-    if (typeof content === 'string') {
-      return content.trim().length > 0 ? content : null;
-    }
-
-    if (Array.isArray(content)) {
-      const combined = content
-        .map((part: any) => {
-          if (typeof part === 'string') {
-            return part;
-          }
-          if (part && typeof part.text === 'string') {
-            return part.text;
-          }
-          return '';
-        })
-        .join('')
-        .trim();
-      return combined.length > 0 ? combined : null;
-    }
-
-    return null;
-  }
-
-  private parseBooleanFlag(value: string | undefined): boolean {
-    if (!value) {
-      return false;
-    }
-    const normalized = value.trim().toLowerCase();
-    return ['true', '1', 'yes', 'y', 'on'].includes(normalized);
-  }
-
-  private async getLibraryContext(input: ChatRequest): Promise<string | null> {
-    if (!input.libraryIntegrationEnabled) {
-      return null;
-    }
-
-    const globalEnabled = this.parseBooleanFlag(
-      process.env.LIBRARY_INTEGRATION_ENABLED
-    );
-    if (!globalEnabled) {
-      return null;
-    }
-
-    const baseUrl = (process.env.LIBRARIAN_API_URL ?? '').trim();
-    if (!baseUrl) {
-      return null;
-    }
-
-    const recentMessages = input.prompts
-      .slice(-6)
-      .map((message) => {
-        if (message.role !== 'user' && message.role !== 'assistant') {
-          return null;
-        }
-        const text = this.extractMessageContent(message);
-        if (!text) {
-          return null;
-        }
-        return {
-          role: message.role,
-          content: text,
-        };
-      })
-      .filter(
-        (msg): msg is { role: 'user' | 'assistant'; content: string } =>
-          msg !== null
-      );
-
-    if (recentMessages.length === 0) {
-      return null;
-    }
-
-    const lastUserMessage = [...recentMessages]
-      .reverse()
-      .find((msg) => msg.role === 'user');
-    if (!lastUserMessage) {
-      return null;
-    }
-
-    const endpoint = `${baseUrl.replace(/\/$/, '')}/chat`;
-
-    try {
-      const response = await axios.post(
-        endpoint,
-        {
-          messages: recentMessages,
-        },
-        {
-          timeout: 30000,
-        }
-      );
-
-      const answer = response.data?.answer;
-      console.log('Library context response:', answer);
-      if (typeof answer !== 'string' || answer.trim().length === 0) {
-        return null;
-      }
-
-      let context =
-        "Relevant book excerpts (refer back to the sources when used, you're \
-        allowed to be a bit more verbose when referring to the relevant literature. \
-        And use source links, book names, authors etc):\n" + answer.trim();
-      const sources = Array.isArray(response.data?.sources)
-        ? response.data.sources
-        : [];
-      if (sources.length > 0) {
-        const formattedSources = sources
-          .map((src: any) => {
-            const filename = src?.filename ?? 'unknown';
-            const chunkIndex = src?.chunk_index;
-            if (chunkIndex === undefined || chunkIndex === null) {
-              return `- ${filename}`;
-            }
-            return `- ${filename}#${chunkIndex}`;
-          })
-          .join('\n');
-        if (formattedSources.length > 0) {
-          context += '\n\nSources:\n' + formattedSources;
-        }
-      }
-
-      return context;
-    } catch (error: any) {
-      // Log detailed error information for debugging
-      if (axios.isAxiosError(error)) {
-        console.error('Library API error:', {
-          message: error.message,
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          code: error.code,
-          endpoint,
-        });
-      } else {
-        console.error(
-          'Failed to fetch library context:',
-          error?.message ?? error
-        );
-      }
-      // Always return null to gracefully degrade - don't let external service errors break the chat
-      return null;
-    }
   }
 
   /**
