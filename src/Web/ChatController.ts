@@ -149,6 +149,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
         abortController.abort();
       };
       res.on('close', onClientDisconnect);
+      res.setHeader('X-Accel-Buffering', 'no');
 
       try {
         // Normalize body to ChatRequest like the non-streaming endpoint
