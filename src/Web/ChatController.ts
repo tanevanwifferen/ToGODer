@@ -141,6 +141,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     validateChatCompletionMessageArray,
     setAuthUser,
     async (req: Request, res: Response, next: NextFunction) => {
+      res.setHeader('X-Accel-Buffering', 'no');
       const sse = new SseStream(res);
 
       // Create AbortController to cancel streaming when client disconnects
@@ -149,7 +150,6 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
         abortController.abort();
       };
       res.on('close', onClientDisconnect);
-      res.setHeader('X-Accel-Buffering', 'no');
 
       try {
         // Normalize body to ChatRequest like the non-streaming endpoint
