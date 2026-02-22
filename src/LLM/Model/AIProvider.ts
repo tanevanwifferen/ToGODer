@@ -31,7 +31,7 @@ export enum AIProvider {
   Grok3Mini = 'x-ai/grok-3-mini',
   Grok4 = 'x-ai/grok-4',
   Gemini3Pro = 'google/gemini-3-pro-preview',
-  Qwen3Coder = 'qwen/qwen3-coder',
+  Qwen3Coder = 'moonshotai/kimi-k2.5',
 }
 
 export function getAIWrapper(model: AIProvider): AIWrapper {
@@ -182,8 +182,8 @@ export function getTokenCost(model: AIProvider): AICost {
       break;
     case AIProvider.Qwen3Coder:
       torReturn = {
-        input_cost_per_million: new Decimal('2'),
-        output_cost_per_million: new Decimal('2'),
+        input_cost_per_million: new Decimal('0.45'),
+        output_cost_per_million: new Decimal('2.2'),
       };
       break;
     default:
