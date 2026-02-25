@@ -32,6 +32,7 @@ export enum AIProvider {
   Grok4 = 'x-ai/grok-4',
   Gemini31Pro = 'google/gemini-3.1-pro-preview',
   Qwen3Coder = 'moonshotai/kimi-k2.5',
+  Ministral = 'mistralai/ministral-8b-2512'
 }
 
 export function getAIWrapper(model: AIProvider): AIWrapper {
@@ -60,6 +61,7 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.Grok4:
     case AIProvider.Gemini31Pro:
     case AIProvider.Qwen3Coder:
+    case AIProvider.Ministral:
       return new OpenRouterWrapper(model);
     default:
       return new OpenRouterWrapper(AIProvider.LLama3370b);
@@ -186,6 +188,12 @@ export function getTokenCost(model: AIProvider): AICost {
         output_cost_per_million: new Decimal('2.2'),
       };
       break;
+    case AIProvider.Ministral:
+      torReturn = {
+        input_cost_per_million: new Decimal('0.15'),
+        output_cost_per_million: new Decimal('0.15'),
+      };
+      break;
     default:
       throw new Error('unknown price for model: ' + model);
   }
@@ -243,6 +251,8 @@ export function GetModelName(provider: AIProvider): string {
       return 'Gemini 3.1 Pro preview';
     case AIProvider.Qwen3Coder:
       return 'Qwen 3 Coder';
+    case AIProvider.Ministral:
+      return 'Ministral 8K';
     default:
       throw new Error('Unknown AIProvider');
   }
@@ -255,6 +265,7 @@ export function ListModels(): AIProvider[] {
     return modelCache;
   }
   modelCache = [
+    AIProvider.Ministral,
     AIProvider.DeepSeekV3,
     AIProvider.DeepSeekV32,
     AIProvider.gpt5,
@@ -303,6 +314,7 @@ export function ListModels(): AIProvider[] {
         case AIProvider.Llama4Maverick:
         case AIProvider.Gemini31Pro:
         case AIProvider.Grok4:
+        case AIProvider.Ministral:
           a = new OpenRouterWrapper(x);
           break;
         default:
