@@ -70,7 +70,16 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       });
     };
 
-    if (totalMessages >= 10) {
+    // Logged-out users get the default model and no premium features
+    if (!user) {
+      body.model = getDefaultModel();
+      body.artifactIndex = undefined;
+      body.tools = undefined;
+    }
+
+    const isDefaultModel = body.model === getDefaultModel();
+
+    if (totalMessages >= 10 && !isDefaultModel) {
       if (!user) {
         respondWithPaywall();
         return;
@@ -79,7 +88,9 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       const billingApi = new BillingApi();
       const userBalance = await billingApi.GetBalance(user.email);
       if (userBalance.lessThanOrEqualTo(0)) {
-        body.model = AIProvider.DeepSeekV3;
+        body.model = getDefaultModel();
+        body.artifactIndex = undefined;
+        body.tools = undefined;
       }
       const balance = await billingApi.GetTotalBalance(user.email);
       if (balance.lessThanOrEqualTo(0)) {
@@ -141,6 +152,7 @@ export function GetChatRouter(messageLimiter: RateLimitRequestHandler): Router {
     validateChatCompletionMessageArray,
     setAuthUser,
     async (req: Request, res: Response, next: NextFunction) => {
+      res.setHeader('X-Accel-Buffering', 'no');
       const sse = new SseStream(res);
 
       // Create AbortController to cancel streaming when client disconnects

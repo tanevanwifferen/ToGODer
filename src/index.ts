@@ -17,6 +17,7 @@ import {
 } from './Web/RealtimeVoiceController';
 import { createServer } from 'http';
 import WebSocket from 'ws';
+import { registerLibraryTool } from './Tools/LibraryTool';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -40,7 +41,7 @@ const messageLimiter = rateLimit({
   headers: true,
 });
 
-app.use(express.json({limit: "50mb"}));
+app.use(express.json({ limit: '50mb' }));
 
 app.use(
   express.urlencoded({
@@ -128,3 +129,4 @@ server.listen(port, () => {
 });
 
 setupRunners();
+registerLibraryTool();

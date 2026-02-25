@@ -2,8 +2,10 @@ import { Request, Response, Router } from 'express';
 import { getDbContext } from '../Entity/Database';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { z } from 'zod';
 import { Mailer } from '../Email/mailer';
-import { onlyOwner } from './Middleware/auth';
+import { onlyOwner, authenticated, setAuthUser } from './Middleware/auth';
+import { ToGODerRequest } from './Model/ToGODerRequest';
 
 const updateTokenHandler = async (req: Request, res: Response) => {
   try {
@@ -172,6 +174,50 @@ const signUpHandler = async (req: Request, res: Response) => {
   }
 };
 
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(8),
+  newPassword: z.string().min(8),
+  confirmPassword: z.string().min(8),
+}).refine(data => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+const changePasswordHandler = async (req: Request, res: Response) => {
+  try {
+    const togoderReq = req as ToGODerRequest;
+    const user = togoderReq.togoder_auth?.user;
+
+    if (!user) {
+      return res.status(401).send('Unauthorized');
+    }
+
+    const parseResult = changePasswordSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({ error: parseResult.error.errors[0].message });
+    }
+
+    const { currentPassword, newPassword } = parseResult.data;
+
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      return res.status(400).send('Current password is incorrect');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const db = getDbContext();
+    await db.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+
+    res.status(200).send('Password changed successfully');
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Something went wrong');
+  }
+};
+
 export function GetAuthRouter() {
   const authRouter = Router();
 
@@ -186,6 +232,8 @@ export function GetAuthRouter() {
   authRouter.post('/api/auth/signIn', signInHandler);
 
   authRouter.post('/api/auth/signUp', signUpHandler);
+
+  authRouter.post('/api/auth/changePassword', authenticated, setAuthUser, changePasswordHandler);
 
   return authRouter;
 }

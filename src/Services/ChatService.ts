@@ -3,7 +3,7 @@ import { ChatRequest, ExperienceRequest } from '../Model/ChatRequest';
 import { User } from '@prisma/client';
 import crypto from 'crypto';
 import { ExperienceSeedPrompt } from '../LLM/prompts/experienceprompts';
-import { AIProvider } from '../LLM/Model/AIProvider';
+import { AIProvider, getDefaultModel } from '../LLM/Model/AIProvider';
 import { ChatCompletionMessageParam } from 'openai/resources/index';
 import exp from 'constants';
 
@@ -20,8 +20,8 @@ export class ChatService {
   }
 
   async getChatResponse(body: ChatRequest, user: User | null): Promise<string> {
-    // Only allow longer conversations for authenticated users
-    if (body.prompts.length > 10 && user === null) {
+    // Only allow longer conversations for authenticated users (unless on default model)
+    if (body.prompts.length > 10 && user === null && body.model !== getDefaultModel()) {
       return 'Please create an account or login to have longer conversations';
     }
 
