@@ -70,7 +70,9 @@ const chatHandler = async (req: Request, res: Response, next: NextFunction) => {
       });
     };
 
-    if (totalMessages >= 10) {
+    const isDefaultModel = body.model === getDefaultModel();
+
+    if (totalMessages >= 10 && !isDefaultModel) {
       if (!user) {
         respondWithPaywall();
         return;

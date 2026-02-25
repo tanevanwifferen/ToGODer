@@ -4,7 +4,7 @@ import { ChatService } from './ChatService';
 import { MemoryService, MAX_MEMORY_FETCH_LOOPS } from './MemoryService';
 import { BillingApi } from '../Api/BillingApi';
 import { ConversationApi } from '../Api/ConversationApi';
-import { AIProvider } from '../LLM/Model/AIProvider';
+import { AIProvider, getDefaultModel } from '../LLM/Model/AIProvider';
 import { StreamChunk } from '../LLM/AIWrapper';
 import { ToolRegistry } from '../Tools/ToolRegistry';
 import {
@@ -73,8 +73,11 @@ export class StreamingChatService {
     const paywallMessage =
       'Insufficient balance. Please donate through KoFi with this email address to continue using the service.';
 
-    // Balance check mirrors existing behavior but also covers unauthenticated users
-    if (totalMessages >= 10) {
+    // Balance check mirrors existing behavior but also covers unauthenticated users.
+    // Skip paywall when using the default model — it's free for everyone.
+    const isDefaultModel = body.model === getDefaultModel();
+
+    if (totalMessages >= 10 && !isDefaultModel) {
       if (!user) {
         yield { type: 'chunk', data: { delta: paywallMessage } };
         const signature = this.chatService.generateSignature([
