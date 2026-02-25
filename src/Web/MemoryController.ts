@@ -5,6 +5,7 @@ import { ToGODerRequest } from './Model/ToGODerRequest';
 import { MemoryService } from '../Services/MemoryService';
 import { AIProvider } from '../LLM/Model/AIProvider';
 import { ConversationApi } from '../Api/ConversationApi';
+import { BillingApi } from '../Api/BillingApi';
 import {
   FetchMemoryKeysPromptForCompression,
   MemoryCompressionPrompt,
@@ -23,6 +24,13 @@ const fetchMemoryKeysHandler = async (
     const user = (req as ToGODerRequest).togoder_auth?.user;
     if (!user) {
       res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const billingApi = new BillingApi();
+    const balance = await billingApi.GetTotalBalance(user.email);
+    if (balance.lessThanOrEqualTo(0)) {
+      res.status(402).json({ error: 'Insufficient balance' });
       return;
     }
 
@@ -75,6 +83,13 @@ const compressMemoryHandler = async (
     const user = (req as ToGODerRequest).togoder_auth?.user;
     if (!user) {
       res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const billingApi = new BillingApi();
+    const balance = await billingApi.GetTotalBalance(user.email);
+    if (balance.lessThanOrEqualTo(0)) {
+      res.status(402).json({ error: 'Insufficient balance' });
       return;
     }
 

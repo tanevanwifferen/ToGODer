@@ -73,7 +73,13 @@ export class StreamingChatService {
     const paywallMessage =
       'Insufficient balance. Please donate through KoFi with this email address to continue using the service.';
 
-    // Balance check mirrors existing behavior but also covers unauthenticated users.
+    // Logged-out users get the default model and no premium features
+    if (!user) {
+      body.model = getDefaultModel();
+      body.artifactIndex = undefined;
+      body.tools = undefined;
+    }
+
     // Skip paywall when using the default model — it's free for everyone.
     const isDefaultModel = body.model === getDefaultModel();
 
@@ -91,7 +97,9 @@ export class StreamingChatService {
 
       const userBalance = await this.billingApi.GetBalance(user.email);
       if (userBalance.lessThanOrEqualTo(0)) {
-        body.model = AIProvider.DeepSeekV3;
+        body.model = getDefaultModel();
+        body.artifactIndex = undefined;
+        body.tools = undefined;
       }
 
       const balance = await this.billingApi.GetTotalBalance(user.email);
