@@ -10,4 +10,5 @@ prisma/dev.*
 # Gas Town (added by gt)
 .runtime/
 .claude/
+.claude/commands/
 .logs/

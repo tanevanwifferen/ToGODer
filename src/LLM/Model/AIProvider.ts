@@ -30,7 +30,7 @@ export enum AIProvider {
   Llama4Maverick = 'meta-llama/llama-4-maverick',
   Grok3Mini = 'x-ai/grok-3-mini',
   Grok4 = 'x-ai/grok-4',
-  Gemini3Pro = 'google/gemini-3-pro-preview',
+  Gemini31Pro = 'google/gemini-3.1-pro-preview',
   Qwen3Coder = 'moonshotai/kimi-k2.5',
 }
 
@@ -58,7 +58,7 @@ export function getAIWrapper(model: AIProvider): AIWrapper {
     case AIProvider.Llama4Maverick:
     case AIProvider.Grok3Mini:
     case AIProvider.Grok4:
-    case AIProvider.Gemini3Pro:
+    case AIProvider.Gemini31Pro:
     case AIProvider.Qwen3Coder:
       return new OpenRouterWrapper(model);
     default:
@@ -174,10 +174,10 @@ export function getTokenCost(model: AIProvider): AICost {
         output_cost_per_million: new Decimal('15'),
       };
       break;
-    case AIProvider.Gemini3Pro:
+    case AIProvider.Gemini31Pro:
       torReturn = {
-        input_cost_per_million: new Decimal('3'),
-        output_cost_per_million: new Decimal('15'),
+        input_cost_per_million: new Decimal('1'),
+        output_cost_per_million: new Decimal('12'),
       };
       break;
     case AIProvider.Qwen3Coder:
@@ -239,8 +239,8 @@ export function GetModelName(provider: AIProvider): string {
       return 'Llama 4 Maverick';
     case AIProvider.Grok4:
       return 'Grok 4';
-    case AIProvider.Gemini3Pro:
-      return 'Gemini 3 Pro';
+    case AIProvider.Gemini31Pro:
+      return 'Gemini 3.1 Pro preview';
     case AIProvider.Qwen3Coder:
       return 'Qwen 3 Coder';
     default:
@@ -274,7 +274,7 @@ export function ListModels(): AIProvider[] {
     AIProvider.LLama3290b,
     AIProvider.LLama3370b,
     AIProvider.Llama4Maverick,
-    AIProvider.Gemini3Pro,
+    AIProvider.Gemini31Pro,
     AIProvider.Grok4,
   ].filter((x) => {
     try {
@@ -301,7 +301,7 @@ export function ListModels(): AIProvider[] {
         case AIProvider.LLama3290b:
         case AIProvider.LLama3370b:
         case AIProvider.Llama4Maverick:
-        case AIProvider.Gemini3Pro:
+        case AIProvider.Gemini31Pro:
         case AIProvider.Grok4:
           a = new OpenRouterWrapper(x);
           break;
