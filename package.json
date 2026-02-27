@@ -40,6 +40,7 @@
   "dependencies": {
     "@ko-fi/express": "^1.0.5",
     "@ko-fi/types": "^1.0.4",
+    "@opendocsg/pdf2md": "^0.2.4",
     "@prisma/client": "^6.16.3",
     "@types/bcrypt": "^5.0.2",
     "@types/ws": "^8.18.1",
@@ -51,7 +52,6 @@
     "nodemailer": "^6.9.14",
     "openai": "^6.1.0",
     "pdf2md-ts": "^1.1.1",
-    "pdfjs": "^2.5.4",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7",
     "vue-icon": "^2.3.0",
