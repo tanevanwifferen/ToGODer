@@ -51,6 +51,7 @@
     "nodemailer": "^6.9.14",
     "openai": "^6.1.0",
     "pdf2md-ts": "^1.1.1",
+    "pdfjs": "^2.5.4",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7",
     "vue-icon": "^2.3.0",
