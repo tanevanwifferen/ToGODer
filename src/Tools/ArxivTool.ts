@@ -138,22 +138,15 @@ export function registerArxivTools(): void {
         return 'Error: arxiv_id parameter is required and must be a non-empty string.';
       }
 
-      const baseUrl = (process.env.LIBRARIAN_API_URL ?? '').trim();
-      if (!baseUrl) {
-        return 'Library service is not configured.';
-      }
-
-      const endpoint = `${baseUrl.replace(/\/$/, '')}/arxiv/pdf/${arxivId.trim()}`;
+      const pdfUrl = `https://arxiv.org/pdf/${arxivId.trim()}`;
 
       try {
-        const response = await axios.get(endpoint, { timeout: 90000 });
+        const response = await axios.get(pdfUrl, {
+          responseType: 'arraybuffer',
+          timeout: 90000,
+        });
 
-        const pdfBase64: string = response.data?.pdf_base64;
-        if (!pdfBase64) {
-          return 'Failed to retrieve the PDF for this paper.';
-        }
-
-        const pdfBuffer = Buffer.from(pdfBase64, 'base64');
+        const pdfBuffer = Buffer.from(response.data);
         const markdown = await pdf2md(pdfBuffer);
 
         if (markdown.trim().length === 0) {
@@ -166,7 +159,7 @@ export function registerArxivTools(): void {
           console.error('ArXiv PDF fetch error:', {
             message: error.message,
             status: error.response?.status,
-            endpoint,
+            url: pdfUrl,
           });
         } else {
           console.error('ArXiv read paper error:', error?.message ?? error);
