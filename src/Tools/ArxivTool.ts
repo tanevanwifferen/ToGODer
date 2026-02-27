@@ -1,5 +1,5 @@
 import axios from 'axios';
-import pdf2md from '@opendocsg/pdf2md';
+import pdf2md from 'pdf2md-ts';
 import { ToolRegistry } from './ToolRegistry';
 import { ChatRequest } from '../Model/ChatRequest';
 
@@ -147,7 +147,8 @@ export function registerArxivTools(): void {
         });
 
         const pdfBuffer = Buffer.from(response.data);
-        const markdown = await pdf2md(pdfBuffer);
+        const pages: string[] = await pdf2md(pdfBuffer);
+        const markdown = pages.join('\n\n');
 
         if (markdown.trim().length === 0) {
           return 'The PDF was retrieved but could not be converted to readable text.';
