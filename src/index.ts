@@ -18,6 +18,7 @@ import {
 import { createServer } from 'http';
 import WebSocket from 'ws';
 import { registerLibraryTool } from './Tools/LibraryTool';
+import { registerArxivTools } from './Tools/ArxivTool';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -130,3 +131,4 @@ server.listen(port, () => {
 
 setupRunners();
 registerLibraryTool();
+registerArxivTools();
