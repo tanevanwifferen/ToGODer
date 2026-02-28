@@ -17,6 +17,7 @@ import {
   ConnectionFacilitatorPrompt,
   RecursionPrompt,
   WakeUpPrompt,
+  SymbioticEssencePrompt,
 } from './chatprompts';
 import { ExperiencePrompt } from './experienceprompts';
 
@@ -34,6 +35,13 @@ export const PromptList: Record<string, PromptListItem> = {
       'Leave the ai to decide for itself. There is no steering in what \
     to interpret and find conclusions out of. Leaves most of the \
     concluding work to you.',
+    display: true,
+  },
+  '/symbiosis': {
+    prompt: SymbioticEssencePrompt,
+    description:
+      'More of a symbiotic vibe, you and the AI becomre greater\
+    than the sum of the parts combined.',
     display: true,
   },
   '/fiveMinuteCheckin': {
